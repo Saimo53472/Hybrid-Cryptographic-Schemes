@@ -1,5 +1,6 @@
 package Chameleon;
 
+import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 
 import javacard.framework.*; // Applet class
@@ -15,9 +16,14 @@ public class ChameleonApplet extends Applet {
     private static final byte INS_GET_SIG_BASE = (byte) 0x50; // Returns the computed classical signature
     private static final byte INS_GET_SIG_DELTA = (byte) 0x60; // Returns the computed delta signature 
 
-    private Object data; // Data to be signed
+    private static final byte INS_LOAD_PRIVKEY_BASE = (byte) 0x70; 
+    private static final byte INS_LOAD_PRIVKEY_DELTA = (byte) 0x71; 
+    private static final byte INS_LOAD_CERT = (byte) 0x72;
+    private static final byte INS_LOCK_CARD = (byte) 0x73;
 
-    // TODO
+    private byte[] dataToSign; // data to be signed
+    private short dataToSignLen;
+
     // Classical values 
     private ECPrivateKey classicalPrivateKey;
 
@@ -34,8 +40,17 @@ public class ChameleonApplet extends Applet {
     private byte[] signatureBuffer;
     private short signatureLen;
 
+    private boolean personalized;
+
     protected ChameleonApplet() {
-        buffer = new byte[255];
+        dataToSign = new byte[255];
+        certificate = new byte[512];
+        signatureBuffer = new byte[128];
+
+        classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_256, false);
+        classicalSignature = Signature.getInstance( Signature.ALG_ECDSA_SHA_256, false);
+
+        personalized = false;
 
         register(); // makes the applet selectable 
     }
@@ -78,45 +93,68 @@ public class ChameleonApplet extends Applet {
                 sendSignatureDelta(apdu);
                 return;
 
+            case INS_LOAD_PRIVKEY_BASE:
+                loadPrivateKey(apdu);
+                return;
+
+            case INS_LOAD_PRIVKEY_DELTA:
+                loadPrivateKey(apdu); // change
+                return;
+
+            case INS_LOAD_CERT:
+                loadCertificate(apdu);
+                return;
+
+            case INS_LOCK_CARD:
+                lockCard();
+                return;
+
             default:
                 ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
         }
     }
 
-    // TODO oof card
-    // private void initClassicalCrypto() {
-    //     classicalPrivateKey =
-    //     (ECPrivateKey) KeyBuilder.buildKey(
-    //         KeyBuilder.TYPE_EC_FP_PRIVATE,
-    //         KeyBuilder.LENGTH_EC_FP_256,
-    //         false
-    //     );
+    private void loadPrivateKey(APDU apdu) {
 
-    //     classicalPublicKey =
-    //     (ECPublicKey) KeyBuilder.buildKey(
-    //         KeyBuilder.TYPE_EC_FP_PUBLIC,
-    //         KeyBuilder.LENGTH_EC_FP_256,
-    //         false
-    //     );
+        if (personalized)
+            ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
-    //     classicalSignature =
-    //     Signature.getInstance(
-    //         Signature.ALG_ECDSA_SHA_256,
-    //         false
-    //     );
+        byte[] buf = apdu.getBuffer();
+        short len = apdu.setIncomingAndReceive();
 
-    //     signatureBuffer = new byte[80];
-    // }
+        // Loads EC private scalar S
+        classicalPrivateKey.setS(
+            buf,
+            ISO7816.OFFSET_CDATA,
+            len
+        );
+    }
 
-    // TODO
-    // private void initPostQuantumCrypto() {
-    //     pqPublicKey = null;
-    //     pqPrivateKey = null;
-    //     pqEngine = null;
-    // }
+    private void loadCertificate(APDU apdu) {
+
+        if (personalized)
+            ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
+
+        byte[] buf = apdu.getBuffer();
+        short len = apdu.setIncomingAndReceive();
+
+        Util.arrayCopy(
+            buf,
+            ISO7816.OFFSET_CDATA,
+            certificate,
+            (short) 0,
+            len
+        );
+        certLen = len;
+    }
+
+    private void lockCard() {
+        personalized = true;
+    }
 
     private void initSession(APDU apdu) {
-        certLen = 0; // get
+        signatureLen = 0;
+        dataToSignLen = 0;
     }
 
     private void createSignatureBase(APDU apdu) {
