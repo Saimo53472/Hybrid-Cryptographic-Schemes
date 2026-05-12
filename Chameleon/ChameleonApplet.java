@@ -1,7 +1,6 @@
 package Chameleon;
 
 import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.ECPublicKey;
 
 import javacard.framework.*; // Applet class
 import javacard.security.*; // Cryptographic operations
@@ -20,6 +19,8 @@ public class ChameleonApplet extends Applet {
     private static final byte INS_LOAD_PRIVKEY_DELTA = (byte) 0x71; 
     private static final byte INS_LOAD_CERT = (byte) 0x72;
     private static final byte INS_LOCK_CARD = (byte) 0x73;
+
+    private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88;
 
     private byte[] dataToSign; // data to be signed
     private short dataToSignLen;
@@ -109,6 +110,10 @@ public class ChameleonApplet extends Applet {
                 lockCard();
                 return;
 
+            case INS_INTERNAL_AUTHENTICATE:
+                internalAuthenticate(apdu);
+                return;
+
             default:
                 ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
         }
@@ -157,9 +162,53 @@ public class ChameleonApplet extends Applet {
         dataToSignLen = 0;
     }
 
+    private void internalAuthenticate(APDU apdu) {
+        byte[] buf = apdu.getBuffer();
+        short len = apdu.setIncomingAndReceive();
+
+        short post = 0;
+        
+        dataToSign[pos++] = (byte) 0x05;   // Signed Data Format
+        dataToSign[pos++] = (byte) 0x01;   // Hash algorithm indicator
+        dataToSign[pos++] = (byte) 0x08;   // ICC dynamic data length
+
+        random.generateData(iccDynamicData, (short) 0, (short) 8);
+
+        Util.arrayCopyNonAtomic(
+            iccDynamicData,
+            (short) 0,
+            dataToSign,
+            pos,
+            (short) 8
+        );
+        pos += 8;
+
+        short paddingLen = (short)(TOTAL_LEN - pos - len);
+
+        Util.arrayFillNonAtomic(
+            dataToSign,
+            pos,
+            paddingLen,
+            (byte) 0xBB
+        );
+        pos += paddingLen;
+
+
+        Util.arrayCopyNonAtomic(
+            buf,
+            ISO7816.OFFSET_CDATA,
+            dataToSign,
+            pos,
+            len
+        );
+        pos += len;
+
+        dataToSignLen = pos;
+    }
+
     private void createSignatureBase(APDU apdu) {
         classicalSignature.init(classicalPrivateKey, Signature.MODE_SIGN);
-        signatureLen = classicalSignature.sign(data, 0, (short) data.length, signatureBuffer, 0);
+        signatureLen = classicalSignature.sign(dataToSign, 0, dataToSignLen, signatureBuffer, 0);
         
         apdu.setOutgoing();
         apdu.setOutgoingLength(signatureLen);
@@ -168,7 +217,7 @@ public class ChameleonApplet extends Applet {
 
     private void createSignatureDelta(APDU apdu) {
         pqSignature.init(pqPrivateKey, Signature.MODE_SIGN);
-        signatureLen = pqSignature.sign(data, 0, (short) data.length, signatureBuffer, 0);
+        signatureLen = pqSignature.sign(dataToSign, 0, dataToSignLen, signatureBuffer, 0);
 
         apdu.setOutgoing();
         apdu.setOutgoingLength(signatureLen);
