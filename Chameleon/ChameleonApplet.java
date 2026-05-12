@@ -25,10 +25,10 @@ public class ChameleonApplet extends Applet {
     private short dataToSignLen;
 
     // Classical values 
-    private ECPrivateKey classicalPrivateKey;
+    private ECPrivateKey classicalPrivateKey; // on card
 
     // Post-Quantum values
-    private Object pqPrivateKey;
+    private Object pqPrivateKey; // on card 
 
     // Certificate storage
     private byte[] certificate; // stored on card
@@ -74,7 +74,7 @@ public class ChameleonApplet extends Applet {
                 return;
 
             case INS_GET_CERT:
-                sendBaseCertificate(apdu);
+                sendCertificate(apdu);
                 return;
             
             case INS_SIGN_BASE:
@@ -176,7 +176,7 @@ public class ChameleonApplet extends Applet {
     }
 
     // TODO: if the certificate / signature exceeds the buffer size
-    private void sendBaseCertificate(APDU apdu) {
+    private void sendCertificate(APDU apdu) {
         apdu.setOutgoing();
         apdu.setOutgoingLength(certLen);
         apdu.sendBytesLong(certificate, (short) 0, certLen);
