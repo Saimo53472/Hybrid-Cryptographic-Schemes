@@ -14,6 +14,12 @@ export JAVA_HOME=/mnt/c/Java/jdk-17/jdk-17.0.12
 export PATH=$JAVA_HOME/bin:$PATH
 ```
 
+Pwsh
+```
+$env:JAVA_HOME = "C:\Java\jdk-17\jdk-17.0.12"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+```
+
 To use the Java card development kit:
 MAC
 ```
@@ -25,6 +31,13 @@ WSL
 ```
 export JC_HOME=$HOME/Downloads/java_card_devkit_tools-bin-v25.1-b_611-26-OCT-2025
 export PATH=$JC_HOME/bin:$PATH
+```
+
+Pwsh
+```
+$env:JC_HOME = "$env:USERPROFILE\Downloads\java_card_devkit_tools-bin-v25.1-b_611-26-OCT-2025"
+$env:PATH = "$env:JC_HOME\bin;$env:PATH"
+
 ```
 
 To convert to class:
