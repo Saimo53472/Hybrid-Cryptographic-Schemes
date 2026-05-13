@@ -61,3 +61,20 @@ Create self-sgined certificate
 ```
 openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=PoC-Test"
 ```
+
+## GlobalPlatformPro
+Clone the repo of the project
+```
+git clone https://github.com/martinpaljak/GlobalPlatformPro
+cd GlobalPlatformPro
+```
+
+Build the project and create the gp.jar
+```
+./mvnw package
+```
+
+Connect the reader, then
+```
+java -jar ./tool/target/gp.jar -info
+```
