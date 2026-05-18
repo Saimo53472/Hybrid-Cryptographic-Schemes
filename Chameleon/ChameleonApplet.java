@@ -95,11 +95,11 @@ public class ChameleonApplet extends Applet {
                 return;
 
             case INS_LOAD_PRIVKEY_BASE:
-                loadPrivateKey(apdu);
+                loadPrivateKeyBase(apdu);
                 return;
 
             case INS_LOAD_PRIVKEY_DELTA:
-                loadPrivateKey(apdu); // change
+                loadPrivateKeyDelta(apdu);
                 return;
 
             case INS_LOAD_CERT:
@@ -119,7 +119,7 @@ public class ChameleonApplet extends Applet {
         }
     }
 
-    private void loadPrivateKey(APDU apdu) {
+    private void loadPrivateKeyBase(APDU apdu) {
 
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
@@ -133,6 +133,17 @@ public class ChameleonApplet extends Applet {
             ISO7816.OFFSET_CDATA,
             len
         );
+    }
+
+    private void loadPrivateKeyDelta(APDU apdu) {
+
+        if (personalized)
+            ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
+
+        byte[] buf = apdu.getBuffer();
+        short len = apdu.setIncomingAndReceive();
+
+        // Load
     }
 
     private void loadCertificate(APDU apdu) {

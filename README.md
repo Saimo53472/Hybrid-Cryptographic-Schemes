@@ -78,3 +78,6 @@ Connect the reader, then
 ```
 java -jar ./tool/target/gp.jar -r
 ```
+
+### How it works
+ChameleonClient -> CardSession (APDU transport) -> ReaderDevice (DLL) -> Hardware
