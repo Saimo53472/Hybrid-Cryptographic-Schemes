@@ -76,5 +76,5 @@ Build the project and create the gp.jar
 
 Connect the reader, then
 ```
-java -jar ./tool/target/gp.jar -info
+java -jar ./tool/target/gp.jar -r
 ```

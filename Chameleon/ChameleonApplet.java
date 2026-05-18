@@ -35,7 +35,7 @@ public class ChameleonApplet extends Applet {
     private byte[] certificate; // stored on card
     private short certLen;
 
-    // Temporary APDU buffer - communictaion
+    // Temporary APDU buffer - communication
     private byte[] buffer;
 
     private byte[] signatureBuffer;
