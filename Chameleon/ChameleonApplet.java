@@ -24,12 +24,15 @@ public class ChameleonApplet extends Applet {
 
     private byte[] dataToSign; // data to be signed
     private short dataToSignLen;
+    private static final short TOTAL_LEN = 255; // total length of data to be signed (including padding)
 
     // Classical values 
     private ECPrivateKey classicalPrivateKey; // on card
+    private Signature classicalSignature; 
 
     // Post-Quantum values
-    private Object pqPrivateKey; // on card 
+    private Key pqPrivateKey; // on card 
+    private Signature pqSignature; 
 
     // Certificate storage
     private byte[] certificate; // stored on card
@@ -42,6 +45,8 @@ public class ChameleonApplet extends Applet {
     private short signatureLen;
 
     private boolean personalized;
+    private RandomData random;
+    private byte[] iccDynamicData = new byte[8];
 
     protected ChameleonApplet() {
         dataToSign = new byte[255];
@@ -52,7 +57,7 @@ public class ChameleonApplet extends Applet {
         classicalSignature = Signature.getInstance( Signature.ALG_ECDSA_SHA_256, false);
 
         personalized = false;
-
+        random = RandomData.getInstance(RandomData.ALG_SECURE_RANDOM);
         register(); // makes the applet selectable 
     }
 
@@ -65,7 +70,7 @@ public class ChameleonApplet extends Applet {
     public void process(APDU apdu) {
         byte[] apduBuffer = apdu.getBuffer();
 
-        if ((apduBuffer[ISO7816.OFFSET_CLA] == 0) && (aopduBuffer[ISO7816.OFFSET_INS] == (byte) (0xA4)) ) // SELECT APDU command
+        if ((apduBuffer[ISO7816.OFFSET_CLA] == 0) && (apduBuffer[ISO7816.OFFSET_INS] == (byte) (0xA4)) ) // SELECT APDU command
             return;
 
         switch (apduBuffer[ISO7816.OFFSET_INS]) {
@@ -130,7 +135,7 @@ public class ChameleonApplet extends Applet {
         // Loads EC private scalar S
         classicalPrivateKey.setS(
             buf,
-            ISO7816.OFFSET_CDATA,
+            (short) ISO7816.OFFSET_CDATA,
             len
         );
     }
@@ -177,7 +182,7 @@ public class ChameleonApplet extends Applet {
         byte[] buf = apdu.getBuffer();
         short len = apdu.setIncomingAndReceive();
 
-        short post = 0;
+        short pos = 0;
         
         dataToSign[pos++] = (byte) 0x05;   // Signed Data Format
         dataToSign[pos++] = (byte) 0x01;   // Hash algorithm indicator
@@ -219,20 +224,20 @@ public class ChameleonApplet extends Applet {
 
     private void createSignatureBase(APDU apdu) {
         classicalSignature.init(classicalPrivateKey, Signature.MODE_SIGN);
-        signatureLen = classicalSignature.sign(dataToSign, 0, dataToSignLen, signatureBuffer, 0);
+        signatureLen = classicalSignature.sign(dataToSign, (short) 0, dataToSignLen, signatureBuffer, (short) 0);
         
         apdu.setOutgoing();
         apdu.setOutgoingLength(signatureLen);
-        apdu.sendBytes(signatureBuffer, 0, signatureLen);
+        apdu.sendBytes(signatureBuffer, (short) 0, signatureLen);
     }
 
     private void createSignatureDelta(APDU apdu) {
         pqSignature.init(pqPrivateKey, Signature.MODE_SIGN);
-        signatureLen = pqSignature.sign(dataToSign, 0, dataToSignLen, signatureBuffer, 0);
+        signatureLen = pqSignature.sign(dataToSign, (short) 0, dataToSignLen, signatureBuffer, (short) 0);
 
         apdu.setOutgoing();
         apdu.setOutgoingLength(signatureLen);
-        apdu.sendBytes(signatureBuffer, 0, signatureLen);
+        apdu.sendBytes(signatureBuffer, (short) 0, signatureLen);
     }
 
     // TODO: if the certificate / signature exceeds the buffer size

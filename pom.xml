@@ -1,0 +1,24 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" version="4.0.0">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>chameleon</groupId>
+    <artifactId>chameleon-test</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.licel</groupId>
+            <artifactId>jcardsim</artifactId>
+            <version>master-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+</project>

@@ -37,7 +37,16 @@ Pwsh
 ```
 $env:JC_HOME = "$env:USERPROFILE\Downloads\java_card_devkit_tools-bin-v25.1-b_611-26-OCT-2025"
 $env:PATH = "$env:JC_HOME\bin;$env:PATH"
+```
 
+```
+$env:JC_CLASSIC_HOME = "$env:USERPROFILE\Downloads\java_card_devkit_tools-bin-v25.1-b_611-26-OCT-2025"
+$env:PATH = "$env:JC_CLASSIC_HOME\bin;$env:PATH"
+```
+
+MVN Pwsh
+```
+$env:Path += ";C:\Program Files\apache-maven-3.9.16\bin"   
 ```
 
 To convert to class:
@@ -79,5 +88,13 @@ Connect the reader, then
 java -jar ./tool/target/gp.jar -r
 ```
 
-### How it works
-ChameleonClient -> CardSession (APDU transport) -> ReaderDevice (DLL) -> Hardware
+## Test - Simulator
+Compile
+```
+javac -cp .:jcardsim.jar:api_classic.jar Chameleon/ChameleonApplet.java ChameleonTest.java
+```
+
+Run
+```
+java -cp .:jcardsim.jar ChameleonTest
+```
