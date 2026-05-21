@@ -2,6 +2,7 @@ package Reader;
 
 import java.util.Arrays;
 
+// apdu transport
 public class CardSession {
     private final Pointer icdev;
     private final byte CARD_NO = 0x00;
@@ -14,18 +15,18 @@ public class CardSession {
         IntByReference state = new IntByReference();
 
         while (true) {
-            Ylt32.INSTANCE.GetIcCardState(
-                icdev, (short) 500, 0, state
-            );
+            Ylt32.INSTANCE.GetIcCardState(icdev, (short)500, 0, state);
 
             if (state.getValue() == 1)
                 break;
+
+            try { Thread.sleep(100); } catch (InterruptedException ignored) {}
         }
     }
 
     public byte[] powerOn() {
 
-        byte[] len = new byte[1];
+        ByteByReference len = new ByteByReference();
         byte[] atr = new byte[64];
 
         int r = Ylt32.INSTANCE.CpuCardPowerOn(
@@ -38,26 +39,11 @@ public class CardSession {
         if (r != 0)
             throw new RuntimeException("PowerOn failed");
 
-        return Arrays.copyOf(atr, len[0]);
+        return Arrays.copyOf(atr, len.getValue() & 0xFF);
     }
 
-    public byte[] transmit(byte[] apdu) {
-
-        IntByReference rlen = new IntByReference();
-        byte[] resp = new byte[256];
-
-        int r = Ylt32.INSTANCE.CpuCardAPDU(
-            icdev,
-            CARD_NO,
-            apdu.length,
-            apdu,
-            rlen,
-            resp
-        );
-
-        if (r != 0)
-            throw new RuntimeException("APDU failed");
-
-        return Arrays.copyOf(resp, rlen.getValue());
+    public ResponseApdu transmit(CommandApdu cmd) {
+        byte[] resp = transmit(cmd.toBytes());
+        return new ResponseApdu(resp);
     }
 }

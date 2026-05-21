@@ -1,6 +1,7 @@
 package Chameleon;
 
-import Reader.CardSession;
+import Reader.*;
+import Chameleon.ChameleonApplet;
 
 public class ChameleonClient {
 
@@ -10,61 +11,95 @@ public class ChameleonClient {
         this.session = session;
     }
 
-    public class ChameleonCommands {
-        public static final byte INS_INIT = 0x10;
-        public static final byte INS_GET_CERT = 0x20;
-        public static final byte INS_SIGN_BASE = 0x30;
-        public static final byte INS_SIGN_DELTA = 0x40;
-        public static final byte INS_LOAD_PRIVKEY_BASE = 0x70;
-        public static final byte INS_LOAD_PRIVKEY_Delta = 0x71;
-        public static final byte INS_LOAD_CERT = 0x72;
-        public static final byte INS_LOCK_CARD = 0x73;
-    }
-
-    private byte[] apdu(byte ins, byte[] data) {
-
-        int len = (data == null) ? 5 : 5 + data.length;
-
-        byte[] cmd = new byte[len];
-
-        cmd[0] = 0x00;   // CLA
-        cmd[1] = ins;
-        cmd[2] = 0x00;
-        cmd[3] = 0x00;
-        cmd[4] = (byte)(data == null ? 0 : data.length);
-
-        if (data != null) {
-            System.arraycopy(data, 0, cmd, 5, data.length);
-        }
-
-        return cmd;
-    }
-
     public void initSession() {
-        session.transmit(apdu(ChameleonApplet.INS_INIT, null));
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_INIT, null)
+        );
+        check(r);
     }
 
+    public void loadPrivateKeyBase(byte[] key) {
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_LOAD_PRIVKEY_BASE, key)
+        );
+        check(r);
+    }
+
+    public void loadPrivateKeyDelta(byte[] key) {
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_LOAD_PRIVKEY_DELTA, key)
+        );
+        check(r);
+    }
+    
     public void loadCertificate(byte[] cert) {
-        session.transmit(apdu(ChameleonApplet.INS_LOAD_CERT, cert));
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_LOAD_CERT, cert)
+        );
+        check(r);
     }
 
     public void lockCard() {
-        session.transmit(apdu(ChameleonApplet.INS_LOCK_CARD, null));
-    }
-
-    public byte[] signBase() {
-        return session.transmit(apdu(ChameleonApplet.INS_SIGN_BASE, null));
-    }
-
-    public byte[] signDelta() {
-        return session.transmit(apdu(ChameleonApplet.INS_SIGN_DELTA, null));
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_LOCK_CARD, null)
+        );
+        check(r);
     }
 
     public byte[] getCertificate() {
-        return session.transmit(apdu(ChameleonApplet.INS_GET_CERT, null));
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_GET_CERT, null)
+        );
+        check(r);
+        return r.getData();
+    }
+
+    public byte[] signBase() {
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_SIGN_BASE, null)
+        );
+        check(r);
+        return r.getData();
+    }
+
+    public byte[] getSignatureBase() {
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_GET_SIG_BASE, null)
+        );
+        check(r);
+        return r.getData();
+    }
+
+    public byte[] getSignatureDelta() {
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_GET_SIG_DELTA, null)
+        );
+        check(r);
+        return r.getData();
     }
 
     public void internalAuthenticate(byte[] data) {
-        session.transmit(apdu(ChameleonApplet.INS_INTERNAL_AUTHENTICATE, data));
+        ResponseApdu r = session.transmit(
+            command(ChameleonApplet.INS_INTERNAL_AUTHENTICATE, data)
+        );
+        check(r);
+    }
+
+    private CommandApdu command(byte ins, byte[] data) {
+        CommandApdu cmd = new CommandApdu();
+        cmd.cla = (byte) 0x00;
+        cmd.ins = ins;
+        cmd.p1  = (byte) 0x00;
+        cmd.p2  = (byte) 0x00;
+        cmd.data = data;
+        return cmd;
+    }
+
+    private void check(ResponseApdu r) {
+        if (!r.isOK()) {
+            throw new RuntimeException(
+                String.format("APDU failed: SW=%04X", r.getSW())
+            );
+        }
     }
 }
