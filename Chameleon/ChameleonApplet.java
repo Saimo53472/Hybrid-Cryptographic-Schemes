@@ -1,7 +1,5 @@
 package Chameleon;
 
-import java.security.interfaces.ECPrivateKey;
-
 import javacard.framework.*; // Applet class
 import javacard.security.*; // Cryptographic operations
 
@@ -87,9 +85,9 @@ public class ChameleonApplet extends Applet {
                 createSignatureBase(apdu);
                 return;
 
-            case INS_SIGN_DELTA:
-                createSignatureDelta(apdu);
-                return;
+            // case INS_SIGN_DELTA:
+            //     createSignatureDelta(apdu);
+            //     return;
 
             case INS_GET_SIG_BASE:
                 sendSignatureBase(apdu);
@@ -225,20 +223,16 @@ public class ChameleonApplet extends Applet {
     private void createSignatureBase(APDU apdu) {
         classicalSignature.init(classicalPrivateKey, Signature.MODE_SIGN);
         signatureLen = classicalSignature.sign(dataToSign, (short) 0, dataToSignLen, signatureBuffer, (short) 0);
-        
-        apdu.setOutgoing();
-        apdu.setOutgoingLength(signatureLen);
-        apdu.sendBytes(signatureBuffer, (short) 0, signatureLen);
     }
 
-    private void createSignatureDelta(APDU apdu) {
-        pqSignature.init(pqPrivateKey, Signature.MODE_SIGN);
-        signatureLen = pqSignature.sign(dataToSign, (short) 0, dataToSignLen, signatureBuffer, (short) 0);
+    // private void createSignatureDelta(APDU apdu) {
+    //     pqSignature.init(pqPrivateKey, Signature.MODE_SIGN);
+    //     signatureLen = pqSignature.sign(dataToSign, (short) 0, dataToSignLen, signatureBuffer, (short) 0);
 
-        apdu.setOutgoing();
-        apdu.setOutgoingLength(signatureLen);
-        apdu.sendBytes(signatureBuffer, (short) 0, signatureLen);
-    }
+    //     apdu.setOutgoing();
+    //     apdu.setOutgoingLength(signatureLen);
+    //     apdu.sendBytes(signatureBuffer, (short) 0, signatureLen);
+    // }
 
     // TODO: if the certificate / signature exceeds the buffer size
     private void sendCertificate(APDU apdu) {
