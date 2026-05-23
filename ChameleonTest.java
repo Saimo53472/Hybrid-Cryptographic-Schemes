@@ -5,9 +5,9 @@ import javax.smartcardio.*;
 
 public class ChameleonTest {
 
-    private static final byte CLA = (byte) 0x80;
+    private static final byte CLA = (byte) 0x00;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
         CardSimulator simulator = new CardSimulator();
 
@@ -22,7 +22,11 @@ public class ChameleonTest {
         System.out.println("Applet selected");
 
         // 1. INIT
-        send(simulator, new CommandAPDU(CLA, 0x10, 0x00, 0x00));
+        ResponseAPDU response = send(simulator, new CommandAPDU(CLA, 0x10, 0x00, 0x00));
+        
+        if (response.getSW() != 0x9000) {
+            throw new RuntimeException("Assertion failed: expected 0x9000");
+        }
 
         // 2. Load EC private key (dummy 32 bytes)
         byte[] fakeKey = new byte[32];
@@ -34,24 +38,21 @@ public class ChameleonTest {
         byte[] cert = "MY_TEST_CERT".getBytes();
         send(simulator, new CommandAPDU(CLA, 0x72, 0x00, 0x00, cert));
 
-        // 4. Internal authenticate (build dataToSign)
+        // 4. Lock card
+        send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
+
+        // 5. Get certificate
+        send(simulator, new CommandAPDU(CLA, 0x20, 0x00, 0x00));
+
+        // 6. Internal authenticate (build dataToSign)
         byte[] challenge = {0x01, 0x02, 0x03, 0x04};
         send(simulator, new CommandAPDU(0x00, 0x88, 0x00, 0x00, challenge));
 
-        // 5. Create classical signature
-        ResponseAPDU sigResponse = send(simulator,
-                new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+        // 7. Create classical signature
+        ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
 
-        // 6. Get signature again (stored)
+        // 8. Get signature
         send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
-
-        // 7. Get certificate
-        send(simulator, new CommandAPDU(CLA, 0x20, 0x00, 0x00));
-
-        // 8. Lock card
-        send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
-
-        System.out.println("Test completed");
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {

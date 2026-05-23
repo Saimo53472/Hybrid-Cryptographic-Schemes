@@ -10,13 +10,14 @@ export PATH=$JAVA_HOME/bin:$PATH
 
 WSL
 ```
-export JAVA_HOME=/mnt/c/Java/jdk-17/jdk-17.0.12
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 export PATH=$JAVA_HOME/bin:$PATH
 ```
 
 Pwsh
 ```
-$env:JAVA_HOME = "C:\Java\jdk-17\jdk-17.0.12"
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-8.0.492.9-hotspot"
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot"
 $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 ```
 
@@ -91,10 +92,13 @@ java -jar ./tool/target/gp.jar -r
 ## Test - Simulator
 Compile
 ```
-javac -cp .:jcardsim.jar:api_classic.jar Chameleon/ChameleonApplet.java ChameleonTest.java
+javac -cp .:jcardsim.jar:api_classic-3.0.5.jar Chameleon/ChameleonApplet.java
+```
+```
+javac -cp .:jcardsim.jar:api_classic-3.0.5.jar ChameleonTest.java
 ```
 
-Run
+Run 
 ```
-java -cp .:jcardsim.jar ChameleonTest
+java -cp .:jcardsim.jar:api_classic-3.0.5.jar ChameleonTest
 ```
