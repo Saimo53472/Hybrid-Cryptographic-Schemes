@@ -1,6 +1,10 @@
 import com.licel.jcardsim.smartcardio.CardSimulator;
 import javacard.framework.AID;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
+
 import javax.smartcardio.*;
 
 public class ChameleonTest {
@@ -28,14 +32,12 @@ public class ChameleonTest {
             throw new RuntimeException("Assertion failed: expected 0x9000");
         }
 
-        // 2. Load EC private key (dummy 32 bytes)
-        byte[] fakeKey = new byte[32];
-        for (int i = 0; i < 32; i++) fakeKey[i] = (byte) (i + 1);
-
-        send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, fakeKey));
+        // 2. Load EC private key 
+        byte[] key = loadECPrivateKeyRaw("key.pem");
+        send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
 
         // 3. Load certificate
-        byte[] cert = "MY_TEST_CERT".getBytes();
+        byte[] cert = loadCertificate("cert.pem");
         send(simulator, new CommandAPDU(CLA, 0x72, 0x00, 0x00, cert));
 
         // 4. Lock card
@@ -72,5 +74,56 @@ public class ChameleonTest {
             sb.append(String.format("%02X ", b));
         }
         return sb.toString();
+    }
+    
+    private static byte[] loadECPrivateKeyRaw(String pemPath)
+        throws Exception {
+
+        String pem = Files.readString(Paths.get(pemPath));
+
+        pem = pem
+            .replace("-----BEGIN EC PRIVATE KEY-----", "")
+            .replace("-----END EC PRIVATE KEY-----", "")
+            .replaceAll("\\s", "");
+
+        byte[] sec1 = Base64.getDecoder().decode(pem);
+        int index = 0;
+
+        if (sec1[index++] != 0x30) {
+            throw new RuntimeException("Not ASN.1 SEQUENCE");
+        }
+
+        index++; // skip sequence length
+
+        if (sec1[index++] != 0x02) {
+        throw new RuntimeException("Expected INTEGER");
+        }
+
+        index += 2; // skip version
+
+        if (sec1[index++] != 0x04) {
+            throw new RuntimeException("Expected OCTET STRING");
+        }
+
+        int keyLen = sec1[index++] & 0xFF;
+
+        byte[] key = new byte[keyLen];
+
+        System.arraycopy(sec1, index, key, 0, keyLen);
+
+        return key;
+    }
+
+    private static byte[] loadCertificate(String pemPath)
+        throws Exception {
+
+        String pem = Files.readString(Paths.get(pemPath));
+
+        pem = pem
+            .replace("-----BEGIN CERTIFICATE-----", "")
+            .replace("-----END CERTIFICATE-----", "")
+            .replaceAll("\\s", "");
+
+        return Base64.getDecoder().decode(pem);
     }
 }
