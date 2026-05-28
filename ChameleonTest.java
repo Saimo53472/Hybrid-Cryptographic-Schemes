@@ -3,6 +3,7 @@ import javacard.framework.AID;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Base64;
 
 import javax.smartcardio.*;
@@ -32,28 +33,59 @@ public class ChameleonTest {
             throw new RuntimeException("Assertion failed: expected 0x9000");
         }
 
-        // 2. Load EC private key 
-        byte[] key = loadECPrivateKeyRaw("key.pem");
-        send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
+        // 2. Load EC private key and certificate
+        try {
+            byte[] key = loadECPrivateKeyRaw("key.pem");
+            byte[] cert = loadCertificate("cert.pem");
 
-        // 3. Load certificate
-        byte[] cert = loadCertificate("cert.pem");
-        send(simulator, new CommandAPDU(CLA, 0x72, 0x00, 0x00, cert));
+            send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
 
-        // 4. Lock card
+            int offset = 0;
+            int chunkSize = 200;
+
+            while (offset < cert.length) {
+                int len = Math.min(chunkSize, cert.length - offset);
+
+                byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
+
+                send(simulator, new CommandAPDU(CLA, 0x72, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+
+                offset += len;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 3. Lock card
         send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
 
-        // 5. Get certificate
-        send(simulator, new CommandAPDU(CLA, 0x20, 0x00, 0x00));
+        // 4. Get certificate
+        int offset = 0;
 
-        // 6. Internal authenticate (build dataToSign)
+        while (true) {
+            int p1 = (offset >> 8) & 0xFF;
+            int p2 = offset & 0xFF;
+
+            ResponseAPDU resp = send(simulator, new CommandAPDU(CLA, 0x20, p1, p2));
+
+            byte[] data = resp.getData();
+
+            if (data.length == 0) break;
+
+            // store / append data
+            offset += data.length;
+
+            if (data.length < 200) break; // last chunk
+        }
+
+        // 5. Internal authenticate (build dataToSign)
         byte[] challenge = {0x01, 0x02, 0x03, 0x04};
         send(simulator, new CommandAPDU(0x00, 0x88, 0x00, 0x00, challenge));
 
-        // 7. Create classical signature
+        // 6. Create classical signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
 
-        // 8. Get signature
+        // 7. Get signature
         send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
     }
 
@@ -79,7 +111,7 @@ public class ChameleonTest {
     private static byte[] loadECPrivateKeyRaw(String pemPath)
         throws Exception {
 
-        String pem = Files.readString(Paths.get(pemPath));
+        String pem = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(pemPath)));
 
         pem = pem
             .replace("-----BEGIN EC PRIVATE KEY-----", "")
@@ -117,7 +149,7 @@ public class ChameleonTest {
     private static byte[] loadCertificate(String pemPath)
         throws Exception {
 
-        String pem = Files.readString(Paths.get(pemPath));
+        String pem = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(pemPath)));
 
         pem = pem
             .replace("-----BEGIN CERTIFICATE-----", "")

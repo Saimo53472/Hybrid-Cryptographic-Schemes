@@ -149,6 +149,8 @@ public class ChameleonApplet extends Applet {
         // Load
     }
 
+    private short certOffset = 0;
+
     private void loadCertificate(APDU apdu) {
 
         if (personalized)
@@ -157,14 +159,18 @@ public class ChameleonApplet extends Applet {
         byte[] buf = apdu.getBuffer();
         short len = apdu.setIncomingAndReceive();
 
+        short dataOffset = ISO7816.OFFSET_CDATA;
+
         Util.arrayCopy(
             buf,
-            ISO7816.OFFSET_CDATA,
+            dataOffset,
             certificate,
-            (short) 0,
+            certOffset,
             len
         );
-        certLen = len;
+
+        certOffset += len;
+        certLen = certOffset;
     }
 
     private void lockCard() {
@@ -236,9 +242,28 @@ public class ChameleonApplet extends Applet {
 
     // TODO: if the certificate / signature exceeds the buffer size
     private void sendCertificate(APDU apdu) {
+
+        if (certLen == 0) {
+            ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
+        }
+
+        byte[] buf = apdu.getBuffer();
+
+        short offset = (short) (
+            ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
+            (buf[ISO7816.OFFSET_P2] & 0xFF)
+        );
+
+        if (offset >= certLen) {
+            ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
+        }
+
+        short remaining = (short) (certLen - offset);
+        short chunk = remaining > 200 ? 200 : remaining;
+
         apdu.setOutgoing();
-        apdu.setOutgoingLength(certLen);
-        apdu.sendBytesLong(certificate, (short) 0, certLen);
+        apdu.setOutgoingLength(chunk);
+        apdu.sendBytesLong(certificate, offset, chunk);
     }
 
     private void sendSignatureBase(APDU apdu) {

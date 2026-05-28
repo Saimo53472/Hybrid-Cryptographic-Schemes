@@ -50,16 +50,6 @@ MVN Pwsh
 $env:Path += ";C:\Program Files\apache-maven-3.9.16\bin"   
 ```
 
-To convert to class:
-```
-javac -source 8 -target 8 -classpath $JC_HOME/lib/api_classic-3.0.5.jar Chameleon/ChameleonApplet.java 
-```
-
-To convert to cap:
-``` 
-$JC_HOME/bin/converter.sh -classdir . -applet 0xa0:0x00:0x00:0x00:0x00:0x00:0x01 ChameleonApplet Chameleon 0xa0:0x00:0x00:0x00:0x00:0x00 1.0
-```
-
 ## X.509 Certificates
 ### P-256
 Create key pair
