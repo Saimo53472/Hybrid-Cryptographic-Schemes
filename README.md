@@ -39,23 +39,6 @@ Create self-sgined certificate
 openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=PoC-Test"
 ```
 
-## GlobalPlatformPro
-Clone the repo of the project
-```
-git clone https://github.com/martinpaljak/GlobalPlatformPro
-cd GlobalPlatformPro
-```
-
-Build the project and create the gp.jar
-```
-./mvnw package
-```
-
-Connect the reader, then
-```
-java -jar ./tool/target/gp.jar -r
-```
-
 ## Test - Simulator
 Compile
 ```
@@ -63,6 +46,25 @@ javac -cp .:jcardsim.jar:api_classic-3.0.5.jar Chameleon/ChameleonApplet.java
 ```
 ```
 javac -cp .:jcardsim.jar:api_classic-3.0.5.jar ChameleonTest.java
+```
+
+To convert to cap:
+WSL
+``` 
+$JC_HOME/bin/converter.sh -classdir . -applet 0xa0:0x00:0x00:0x00:0x00:0x00:0x01 ChameleonApplet Chameleon 0xa0:0x00:0x00:0x00:0x00:0x00 1.0
+```
+
+Pwsh
+``` 
+& "$env:JC_HOME\bin\converter.bat" `
+  -classdir . `
+  -out CAP `
+  -applet 0xa0:0x00:0x00:0x00:0x00:0x00:0x01 ChameleonApplet `
+  Chameleon 0xa0:0x00:0x00:0x00:0x00:0x00 1.0
+```
+
+```
+java -jar gp.jar -install ChameleonApplet.cap
 ```
 
 Run 
