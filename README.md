@@ -41,11 +41,22 @@ openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=PoC-Test"
 
 ## Test - Simulator
 Compile
+WSL
 ```
 javac -cp .:jcardsim.jar:api_classic-3.0.5.jar Chameleon/ChameleonApplet.java
 ```
+Pwsh
+```
+javac --release 8 -cp ".;jcardsim.jar;api_classic-3.0.5.jar" Chameleon\ChameleonApplet.java
+```
+
+WSL
 ```
 javac -cp .:jcardsim.jar:api_classic-3.0.5.jar ChameleonTest.java
+```
+Pwsh
+```
+javac -cp ".;jcardsim.jar;api_classic-3.0.5.jar" ChameleonTest.java
 ```
 
 To convert to cap:
@@ -53,21 +64,22 @@ WSL
 ``` 
 $JC_HOME/bin/converter.sh -classdir . -applet 0xa0:0x00:0x00:0x00:0x00:0x00:0x01 ChameleonApplet Chameleon 0xa0:0x00:0x00:0x00:0x00:0x00 1.0
 ```
-
 Pwsh
 ``` 
-& "$env:JC_HOME\bin\converter.bat" `
-  -classdir . `
-  -out CAP `
-  -applet 0xa0:0x00:0x00:0x00:0x00:0x00:0x01 ChameleonApplet `
-  Chameleon 0xa0:0x00:0x00:0x00:0x00:0x00 1.0
+& "$env:JC_HOME\bin\converter.bat" -classdir . -applet 0xa0:0x00:0x00:0x00:0x00:0x00:0x01 ChameleonApplet Chameleon 0xa0:0x00:0x00:0x00:0x00:0x00 1.0
 ```
 
+Install the applet on the card:
 ```
 java -jar gp.jar -install ChameleonApplet.cap
 ```
 
 Run 
+WSL
 ```
 java -cp .:jcardsim.jar:api_classic-3.0.5.jar ChameleonTest
+```
+Pwsh
+```
+java -cp ".;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" ChameleonTest
 ```
