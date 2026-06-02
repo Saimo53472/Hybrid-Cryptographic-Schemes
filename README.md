@@ -39,6 +39,53 @@ Create self-sgined certificate
 openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=PoC-Test"
 ```
 
+### MAYO
+In a WSL terminal
+```
+mkdir ~/oqs-test && cd ~/oqs-test
+```
+```
+export OPENSSL_CONF=$PWD/oqs.cnf
+```
+```
+export OPENSSL_MODULES=/mnt/c/Users/culachisi/oqs-provider/_build/lib
+```
+```
+openssl list -providers -provider oqsprovider
+```
+```
+openssl list -signature-algorithms -provider oqsprovider | grep mayo
+```
+
+Create key
+```
+openssl genpkey \
+  -provider default \
+  -provider oqsprovider \
+  -algorithm mayo1 \
+  -out qkey.pem
+```
+
+Create certificate 
+```
+openssl req -x509 \
+  -provider default \
+  -provider oqsprovider \
+  -key qkey.pem \
+  -out qcert.pem \
+  -days 365 \
+  -subj "/CN=MAYO-POC"
+```
+Check certificate
+```
+openssl x509 -in qcert.pem -text -noout
+```
+Copy them to this project
+```
+cp ~/oqs-test/qkey.pem /mnt/c/Users/culachisi/Hybrid-Cryptographic-Schemes/
+cp ~/oqs-test/qcert.pem /mnt/c/Users/culachisi/Hybrid-Cryptographic-Schemes/
+```
+
 ## Test - Simulator
 Compile
 WSL
