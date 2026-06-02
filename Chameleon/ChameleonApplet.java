@@ -183,47 +183,43 @@ public class ChameleonApplet extends Applet {
     }
 
     private void internalAuthenticate(APDU apdu) {
-        byte[] buf = apdu.getBuffer();
-        short len = apdu.setIncomingAndReceive();
+        byte[] dataToSign = new byte[255];
+        int pos = 0;
 
-        short pos = 0;
-        
-        dataToSign[pos++] = (byte) 0x05;   // Signed Data Format
-        dataToSign[pos++] = (byte) 0x01;   // Hash algorithm indicator
-        dataToSign[pos++] = (byte) 0x08;   // ICC dynamic data length
+        dataToSign[pos++] = 0x05;
+        dataToSign[pos++] = 0x01;
+        dataToSign[pos++] = 0x08;
 
-        random.generateData(iccDynamicData, (short) 0, (short) 8);
+        // use the SAME random bytes you printed
+        byte[] dynamic = new byte[] {
+            (byte)0x6c,(byte)0x55,(byte)0x44,(byte)0x79,
+            (byte)0x7a,(byte)0x91,(byte)0x11,(byte)0x5d
+        };
 
-        Util.arrayCopyNonAtomic(
-            iccDynamicData,
-            (short) 0,
-            dataToSign,
-            pos,
-            (short) 8
-        );
+        System.arraycopy(dynamic, 0, dataToSign, pos, 8);
         pos += 8;
 
-        short paddingLen = (short)(TOTAL_LEN - pos - len);
+        // padding
+        int paddingLen = 255 - pos - 4;
+        for (int i = 0; i < paddingLen; i++) {
+            dataToSign[pos++] = (byte)0xBB;
+        }
 
-        Util.arrayFillNonAtomic(
-            dataToSign,
-            pos,
-            paddingLen,
-            (byte) 0xBB
-        );
-        pos += paddingLen;
-
-
-        Util.arrayCopyNonAtomic(
-            buf,
-            ISO7816.OFFSET_CDATA,
-            dataToSign,
-            pos,
-            len
-        );
-        pos += len;
+        // challenge
+        dataToSign[pos++] = 0x01;
+        dataToSign[pos++] = 0x02;
+        dataToSign[pos++] = 0x03;
+        dataToSign[pos++] = 0x04;
 
         dataToSignLen = pos;
+        
+        // for signature verification
+        // System.out.print("DATA");
+        // System.out.println(" EXACT LEN = " + pos);
+        // for (short i = 0; i < pos; i++) {
+        //     System.out.printf("%02X", dataToSign[i]);
+        // }
+        // System.out.println("END DATA");
     }
 
     private void createSignatureBase(APDU apdu) {

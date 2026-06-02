@@ -6,7 +6,15 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
 
+import java.security.*;
+import java.security.cert.*;
+import java.io.*;
+
 import javax.smartcardio.*;
+
+import java.math.BigInteger;
+import java.io.ByteArrayOutputStream;
+
 
 public class ChameleonTest {
 
@@ -83,10 +91,10 @@ public class ChameleonTest {
         send(simulator, new CommandAPDU(0x00, 0x88, 0x00, 0x00, challenge));
 
         // 6. Create classical signature
-        ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
 
         // 7. Get signature
-        send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
+        ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
@@ -157,5 +165,12 @@ public class ChameleonTest {
             .replaceAll("\\s", "");
 
         return Base64.getDecoder().decode(pem);
+    }
+
+    public static PublicKey loadPublicKeyFromCert(String certPath) throws Exception {
+        FileInputStream fis = new FileInputStream(certPath);
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        X509Certificate cert = (X509Certificate) cf.generateCertificate(fis);
+        return cert.getPublicKey();
     }
 }
