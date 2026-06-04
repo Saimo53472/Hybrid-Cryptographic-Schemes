@@ -184,7 +184,7 @@ public class ChameleonApplet extends Applet {
 
     private void internalAuthenticate(APDU apdu) {
         byte[] dataToSign = new byte[255];
-        int pos = 0;
+        short pos = 0;
 
         dataToSign[pos++] = 0x05;
         dataToSign[pos++] = 0x01;
@@ -196,12 +196,12 @@ public class ChameleonApplet extends Applet {
             (byte)0x7a,(byte)0x91,(byte)0x11,(byte)0x5d
         };
 
-        System.arraycopy(dynamic, 0, dataToSign, pos, 8);
+        Util.arrayCopy(dynamic, (short) 0, dataToSign, pos, (short) 8);
         pos += 8;
 
         // padding
-        int paddingLen = 255 - pos - 4;
-        for (int i = 0; i < paddingLen; i++) {
+        short paddingLen = (short) (255 - pos - 4);
+        for (short i = 0; i < paddingLen; i++) {
             dataToSign[pos++] = (byte)0xBB;
         }
 

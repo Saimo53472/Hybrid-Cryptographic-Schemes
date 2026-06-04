@@ -118,7 +118,7 @@ Pwsh
 
 Install the applet on the card:
 ```
-java -jar gp.jar -install ChameleonApplet.cap
+java -jar gp.jar -install ChameleonApplet.cap -r "SCM Microsystems Inc. SCR33x USB Smart Card Reader 0"
 ```
 
 Run 
