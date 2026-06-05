@@ -212,14 +212,6 @@ public class ChameleonApplet extends Applet {
         dataToSign[pos++] = 0x04;
 
         dataToSignLen = pos;
-        
-        // for signature verification
-        // System.out.print("DATA");
-        // System.out.println(" EXACT LEN = " + pos);
-        // for (short i = 0; i < pos; i++) {
-        //     System.out.printf("%02X", dataToSign[i]);
-        // }
-        // System.out.println("END DATA");
     }
 
     private void createSignatureBase(APDU apdu) {
