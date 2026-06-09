@@ -29,8 +29,8 @@ public class ChameleonApplet extends Applet {
     private Signature classicalSignature; 
 
     // Post-Quantum values
-    private Key pqPrivateKey; // on card 
-    private Signature pqSignature; 
+    private byte[] pqPrivateKey; // on card 
+    private byte[] pqSignature; 
 
     // Certificate storage
     private byte[] certificate; // stored on card
@@ -46,13 +46,19 @@ public class ChameleonApplet extends Applet {
     private RandomData random;
     private byte[] iccDynamicData = new byte[8];
 
+    private short pqKeyOffset = 0;
+    private short pqKeyLen = 0;
+
     protected ChameleonApplet() {
         dataToSign = new byte[255];
-        certificate = new byte[512];
+        certificate = new byte[2048];
         signatureBuffer = new byte[128];
 
         classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_256, false);
         classicalSignature = Signature.getInstance( Signature.ALG_ECDSA_SHA_256, false);
+
+        pqPrivateKey = new byte[2048];
+        pqSignature = new byte[512];
 
         personalized = false;
         random = RandomData.getInstance(RandomData.ALG_SECURE_RANDOM);
@@ -146,13 +152,26 @@ public class ChameleonApplet extends Applet {
         byte[] buf = apdu.getBuffer();
         short len = apdu.setIncomingAndReceive();
 
+        byte p1 = buf[ISO7816.OFFSET_P1];
+        if (p1 == 0x00) {
+            pqKeyOffset = 0;
+        }
+
         // Load
-    }
+        Util.arrayCopy(
+                buf,
+                ISO7816.OFFSET_CDATA,
+                pqPrivateKey,
+                pqKeyOffset,
+                len
+            );
+
+        pqKeyOffset += len;
+}
 
     private short certOffset = 0;
 
     private void loadCertificate(APDU apdu) {
-
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
@@ -161,13 +180,13 @@ public class ChameleonApplet extends Applet {
 
         short dataOffset = ISO7816.OFFSET_CDATA;
 
-        Util.arrayCopy(
-            buf,
-            dataOffset,
-            certificate,
-            certOffset,
-            len
-        );
+        byte p1 = buf[ISO7816.OFFSET_P1];
+
+        if (p1 == 0x00) {
+            certOffset = 0;
+        }
+
+        Util.arrayCopy(buf, dataOffset, certificate, certOffset, len);
 
         certOffset += len;
         certLen = certOffset;
@@ -228,7 +247,6 @@ public class ChameleonApplet extends Applet {
     //     apdu.sendBytes(signatureBuffer, (short) 0, signatureLen);
     // }
 
-    // TODO: if the certificate / signature exceeds the buffer size
     private void sendCertificate(APDU apdu) {
 
         if (certLen == 0) {

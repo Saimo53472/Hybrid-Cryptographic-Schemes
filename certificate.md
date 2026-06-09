@@ -129,3 +129,8 @@ Verify the new certificate
 ```
 openssl x509 -in chameleon_cert.pem -text -noout
 ```
+
+Convert key to pkcs8: 
+```
+openssl pkcs8 -topk8 -nocrypt -in key.pem -out key_pkcs8.pem
+```
