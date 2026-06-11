@@ -49,6 +49,14 @@ public class ChameleonApplet extends Applet {
     private short pqKeyOffset = 0;
     private short pqKeyLen = 0;
 
+    // RAM usage estimation
+    // dataToSign: 255 bytes
+    // certificate: 2048 bytes
+    // signatureBuffer: 128 bytes
+    // pqPrivateKey: 2048 bytes
+    // pqSignature: 512 bytes
+    // TOTAL ≈ 4991 bytes (excluding temporary APDU buffers)
+
     protected ChameleonApplet() {
         dataToSign = new byte[255];
         certificate = new byte[2048];

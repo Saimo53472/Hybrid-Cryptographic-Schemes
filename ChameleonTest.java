@@ -21,6 +21,15 @@ public class ChameleonTest {
 
     private static final byte CLA = (byte) 0x00;
 
+    // Metrics
+    private static int apduCount = 0;          // N_APDU
+    private static int bytesSent = 0;          // B_comm (host -> card)
+    private static int bytesReceived = 0;      // B_comm (card -> host)
+
+    // Timing
+    private static long timeBaseSign = 0;
+    private static long timeDeltaSign = 0;     // will be used later
+
     public static void main(String[] args) {
 
         CardSimulator simulator = new CardSimulator();
@@ -69,6 +78,9 @@ public class ChameleonTest {
             offset = 0;
             chunkSize = 200;
 
+            int S_cert = cert.length;  // certificate size in bytes
+            System.out.println("S_cert = " + S_cert);
+
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
 
@@ -106,17 +118,45 @@ public class ChameleonTest {
 
         // 5. Internal authenticate (build dataToSign)
         byte[] challenge = {0x01, 0x02, 0x03, 0x04};
-        send(simulator, new CommandAPDU(0x00, 0x88, 0x00, 0x00, challenge));
+        send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
         // 6. Create classical signature
+        long startBase = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+        long endBase = System.nanoTime();
+        timeBaseSign = endBase - startBase;
 
         // 7. Get signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
+        byte[] sigData = sigResponse.getData();
+        int S_sig_base = sigData.length;
+
+        // 8. Print metrics
+        System.out.println("METRICS");
+        // Time
+        System.out.println("T_sign_classical (ns): " + timeBaseSign);
+
+        // Communication
+        System.out.println("N_APDU: " + apduCount);
+        System.out.println("B_comm_sent: " + bytesSent);
+        System.out.println("B_comm_received: " + bytesReceived);
+        System.out.println("B_comm_total: " + (bytesSent + bytesReceived));
+
+        // Signature sizes
+        System.out.println("S_sig_base = " + S_sig_base);
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
+        // Count APDU
+        apduCount++;
+
+        // Count bytes sent
+        bytesSent += cmd.getBytes().length;
+
         ResponseAPDU resp = sim.transmitCommand(cmd);
+
+        // Count bytes received
+        bytesReceived += resp.getBytes().length;
 
         System.out.println(">> " + toHex(cmd.getBytes()));
         System.out.println("<< " + toHex(resp.getBytes()));
