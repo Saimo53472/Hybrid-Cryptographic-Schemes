@@ -427,8 +427,63 @@ class MayoSigner {
         }
     }
 
-    private void expand_P1_P2(byte[] seed_pk) {
-        // This is a placeholder for the actual expansion function
+    private void aes_ctr_prf(byte[] out, int outOffset, int outLen, byte[] keyBytes) {
+
+        AESKey key = (AESKey) KeyBuilder.buildKey(
+            KeyBuilder.TYPE_AES,
+            KeyBuilder.LENGTH_AES_128,
+            false
+        );
+
+        key.setKey(keyBytes, (short)0);
+
+        Cipher aes = Cipher.getInstance(Cipher.ALG_AES_BLOCK_128_ECB, false);
+        aes.init(key, Cipher.MODE_ENCRYPT);
+
+        byte[] counter = new byte[16];
+        byte[] block = new byte[16];
+
+        short produced = 0;
+
+        while (produced < outLen) {
+
+            // encrypt counter
+            aes.doFinal(counter, (short)0, (short)16, block, (short)0);
+
+            short toCopy = (short)Math.min(16, outLen - produced);
+
+            Util.arrayCopyNonAtomic(block, (short)0,
+                                out, (short)(outOffset + produced),
+                                toCopy);
+
+            incrementCounter(counter);
+
+            produced += toCopy;
+        }
+    }
+
+    private void incrementCounter(byte[] counter) {
+        for (short i = 15; i >= 0; i--) {
+            counter[i]++;
+            if (counter[i] != 0) {
+                break; 
+            }
+        }
+    }
+
+    private void unpack_m_vecs(byte[] in, byte[] out, int vecs, int m) {
+        int m_vec_limbs = (m + 15) / 16;
+        byte[] tmp = new byte[(M + 15) / 16];
+        for (int i = vecs-1; i >= 0; i--)
+        {
+            Util.arrayCopyNonAtomic(in, (short)(i * m / 2), tmp, (short)0, (short)(m / 2));
+            Util.arrayCopyNonAtomic(tmp, (short)0, out, (short)(i * m_vec_limbs * 8), (short)(m_vec_limbs * 8));
+        }
+    }
+
+    private void expand_P1_P2(byte[] P, byte[] seed_pk) {
+        aes_ctr_prf(P, P1_offset, P1_BYTES + P2_BYTES, seed_pk);
+        unpack_m_vecs(P, seed_pk, 19, M); // vecs = (64 + 32) / 5 from (PARAM_P1_limbs(p) + PARAM_P2_limbs(p))/PARAM_m_vec_limbs(p)
     }
 
     private void P1P1t_times_O (byte[] P, int P1_offset, byte[] O_arr, int L_offset) {
@@ -475,7 +530,7 @@ class MayoSigner {
         //shake (S, pk_seed_bytes + O_bytes, seed_sk, sk_seed_bytes);
         decode(S, PK_SEED_BYTES, O_arr, V*O);
 
-        // expand_P1_P2(seed_pk);
+        expand_P1_P2(P, seed_pk);
         int P1_offset = 0; // these should be arrays not offsets!!! TODO
         int P2_offset = P1_offset + P1_BYTES;
 
