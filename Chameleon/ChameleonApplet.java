@@ -2,6 +2,7 @@ package Chameleon;
 
 import javacard.framework.*; // Applet class
 import javacard.security.*; // Cryptographic operations
+import javacardx.crypto.*; // Extended cryptographic operations
 
 public class ChameleonApplet extends Applet {
 
@@ -19,6 +20,10 @@ public class ChameleonApplet extends Applet {
     private static final byte INS_LOCK_CARD = (byte) 0x73;
 
     private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88;
+
+    private static final byte INS_DEBUG_GET_ESK = (byte)0x92; // DEBUG
+    private byte[] eskBuffer = new byte[4096];
+    private short eskLen = 0;
 
     private byte[] dataToSign; // data to be signed
     private short dataToSignLen;
@@ -99,9 +104,9 @@ public class ChameleonApplet extends Applet {
                 createSignatureBase(apdu);
                 return;
 
-            // case INS_SIGN_DELTA:
-            //     createSignatureDelta(apdu);
-            //     return;
+            case INS_SIGN_DELTA:
+                createSignatureDelta(apdu);
+                return;
 
             case INS_GET_SIG_BASE:
                 sendSignatureBase(apdu);
@@ -131,8 +136,31 @@ public class ChameleonApplet extends Applet {
                 internalAuthenticate(apdu);
                 return;
 
+            case INS_DEBUG_GET_ESK:
+                sendESK(apdu);
+                return;
+
             default:
                 ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
+        }
+    }
+
+    private void sendESK(APDU apdu) {
+        try {
+
+            MayoSigner signer = new MayoSigner();
+
+            eskLen = signer.expandSK(
+                pqPrivateKey, (short)0,
+                eskBuffer, (short)0
+            );
+
+            apdu.setOutgoing();
+            apdu.setOutgoingLength(eskLen);
+            apdu.sendBytesLong(eskBuffer, (short)0, eskLen);
+
+        } catch (Exception e) {
+            ISOException.throwIt((short)0x6F02);
         }
     }
 
@@ -246,14 +274,18 @@ public class ChameleonApplet extends Applet {
         signatureLen = classicalSignature.sign(dataToSign, (short) 0, dataToSignLen, signatureBuffer, (short) 0);
     }
 
-    // private void createSignatureDelta(APDU apdu) {
-    //     pqSignature.init(pqPrivateKey, Signature.MODE_SIGN);
-    //     signatureLen = pqSignature.sign(dataToSign, (short) 0, dataToSignLen, signatureBuffer, (short) 0);
+    private void createSignatureDelta(APDU apdu) {
+        MayoSigner signer = new MayoSigner();
 
-    //     apdu.setOutgoing();
-    //     apdu.setOutgoingLength(signatureLen);
-    //     apdu.sendBytes(signatureBuffer, (short) 0, signatureLen);
-    // }
+        signatureLen = signer.sign(
+            pqPrivateKey,
+            pqKeyLen,
+            dataToSign,
+            dataToSignLen,
+            pqSignature,
+            (short) 0
+        );
+    }
 
     private void sendCertificate(APDU apdu) {
 
@@ -290,5 +322,167 @@ public class ChameleonApplet extends Applet {
         apdu.setOutgoing();
         apdu.setOutgoingLength(signatureLen);
         apdu.sendBytesLong(signatureBuffer, (short) 0, signatureLen);
+    }
+}
+
+class MayoSigner {
+
+    private static final short Q = 16;
+
+    private static final short M = 78;
+    private static final short N = 86;
+    private static final short O = 8;
+
+    private static final short N_MINUS_O = (short)(N - O);
+    private static final short O_DIM = O;
+
+    private static final short K = 10;
+
+    private static final short SALT_BYTES = 24;
+    private static final short DIGEST_BYTES = 32;
+
+    private static final short PK_SEED_BYTES = 16;
+    private static final short SK_SEED_BYTES = 16;
+
+    private static final short O_BYTES = (short)(N_MINUS_O * O);
+    private static final short P1_BYTES = 512;
+    private static final short P2_BYTES = 256;
+
+    private Cipher aesCtr;
+
+    private void decode(byte[] m, int offset, byte[] mdec, int mdeclen) {
+        int i;
+        int j = 0;
+        for(i = 0; i < mdeclen / 2; i++) {
+            mdec[j++] = (byte)(m[offset + i] & 0x0F);
+            mdec[j++] = (byte)((m[offset + i] >> 4) & 0x0F);
+        }
+
+        if(mdeclen % 2 != 0) {
+            mdec[j] = (byte)(m[offset + i] & 0x0F);
+        }
+    }
+
+    private void encode (byte[] m, byte[] menc, int mlen) {
+        int i;
+        int j = 0;
+        for(i = 0; i <mlen / 2; i++, j += 2) {
+            menc[i] = (byte)((m[j] & 0x0F) | ((m[j + 1] & 0x0F) << 4));
+        }
+
+        if(mlen % 2 != 0) {
+            menc[i] = (byte)(m[j] & 0x0F);
+        }
+    }
+
+    private void m_vec_mul_add (int limbs, byte[] in, int in_offset, byte a, int acc_offset) { // might be a problem?
+
+        int tab = mul_table(a);   // must return int (32-bit)
+
+        long lsb_mask = 0x1111111111111111L;
+
+        for (int i = 0; i < limbs; i++) {
+
+            int inPos = in_offset + i * 8;
+            int accPos = acc_offset + i * 8;
+
+            // reconstruct 64-bit value from 8 bytes
+            long inVal =
+                    ((long)(in[inPos]   & 0xFF) << 56) |
+                    ((long)(in[inPos+1] & 0xFF) << 48) |
+                    ((long)(in[inPos+2] & 0xFF) << 40) |
+                    ((long)(in[inPos+3] & 0xFF) << 32) |
+                    ((long)(in[inPos+4] & 0xFF) << 24) |
+                    ((long)(in[inPos+5] & 0xFF) << 16) |
+                    ((long)(in[inPos+6] & 0xFF) << 8)  |
+                    ((long)(in[inPos+7] & 0xFF));
+
+            long accVal =
+                    ((long)(in[accPos]   & 0xFF) << 56) |
+                    ((long)(in[accPos+1] & 0xFF) << 48) |
+                    ((long)(in[accPos+2] & 0xFF) << 40) |
+                    ((long)(in[accPos+3] & 0xFF) << 32) |
+                    ((long)(in[accPos+4] & 0xFF) << 24) |
+                    ((long)(in[accPos+5] & 0xFF) << 16) |
+                    ((long)(in[accPos+6] & 0xFF) << 8)  |
+                    ((long)(in[accPos+7] & 0xFF));
+
+            long result =
+                    ((inVal       & lsb_mask) * (tab & 0xFFL)) ^
+                    (((inVal >> 1) & lsb_mask) * ((tab >> 8)  & 0xFL)) ^
+                    (((inVal >> 2) & lsb_mask) * ((tab >> 16) & 0xFL)) ^
+                    (((inVal >> 3) & lsb_mask) * ((tab >> 24) & 0xFL));
+
+            accVal ^= result;
+
+            // store back into acc
+            acc[accPos]   = (byte)(accVal >>> 56);
+            acc[accPos+1] = (byte)(accVal >>> 48);
+            acc[accPos+2] = (byte)(accVal >>> 40);
+            acc[accPos+3] = (byte)(accVal >>> 32);
+            acc[accPos+4] = (byte)(accVal >>> 24);
+            acc[accPos+5] = (byte)(accVal >>> 16);
+            acc[accPos+6] = (byte)(accVal >>> 8);
+            acc[accPos+7] = (byte)(accVal);
+        }
+    }
+
+    private void expand_P1_P2(byte[] seed_pk) {
+        // This is a placeholder for the actual expansion function
+    }
+
+    private void P1P1t_times_O (byte[] P, int P1_offset, byte[] O_arr, int L_offset) {
+        int bs_mat_entries_used = 0;
+
+        for (short r = 0; r < N_MINUS_O; r++) {
+            for (short c = r; c < N_MINUS_O; c++) {
+
+                if (c == r) {
+                    bs_mat_entries_used++;
+                    continue;
+                }
+
+                for (short k = 0; k < O_DIM; k++) {
+
+                    byte o_ck = O_arr[(short)(c * O_DIM + k)];
+                    byte o_rk = O_arr[(short)(r * O_DIM + k)];
+
+                    int P1_entry_offset = P1_offset + bs_mat_entries_used * M_VEC_LIMBS * 8;
+
+                    int acc_r_offset = L_offset + (r * O_DIM + k) * M_VEC_LIMBS * 8;
+
+                    int acc_c_offset = L_offset + (c * O_DIM + k) * M_VEC_LIMBS * 8;
+
+                    m_vec_mul_add(M_VEC_LIMBS, P, P1_entry_offset, o_ck, acc_r_offset);
+
+                    m_vec_mul_add(M_VEC_LIMBS, P, P1_entry_offset, o_rk, acc_c_offset);
+                }
+
+                bs_mat_entries_used++;
+            }
+        }
+    }
+
+    public short expandSK(byte[] csk, byte[] esk, short eskOff) {
+        int ret = MAYO_OK;
+        byte[] S = new byte[PK_SEED_BYTES + O_BYTES];
+        byte[] P = new byte[P1_BYTES + P2_BYTES];
+        byte[] O_arr =  new byte[V_bytes * O_BYTES];
+
+        byte[] seed_sk = csk;
+        byte[] seed_pk = S;
+
+        //shake (S, pk_seed_bytes + O_bytes, seed_sk, sk_seed_bytes);
+        decode(S, PK_SEED_BYTES, O_arr, V*O);
+
+        // expand_P1_P2(seed_pk);
+        int P1_offset = 0; // these should be arrays not offsets!!! TODO
+        int P2_offset = P1_offset + P1_BYTES;
+
+        int L_offset = P2_offset;
+        P1P1t_times_O(esk, P1_offset, O_arr, L_offset);
+
+        Util.arrayFillNonAtomic(S, (short)0, PK_SEED_BYTES + O_BYTES, (byte)0); // secure clean
+        return ret;
     }
 }

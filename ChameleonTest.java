@@ -97,6 +97,15 @@ public class ChameleonTest {
         // 3. Lock card
         send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
 
+        // *. DEBUG: get expanded secret key 
+        ResponseAPDU eskResp = send(simulator,
+            new CommandAPDU(CLA, 0x92, 0x00, 0x00));
+
+        byte[] esk = eskResp.getData();
+
+        System.out.println("ESK length = " + esk.length);
+        System.out.println("ESK hex = " + toHex(esk));
+
         // 4. Get certificate
         int offset = 0;
 
@@ -126,15 +135,25 @@ public class ChameleonTest {
         long endBase = System.nanoTime();
         timeBaseSign = endBase - startBase;
 
-        // 7. Get signature
+        // 8. Get signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
         byte[] sigData = sigResponse.getData();
-        int S_sig_base = sigData.length;
 
-        // 8. Print metrics
+        // 8. Create post-quantum signature
+        long startDelta = System.nanoTime();
+        send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+        long endDelta = System.nanoTime();
+        timeDeltaSign = endDelta - startDelta;
+
+        // 9. Get post-quantum signature
+        ResponseAPDU pqSigResponse = send(simulator, new CommandAPDU(CLA, 0x60, 0x00, 0x00));
+        byte[] pqSigData = pqSigResponse.getData();
+
+        // 10. Print metrics
         System.out.println("METRICS");
         // Time
         System.out.println("T_sign_classical (ns): " + timeBaseSign);
+        System.out.println("T_sign_post-quantum (ns): " + timeDeltaSign);
 
         // Communication
         System.out.println("N_APDU: " + apduCount);
@@ -143,7 +162,8 @@ public class ChameleonTest {
         System.out.println("B_comm_total: " + (bytesSent + bytesReceived));
 
         // Signature sizes
-        System.out.println("S_sig_base = " + S_sig_base);
+        System.out.println("S_sig_base = " + sigData.length);
+        System.out.println("S_sig_delta = " + pqSigData.length);
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
