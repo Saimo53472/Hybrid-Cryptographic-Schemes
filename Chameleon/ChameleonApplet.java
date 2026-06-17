@@ -146,22 +146,13 @@ public class ChameleonApplet extends Applet {
     }
 
     private void sendESK(APDU apdu) {
-        try {
+        MayoSigner signer = new MayoSigner();
 
-            MayoSigner signer = new MayoSigner();
+        eskLen = signer.expandSK(pqPrivateKey, eskBuffer, (short)0);
 
-            eskLen = signer.expandSK(
-                pqPrivateKey, (short)0,
-                eskBuffer, (short)0
-            );
-
-            apdu.setOutgoing();
-            apdu.setOutgoingLength(eskLen);
-            apdu.sendBytesLong(eskBuffer, (short)0, eskLen);
-
-        } catch (Exception e) {
-            ISOException.throwIt((short)0x6F02);
-        }
+        apdu.setOutgoing();
+        apdu.setOutgoingLength(eskLen);
+        apdu.sendBytesLong(eskBuffer, (short)0, eskLen);
     }
 
     private void loadPrivateKeyBase(APDU apdu) {
@@ -277,14 +268,14 @@ public class ChameleonApplet extends Applet {
     private void createSignatureDelta(APDU apdu) {
         MayoSigner signer = new MayoSigner();
 
-        signatureLen = signer.sign(
-            pqPrivateKey,
-            pqKeyLen,
-            dataToSign,
-            dataToSignLen,
-            pqSignature,
-            (short) 0
-        );
+        // signatureLen = signer.sign(
+        //     pqPrivateKey,
+        //     pqKeyLen,
+        //     dataToSign,
+        //     dataToSignLen,
+        //     pqSignature,
+        //     (short) 0
+        // );
     }
 
     private void sendCertificate(APDU apdu) {
@@ -347,35 +338,50 @@ class MayoSigner {
     private static final short O_BYTES = (short)(N_MINUS_O * O);
     private static final short P1_BYTES = 512;
     private static final short P2_BYTES = 256;
+    private static final short M_VEC_LIMBS = (short)((M + 15) / 16);
+    private static final short MAYO_OK = 0;
 
     private Cipher aesCtr;
 
-    private void decode(byte[] m, int offset, byte[] mdec, int mdeclen) {
+    private void decode(byte[] m, int offset, byte[] mdec, int mdecOffset, int mdeclen) {
         int i;
         int j = 0;
+
         for(i = 0; i < mdeclen / 2; i++) {
-            mdec[j++] = (byte)(m[offset + i] & 0x0F);
-            mdec[j++] = (byte)((m[offset + i] >> 4) & 0x0F);
+            mdec[mdecOffset + j++] = (byte)(m[offset + i] & 0x0F);
+            mdec[mdecOffset + j++] = (byte)((m[offset + i] >> 4) & 0x0F);
         }
 
         if(mdeclen % 2 != 0) {
-            mdec[j] = (byte)(m[offset + i] & 0x0F);
+            mdec[mdecOffset + j] = (byte)(m[offset + i] & 0x0F);
         }
     }
 
-    private void encode (byte[] m, byte[] menc, int mlen) {
+    private void encode(byte[] m,byte[] menc, int mencOffset, int mlen) {
         int i;
         int j = 0;
-        for(i = 0; i <mlen / 2; i++, j += 2) {
-            menc[i] = (byte)((m[j] & 0x0F) | ((m[j + 1] & 0x0F) << 4));
+
+        for(i = 0; i < mlen / 2; i++, j += 2) {
+            menc[mencOffset + i] =
+                (byte)((m[j] & 0x0F) |
+                    ((m[j + 1] & 0x0F) << 4));
         }
 
         if(mlen % 2 != 0) {
-            menc[i] = (byte)(m[j] & 0x0F);
+            menc[mencOffset + i] = (byte)(m[j] & 0x0F);
         }
     }
 
-    private void m_vec_mul_add (int limbs, byte[] in, int in_offset, byte a, int acc_offset) { // might be a problem?
+    private int mul_table(byte b) {
+        int x = (b & 0xFF) * 0x08040201;
+
+        int high_nibble_mask = 0xF0F0F0F0;
+        int high = x & high_nibble_mask;
+
+        return x ^ (high >>> 4) ^ (high >>> 3);
+    }
+
+    private void m_vec_mul_add (int limbs, byte[] in, int in_offset, byte a, byte[] acc, int acc_offset) { // might be a problem?
 
         int tab = mul_table(a);   // must return int (32-bit)
 
@@ -386,7 +392,7 @@ class MayoSigner {
             int inPos = in_offset + i * 8;
             int accPos = acc_offset + i * 8;
 
-            // reconstruct 64-bit value from 8 bytes
+            // reconstruct 64-bit value from 8 bytes - rebuild the 64-bit word so we can apply the same bit trick as C
             long inVal =
                     ((long)(in[inPos]   & 0xFF) << 56) |
                     ((long)(in[inPos+1] & 0xFF) << 48) |
@@ -398,14 +404,14 @@ class MayoSigner {
                     ((long)(in[inPos+7] & 0xFF));
 
             long accVal =
-                    ((long)(in[accPos]   & 0xFF) << 56) |
-                    ((long)(in[accPos+1] & 0xFF) << 48) |
-                    ((long)(in[accPos+2] & 0xFF) << 40) |
-                    ((long)(in[accPos+3] & 0xFF) << 32) |
-                    ((long)(in[accPos+4] & 0xFF) << 24) |
-                    ((long)(in[accPos+5] & 0xFF) << 16) |
-                    ((long)(in[accPos+6] & 0xFF) << 8)  |
-                    ((long)(in[accPos+7] & 0xFF));
+                    ((long)(acc[accPos]   & 0xFF) << 56) |
+                    ((long)(acc[accPos+1] & 0xFF) << 48) |
+                    ((long)(acc[accPos+2] & 0xFF) << 40) |
+                    ((long)(acc[accPos+3] & 0xFF) << 32) |
+                    ((long)(acc[accPos+4] & 0xFF) << 24) |
+                    ((long)(acc[accPos+5] & 0xFF) << 16) |
+                    ((long)(acc[accPos+6] & 0xFF) << 8)  |
+                    ((long)(acc[accPos+7] & 0xFF));
 
             long result =
                     ((inVal       & lsb_mask) * (tab & 0xFFL)) ^
@@ -427,8 +433,38 @@ class MayoSigner {
         }
     }
 
-    private void aes_ctr_prf(byte[] out, int outOffset, int outLen, byte[] keyBytes) {
+    // private byte gf16_mul(byte x, byte y) {
+    //     byte r = 0;
 
+    //     for (int i = 0; i < 4; i++) {
+    //         if (((y >> i) & 1) != 0) {
+    //             r ^= x;
+    //         }
+
+    //         boolean carry = (x & 0x8) != 0;
+    //         x <<= 1;
+
+    //         if (carry) {
+    //             x ^= 0x13; // GF(16) irreducible polynomial x^4 + x + 1
+    //         }
+
+    //         x &= 0xF; // keep 4 bits
+    //     }
+
+    //     return (byte)(r & 0xF);
+    // }
+
+    // private void m_vec_mul_add_simplified(byte[] in, int inOffset, byte a, byte[] acc, int accOffset, int vecLen) {
+
+    //     for (int i = 0; i < vecLen; i++) {
+    //         byte x = (byte)(in[inOffset + i] & 0x0F);
+    //         byte prod = gf16_mul(x, a);
+
+    //         acc[accOffset + i] ^= prod;
+    //     }
+    // }
+
+    private void aes_ctr_prf(byte[] out, int outOffset, int outLen, byte[] keyBytes) {
         AESKey key = (AESKey) KeyBuilder.buildKey(
             KeyBuilder.TYPE_AES,
             KeyBuilder.LENGTH_AES_128,
@@ -437,7 +473,11 @@ class MayoSigner {
 
         key.setKey(keyBytes, (short)0);
 
-        Cipher aes = Cipher.getInstance(Cipher.ALG_AES_BLOCK_128_ECB, false);
+        Cipher aes = Cipher.getInstance(
+            Cipher.ALG_AES_BLOCK_128_ECB_NOPAD,
+            false
+        );
+
         aes.init(key, Cipher.MODE_ENCRYPT);
 
         byte[] counter = new byte[16];
@@ -452,9 +492,11 @@ class MayoSigner {
 
             short toCopy = (short)Math.min(16, outLen - produced);
 
-            Util.arrayCopyNonAtomic(block, (short)0,
-                                out, (short)(outOffset + produced),
-                                toCopy);
+            Util.arrayCopyNonAtomic(
+                block, (short)0,
+                out, (short)(outOffset + produced),
+                toCopy
+            );
 
             incrementCounter(counter);
 
@@ -471,22 +513,39 @@ class MayoSigner {
         }
     }
 
-    private void unpack_m_vecs(byte[] in, byte[] out, int vecs, int m) {
+    private void unpack_m_vecs(byte[] in, int inOffset, byte[] out, int outOffset, int vecs, int m) {
         int m_vec_limbs = (m + 15) / 16;
-        byte[] tmp = new byte[(M + 15) / 16];
-        for (int i = vecs-1; i >= 0; i--)
-        {
-            Util.arrayCopyNonAtomic(in, (short)(i * m / 2), tmp, (short)0, (short)(m / 2));
-            Util.arrayCopyNonAtomic(tmp, (short)0, out, (short)(i * m_vec_limbs * 8), (short)(m_vec_limbs * 8));
+        byte[] tmp = new byte[m_vec_limbs * 8];
+
+        for (int i = vecs - 1; i >= 0; i--) {
+
+            Util.arrayFillNonAtomic(tmp, (short)0, (short)tmp.length, (byte)0);
+
+            Util.arrayCopyNonAtomic(
+                in, (short)(inOffset + i * m / 2),
+                tmp, (short)0,
+                (short)(m / 2)
+            );
+
+            Util.arrayCopyNonAtomic(
+                tmp, (short)0,
+                out, (short)(outOffset + i * m_vec_limbs * 8),
+                (short)(m_vec_limbs * 8)
+            );
         }
     }
 
-    private void expand_P1_P2(byte[] P, byte[] seed_pk) {
-        aes_ctr_prf(P, P1_offset, P1_BYTES + P2_BYTES, seed_pk);
-        unpack_m_vecs(P, seed_pk, 19, M); // vecs = (64 + 32) / 5 from (PARAM_P1_limbs(p) + PARAM_P2_limbs(p))/PARAM_m_vec_limbs(p)
+    private void expand_P1_P2(byte[] esk, int P_offset, byte[] seed_pk) {
+        aes_ctr_prf(esk, P_offset, P1_BYTES + P2_BYTES, seed_pk);
+
+        int P1_limbs = P1_BYTES / 8;
+        int P2_limbs = P2_BYTES / 8;
+        int vecs = (P1_limbs + P2_limbs) / M_VEC_LIMBS;
+
+        unpack_m_vecs(esk, P_offset, esk, P_offset, vecs, M);
     }
 
-    private void P1P1t_times_O (byte[] P, int P1_offset, byte[] O_arr, int L_offset) {
+    private void P1P1t_times_O(byte[] P, int P1_offset, byte[] esk, int O_offset, int L_offset) {
         int bs_mat_entries_used = 0;
 
         for (short r = 0; r < N_MINUS_O; r++) {
@@ -499,8 +558,8 @@ class MayoSigner {
 
                 for (short k = 0; k < O_DIM; k++) {
 
-                    byte o_ck = O_arr[(short)(c * O_DIM + k)];
-                    byte o_rk = O_arr[(short)(r * O_DIM + k)];
+                    byte o_ck = esk[O_offset + (short)(c * O_DIM + k)];
+                    byte o_rk = esk[O_offset + (short)(r * O_DIM + k)];
 
                     int P1_entry_offset = P1_offset + bs_mat_entries_used * M_VEC_LIMBS * 8;
 
@@ -508,9 +567,9 @@ class MayoSigner {
 
                     int acc_c_offset = L_offset + (c * O_DIM + k) * M_VEC_LIMBS * 8;
 
-                    m_vec_mul_add(M_VEC_LIMBS, P, P1_entry_offset, o_ck, acc_r_offset);
+                    m_vec_mul_add(M_VEC_LIMBS, P, P1_entry_offset, o_ck, P, acc_r_offset);
 
-                    m_vec_mul_add(M_VEC_LIMBS, P, P1_entry_offset, o_rk, acc_c_offset);
+                    m_vec_mul_add(M_VEC_LIMBS, P, P1_entry_offset, o_rk, P, acc_c_offset);
                 }
 
                 bs_mat_entries_used++;
@@ -520,24 +579,43 @@ class MayoSigner {
 
     public short expandSK(byte[] csk, byte[] esk, short eskOff) {
         int ret = MAYO_OK;
-        byte[] S = new byte[PK_SEED_BYTES + O_BYTES];
-        byte[] P = new byte[P1_BYTES + P2_BYTES];
-        byte[] O_arr =  new byte[V_bytes * O_BYTES];
+        short checkpoint = 1;
 
-        byte[] seed_sk = csk;
-        byte[] seed_pk = S;
+        try {
+            byte[] S = new byte[PK_SEED_BYTES + O_BYTES];
+            byte[] seed_pk = S;
 
-        //shake (S, pk_seed_bytes + O_bytes, seed_sk, sk_seed_bytes);
-        decode(S, PK_SEED_BYTES, O_arr, V*O);
+            // Layout inside esk:
+            int P_offset = eskOff;
+            int P1_offset = P_offset;
+            int L_offset = P_offset + P1_BYTES;
+            int O_offset = L_offset + P2_BYTES;
 
-        expand_P1_P2(P, seed_pk);
-        int P1_offset = 0; // these should be arrays not offsets!!! TODO
-        int P2_offset = P1_offset + P1_BYTES;
+            // shake256 - temporarly replaced by AES-CTR PRF
+            aes_ctr_prf(S, 0, PK_SEED_BYTES + O_BYTES, csk);
+            checkpoint = 2;
 
-        int L_offset = P2_offset;
-        P1P1t_times_O(esk, P1_offset, O_arr, L_offset);
+            // decode directly into esk (O part)
+            decode(S, PK_SEED_BYTES, esk, O_offset, N_MINUS_O * O_DIM);
+            checkpoint = 3;
 
-        Util.arrayFillNonAtomic(S, (short)0, PK_SEED_BYTES + O_BYTES, (byte)0); // secure clean
-        return ret;
+            // expand directly into esk (P1 + P2 area)
+            expand_P1_P2(esk, P1_offset, seed_pk);
+            checkpoint = 4;
+
+            // compute L in-place (overwrites P2)
+            P1P1t_times_O(esk, P1_offset, esk, O_offset, L_offset);
+            checkpoint = 5;
+
+            Util.arrayFillNonAtomic(S, (short)0,
+                (short)(PK_SEED_BYTES + O_BYTES),
+                (byte)0
+            );
+
+        } catch (Exception e) {
+            ISOException.throwIt((short)(0x6F00 + checkpoint));
+        }
+
+        return (short)(P1_BYTES + P2_BYTES + O_BYTES);
     }
 }
