@@ -1,4 +1,7 @@
 # X.509 Certificates
+> hybrid certificate is for ECDSA with RSA
+
+> chameleon certificate is for ECDSA with MAYO
 ## P-256
 Create key pair
 ```
@@ -7,7 +10,53 @@ openssl ecparam -name prime256v1 -genkey -noout -out key.pem
 
 Create self-sgined certificate 
 ```
-openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=PoC-Test"
+openssl req -new -x509 -key key.pem -out ecdsa_cert.pem -days 365 -subj "/CN=PoC-Test"
+```
+
+## RSA
+Create key pair
+```
+openssl genrsa -out rsa_key.pem 1984
+```
+
+Create self-signed certificate
+```
+openssl req -new -x509 -key rsa_key.pem -out rsa_cert.pem -days 365 -subj "/CN=PoC-Test"
+```
+
+### Certificate Creation
+Extract the public key 
+```
+openssl x509 -in rsa_cert.pem -pubkey -noout > rsa_pub.pem
+```
+
+Convert to DER
+```
+openssl pkey \
+  -pubin \
+  -in rsa_pub.pem \
+  -outform DER \
+  -out rsa_spki.der
+```
+
+Convert to hex
+```
+xxd -p rsa_spki.der | tr -d '\n'
+```
+
+Extension
+```
+nano ext2.cnf
+```
+
+Create hybrid certificate
+```
+openssl x509 \
+  -in ecdsa_cert.pem \
+  -out hybrid_cert.pem \
+  -extfile ext2.cnf \
+  -extensions v3_ext \
+  -signkey key.pem
 ```
 
 ## MAYO

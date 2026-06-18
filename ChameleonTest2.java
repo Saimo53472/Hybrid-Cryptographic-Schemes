@@ -16,8 +16,10 @@ import java.math.BigInteger;
 import java.io.ByteArrayOutputStream;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPrivateKey;
 
-public class ChameleonTest {
+public class ChameleonTest2 {
 
     private static final byte CLA = (byte) 0x00;
 
@@ -39,7 +41,7 @@ public class ChameleonTest {
         AID aid = new AID(aidBytes, (short) 0, (byte) aidBytes.length);
 
         // Install + select
-        simulator.installApplet(aid, Chameleon.ChameleonApplet.class);
+        simulator.installApplet(aid, Chameleon.ChameleonClassicApplet.class);
         simulator.selectApplet(aid);
 
         System.out.println("Applet selected");
@@ -54,40 +56,28 @@ public class ChameleonTest {
         // 2. Load EC private key and certificate
         try {
             byte[] key = loadECPrivateKey("key_pkcs8.pem"); 
-            byte[] qkey = loadRawFile("qkey.pem"); 
-            byte[] cert = loadCertificate("chameleon_cert.pem"); 
+            byte[][] rsaKey = loadRSAPrivateKeyFull("rsa_key_pkcs8.pem");
+            byte[] cert = loadCertificate("hybrid_cert.pem");
+
+            byte[] modulus = rsaKey[0];
+            byte[] exponent = rsaKey[1];
 
             send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
+            send(simulator, new CommandAPDU(CLA, 0x71, 0x00, 0x00, modulus));
+            send(simulator, new CommandAPDU(CLA, 0x71, 0x01, 0x00, exponent));
+            send(simulator, new CommandAPDU(CLA, 0x71, 0x02, 0x00)); // finalize RSA key
 
             int offset = 0;
             int chunkSize = 200;
 
-            while (offset < qkey.length) {
-                int len = Math.min(chunkSize, qkey.length - offset);
-
-                byte[] chunk = Arrays.copyOfRange(qkey, offset, offset + len);
-
-                send(simulator, new CommandAPDU(CLA, 0x71,
-                    offset == 0 ? 0x00 : 0x01,
-                    0x00,
-                    chunk));
-
-                offset += len;
-            }
-
-            offset = 0;
-            chunkSize = 200;
-
             int S_cert = cert.length;  // certificate size in bytes
-            System.out.println("S_cert = " + S_cert);
 
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
 
                 byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
 
-                send(simulator, new CommandAPDU(CLA, 0x72, offset == 0 ? 0x00 : 0x01, 0x00, chunk)); // fix
-
+                send(simulator, new CommandAPDU(CLA, 0x72, offset == 0 ? 0x00 : 0x01, 0x00, chunk)); 
                 offset += len;
             }
         } catch (Exception e) {
@@ -96,14 +86,6 @@ public class ChameleonTest {
 
         // 3. Lock card
         send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
-
-        // * debug
-        // ResponseAPDU eskResp = send(simulator, new CommandAPDU(CLA, 0x92, 0x00, 0x00));
-
-        // byte[] esk = eskResp.getData();
-
-        // System.out.println("ESK length = " + esk.length);
-        // System.out.println("ESK (first 64 bytes) = " + Arrays.toString(Arrays.copyOfRange(esk, 0, 64)));
 
         // 4. Get certificate
         int offset = 0;
@@ -128,7 +110,7 @@ public class ChameleonTest {
         byte[] challenge = {0x01, 0x02, 0x03, 0x04};
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
-        // 6. Create classical signature
+        // 6. Create ECDSA signature
         long startBase = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
         long endBase = System.nanoTime();
@@ -138,31 +120,33 @@ public class ChameleonTest {
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
         byte[] sigData = sigResponse.getData();
 
-        // 8. Create post-quantum signature
+        // 8. Create RSA signature
         long startDelta = System.nanoTime();
-        // send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
         long endDelta = System.nanoTime();
         timeDeltaSign = endDelta - startDelta;
 
-        // 9. Get post-quantum signature
-        // ResponseAPDU pqSigResponse = send(simulator, new CommandAPDU(CLA, 0x60, 0x00, 0x00));
-        // byte[] pqSigData = pqSigResponse.getData();
+        // 9. Get RSA signature
+        ResponseAPDU rsaSigResponse = send(simulator, new CommandAPDU(CLA, 0x60, 0x00, 0x00));
+        byte[] rsaSigData = rsaSigResponse.getData();
 
         // 10. Print metrics
         System.out.println("METRICS");
+
         // Time
-        System.out.println("T_sign_classical (ns): " + timeBaseSign);
-        System.out.println("T_sign_post-quantum (ns): " + timeDeltaSign);
+        System.out.println("Signing time ECDSA (ns): " + timeBaseSign);
+        System.out.println("Signing time RSA (ns): " + timeDeltaSign);
 
         // Communication
-        System.out.println("N_APDU: " + apduCount);
-        System.out.println("B_comm_sent: " + bytesSent);
-        System.out.println("B_comm_received: " + bytesReceived);
-        System.out.println("B_comm_total: " + (bytesSent + bytesReceived));
+        System.out.println("APDU transmisions: " + apduCount);
+        System.out.println("Communication bytes sent: " + bytesSent);
+        System.out.println("Communication bytes received: " + bytesReceived);
+        System.out.println("Total communication bytes: " + (bytesSent + bytesReceived));
 
-        // Signature sizes
-        System.out.println("S_sig_base = " + sigData.length);
-        // System.out.println("S_sig_delta = " + pqSigData.length);
+        // Certificate and signature sizes
+        System.out.println("Certificate size (bytes): " + S_cert);
+        System.out.println("ECDSA signature size (bytes): " + sigData.length);
+        System.out.println("RSA signature size (bytes): " + rsaSigData.length);
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
@@ -226,10 +210,10 @@ public class ChameleonTest {
         return d;
     }
 
-    private static byte[] loadRawFile(String path) throws Exception {
-        byte[] data = Files.readAllBytes(Paths.get(path));
+    private static byte[][] loadRSAPrivateKeyFull(String path) throws Exception {
+        byte[] keyBytes = Files.readAllBytes(Paths.get(path));
 
-        String pem = new String(data);
+        String pem = new String(keyBytes);
 
         if (pem.contains("BEGIN")) {
             pem = pem
@@ -237,10 +221,29 @@ public class ChameleonTest {
                 .replaceAll("-----END (.*)-----", "")
                 .replaceAll("\\s", "");
 
-            data = Base64.getDecoder().decode(pem);
+            keyBytes = Base64.getDecoder().decode(pem);
         }
 
-        return data;
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PrivateKey pk = kf.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+
+        RSAPrivateCrtKey rsaKey = (RSAPrivateCrtKey) pk;
+
+        BigInteger modulus = rsaKey.getModulus();
+        BigInteger privateExponent = rsaKey.getPrivateExponent();
+
+        byte[] n = modulus.toByteArray();
+        byte[] d = privateExponent.toByteArray();
+
+        // Remove leading zero (BigInteger sign byte)
+        if (n[0] == 0x00) {
+            n = Arrays.copyOfRange(n, 1, n.length);
+        }
+        if (d[0] == 0x00) {
+            d = Arrays.copyOfRange(d, 1, d.length);
+        }
+
+        return new byte[][] { n, d };
     }
 
     private static byte[] loadCertificate(String pemPath)
