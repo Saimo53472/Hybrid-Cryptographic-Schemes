@@ -54,6 +54,7 @@ public class ChameleonTest2 {
         }
 
         // 2. Load EC private key and certificate
+        int S_cert = 0; // certificate size in bytes
         try {
             byte[] key = loadECPrivateKey("key_pkcs8.pem"); 
             byte[][] rsaKey = loadRSAPrivateKeyFull("rsa_key_pkcs8.pem");
@@ -70,7 +71,7 @@ public class ChameleonTest2 {
             int offset = 0;
             int chunkSize = 200;
 
-            int S_cert = cert.length;  // certificate size in bytes
+            S_cert = cert.length; 
 
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
