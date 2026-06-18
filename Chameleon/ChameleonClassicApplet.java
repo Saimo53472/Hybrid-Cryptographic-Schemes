@@ -152,6 +152,22 @@ public class ChameleonClassicApplet extends Applet {
         );
     }
 
+    private String toHex(byte[] data, short len) {
+        StringBuffer sb = new StringBuffer();
+
+        for (short i = 0; i < len; i++) {
+            byte b = data[i];
+
+            if (b < 0x10 && b >= 0) {
+                sb.append('0');
+            }
+            sb.append(Integer.toHexString(b & 0xFF).toUpperCase());
+            sb.append(' ');
+        }
+
+        return sb.toString();
+    }
+
     private void loadPrivateKeyRSA(APDU apdu) {
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
@@ -176,6 +192,8 @@ public class ChameleonClassicApplet extends Applet {
             rsaModulusLen = 0;
             rsaExponentLen = 0;
         }
+
+        System.out.println("Card modulus: " + toHex(rsaModulusBuffer, rsaModulusLen));
     }
 
     private short certOffset = 0;
@@ -211,14 +229,13 @@ public class ChameleonClassicApplet extends Applet {
     }
 
     private void internalAuthenticate(APDU apdu) {
-        byte[] dataToSign = new byte[255];
+        byte[] dataToSign = this.dataToSign;
         short pos = 0;
 
         dataToSign[pos++] = 0x05;
         dataToSign[pos++] = 0x01;
         dataToSign[pos++] = 0x08;
 
-        // use the SAME random bytes you printed
         byte[] dynamic = new byte[] {
             (byte)0x6c,(byte)0x55,(byte)0x44,(byte)0x79,
             (byte)0x7a,(byte)0x91,(byte)0x11,(byte)0x5d
@@ -233,14 +250,53 @@ public class ChameleonClassicApplet extends Applet {
             dataToSign[pos++] = (byte)0xBB;
         }
 
-        // challenge
+        // challenge (from terminal in real EMV, but hardcoded here)
         dataToSign[pos++] = 0x01;
         dataToSign[pos++] = 0x02;
         dataToSign[pos++] = 0x03;
         dataToSign[pos++] = 0x04;
 
         dataToSignLen = pos;
+
+        // DEBUG OUTPUT
+        System.out.print("Data to sign: ");
+        for (short i = 0; i < dataToSignLen; i++) {
+            System.out.printf("%02X ", dataToSign[i]);
+        }
+        System.out.println();
     }
+
+    // private void internalAuthenticate(APDU apdu) {
+    //     byte[] dataToSign = new byte[255];
+    //     short pos = 0;
+
+    //     dataToSign[pos++] = 0x05;
+    //     dataToSign[pos++] = 0x01;
+    //     dataToSign[pos++] = 0x08;
+
+    //     // use the SAME random bytes you printed
+    //     byte[] dynamic = new byte[] {
+    //         (byte)0x6c,(byte)0x55,(byte)0x44,(byte)0x79,
+    //         (byte)0x7a,(byte)0x91,(byte)0x11,(byte)0x5d
+    //     };
+
+    //     Util.arrayCopy(dynamic, (short) 0, dataToSign, pos, (short) 8);
+    //     pos += 8;
+
+    //     // padding
+    //     short paddingLen = (short) (255 - pos - 4);
+    //     for (short i = 0; i < paddingLen; i++) {
+    //         dataToSign[pos++] = (byte)0xBB;
+    //     }
+
+    //     // challenge
+    //     dataToSign[pos++] = 0x01;
+    //     dataToSign[pos++] = 0x02;
+    //     dataToSign[pos++] = 0x03;
+    //     dataToSign[pos++] = 0x04;
+
+    //     dataToSignLen = pos;
+    // }
 
     private void createSignatureBase(APDU apdu) {
         classicalSignature.init(classicalPrivateKey, Signature.MODE_SIGN);
