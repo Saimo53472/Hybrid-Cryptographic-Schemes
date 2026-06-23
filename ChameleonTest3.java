@@ -19,7 +19,7 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 
-public class ChameleonTest2 {
+public class ChameleonTest3 {
 
     private static final byte CLA = (byte) 0x00;
 
@@ -44,7 +44,7 @@ public class ChameleonTest2 {
         simulator.installApplet(aid, Chameleon.ChameleonClassicApplet.class);
         simulator.selectApplet(aid);
 
-        System.out.println("Applet selected");
+        //("Applet selected");
 
         // 1. INIT
         ResponseAPDU response = send(simulator, new CommandAPDU(CLA, 0x10, 0x00, 0x00));
@@ -57,16 +57,9 @@ public class ChameleonTest2 {
         int S_cert = 0; // certificate size in bytes
         try {
             byte[] key = loadECPrivateKey("key_pkcs8.pem"); 
-            byte[][] rsaKey = loadRSAPrivateKeyFull("rsa_key_pkcs8.pem");
-            byte[] cert = loadCertificate("hybrid_cert.pem");
-
-            byte[] modulus = rsaKey[0];
-            byte[] exponent = rsaKey[1];
+            byte[] cert = loadCertificate("ecdsa_cert.pem");
 
             send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
-            send(simulator, new CommandAPDU(CLA, 0x71, 0x00, 0x00, modulus));
-            send(simulator, new CommandAPDU(CLA, 0x71, 0x01, 0x00, exponent));
-            send(simulator, new CommandAPDU(CLA, 0x71, 0x02, 0x00)); // finalize RSA key
 
             int offset = 0;
             int chunkSize = 200;
@@ -119,35 +112,23 @@ public class ChameleonTest2 {
 
         // 8. Get signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
-        byte[] sigData = sigResponse.getData();
-
-        // 8. Create RSA signature
-        long startDelta = System.nanoTime();
-        send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
-        long endDelta = System.nanoTime();
-        timeDeltaSign = endDelta - startDelta;
-
-        // 9. Get RSA signature
-        ResponseAPDU rsaSigResponse = send(simulator, new CommandAPDU(CLA, 0x60, 0x00, 0x00));
-        byte[] rsaSigData = rsaSigResponse.getData();
+        byte[] sigData = sigResponse.getData();     
 
         // 10. Print metrics
-        System.out.println("METRICS");
+        //("METRICS");
 
         // Time
-       System.out.println("Signing time ECDSA (ns): " + timeBaseSign);
-       System.out.println("Signing time RSA (ns): " + timeDeltaSign);
+        System.out.println("Signing time ECDSA (ns): " + timeBaseSign);
 
         // Communication
-        System.out.println("R-APDUs: " + apduCount + "for 13 C-APDU commands");
-        System.out.println("Communication bytes sent: " + bytesSent);
-        System.out.println("Communication bytes received: " + bytesReceived);
-        System.out.println("Total communication bytes: " + (bytesSent + bytesReceived));
+        //("R-APDUs: " + apduCount + "for 8 C-APDU commands");
+        //("Communication bytes sent: " + bytesSent);
+        //("Communication bytes received: " + bytesReceived);
+        //("Total communication bytes: " + (bytesSent + bytesReceived));
 
         // Certificate and signature sizes
-        System.out.println("Certificate size (bytes): " + S_cert);
-        System.out.println("ECDSA signature size (bytes): " + sigData.length);
-        System.out.println("RSA signature size (bytes): " + rsaSigData.length);
+        //("Certificate size (bytes): " + S_cert);
+        //("ECDSA signature size (bytes): " + sigData.length);
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
@@ -162,10 +143,10 @@ public class ChameleonTest2 {
         // Count bytes received
         bytesReceived += resp.getBytes().length;
 
-        System.out.println(">> " + toHex(cmd.getBytes()));
-        System.out.println("<< " + toHex(resp.getBytes()));
-        System.out.println("SW = " + Integer.toHexString(resp.getSW()));
-        System.out.println();
+        //(">> " + toHex(cmd.getBytes()));
+        //("<< " + toHex(resp.getBytes()));
+        //("SW = " + Integer.toHexString(resp.getSW()));
+        //();
 
         return resp;
     }
