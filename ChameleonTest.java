@@ -98,12 +98,12 @@ public class ChameleonTest {
         send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
 
         // * debug
-        // ResponseAPDU eskResp = send(simulator, new CommandAPDU(CLA, 0x92, 0x00, 0x00));
+        ResponseAPDU eskResp = send(simulator, new CommandAPDU(CLA, 0x92, 0x00, 0x00));
 
-        // byte[] esk = eskResp.getData();
+        byte[] esk = eskResp.getData();
 
-        // System.out.println("ESK length = " + esk.length);
-        // System.out.println("ESK (first 64 bytes) = " + Arrays.toString(Arrays.copyOfRange(esk, 0, 64)));
+        System.out.println("ESK length = " + esk.length);
+        System.out.println("ESK (first 64 bytes) = " + Arrays.toString(Arrays.copyOfRange(esk, 0, 64)));
 
         // 4. Get certificate
         int offset = 0;
