@@ -155,12 +155,11 @@ public class ChameleonApplet extends Applet {
         }
 
         eskLen = signer.eskProducedLen;
-
-        if (eskLen > 200) eskLen = 200;
+        short outLen = eskLen > 200 ? 200 : eskLen;
 
         apdu.setOutgoing();
-        apdu.setOutgoingLength(eskLen);
-        apdu.sendBytesLong(eskBuffer, (short)0, eskLen);
+        apdu.setOutgoingLength(outLen);
+        apdu.sendBytesLong(eskBuffer, (short)0, outLen);
     }
 
     private void loadPrivateKeyBase(APDU apdu) {
@@ -180,29 +179,19 @@ public class ChameleonApplet extends Applet {
     }
 
     private void loadPrivateKeyDelta(APDU apdu) {
-
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
         byte[] buf = apdu.getBuffer();
         short len = apdu.setIncomingAndReceive();
 
-        byte p1 = buf[ISO7816.OFFSET_P1];
-        if (p1 == 0x00) {
+        if (buf[ISO7816.OFFSET_P1] == 0x00) {
             pqKeyOffset = 0;
         }
 
-        // Load
-        Util.arrayCopy(
-                buf,
-                ISO7816.OFFSET_CDATA,
-                pqPrivateKey,
-                pqKeyOffset,
-                len
-            );
-
+        Util.arrayCopy(buf, ISO7816.OFFSET_CDATA, pqPrivateKey, pqKeyOffset, len);
         pqKeyOffset += len;
-}
+    }
 
     private short certOffset = 0;
 
@@ -213,16 +202,11 @@ public class ChameleonApplet extends Applet {
         byte[] buf = apdu.getBuffer();
         short len = apdu.setIncomingAndReceive();
 
-        short dataOffset = ISO7816.OFFSET_CDATA;
-
-        byte p1 = buf[ISO7816.OFFSET_P1];
-
-        if (p1 == 0x00) {
+        if (buf[ISO7816.OFFSET_P1] == 0x00) {
             certOffset = 0;
         }
 
-        Util.arrayCopy(buf, dataOffset, certificate, certOffset, len);
-
+        Util.arrayCopy(buf, ISO7816.OFFSET_CDATA, certificate, certOffset, len);
         certOffset += len;
         certLen = certOffset;
     }
@@ -237,33 +221,32 @@ public class ChameleonApplet extends Applet {
     }
 
     private void internalAuthenticate(APDU apdu) {
-        byte[] dataToSign = new byte[255];
+        byte[] local = dataToSign;
         short pos = 0;
 
-        dataToSign[pos++] = 0x05;
-        dataToSign[pos++] = 0x01;
-        dataToSign[pos++] = 0x08;
+        local[pos++] = 0x05;
+        local[pos++] = 0x01;
+        local[pos++] = 0x08;
 
-        // use the SAME random bytes you printed
         byte[] dynamic = new byte[] {
             (byte)0x6c,(byte)0x55,(byte)0x44,(byte)0x79,
             (byte)0x7a,(byte)0x91,(byte)0x11,(byte)0x5d
         };
 
-        Util.arrayCopy(dynamic, (short) 0, dataToSign, pos, (short) 8);
+        Util.arrayCopy(dynamic, (short) 0, local, pos, (short) 8);
         pos += 8;
 
         // padding
         short paddingLen = (short) (255 - pos - 4);
         for (short i = 0; i < paddingLen; i++) {
-            dataToSign[pos++] = (byte)0xBB;
+            local[pos++] = (byte)0xBB;
         }
 
         // challenge
-        dataToSign[pos++] = 0x01;
-        dataToSign[pos++] = 0x02;
-        dataToSign[pos++] = 0x03;
-        dataToSign[pos++] = 0x04;
+        local[pos++] = 0x01;
+        local[pos++] = 0x02;
+        local[pos++] = 0x03;
+        local[pos++] = 0x04;
 
         dataToSignLen = pos;
     }
@@ -275,15 +258,7 @@ public class ChameleonApplet extends Applet {
 
     private void createSignatureDelta(APDU apdu) {
         MayoSigner signer = new MayoSigner();
-
-        // signatureLen = signer.sign(
-        //     pqPrivateKey,
-        //     pqKeyLen,
-        //     dataToSign,
-        //     dataToSignLen,
-        //     pqSignature,
-        //     (short) 0
-        // );
+        signatureLen = 0;
     }
 
     private void sendCertificate(APDU apdu) {
@@ -325,9 +300,6 @@ public class ChameleonApplet extends Applet {
 }
 
 class MayoSigner {
-
-    private static final short Q = 16;
-
     private static final short M = 78;
     private static final short N = 86;
     private static final short O = 8;
@@ -335,70 +307,39 @@ class MayoSigner {
     private static final short N_MINUS_O = (short)(N - O);
     private static final short O_DIM = O;
 
-    private static final short K = 10;
-
-    private static final short SALT_BYTES = 24;
-    private static final short DIGEST_BYTES = 32;
-
     private static final short PK_SEED_BYTES = 16;
-    private static final short SK_SEED_BYTES = 16;
-
     private static final short O_BYTES = (short)(N_MINUS_O * O);
     private static final short P1_BYTES = 512;
     private static final short P2_BYTES = 256;
-    private static final short M_VEC_LIMBS = (short)((M + 15) / 16);
+
     private static final short MAYO_OK = 0;
 
-    public short dbg_r;
-    public short dbg_c;
-    public short dbg_k;
-    public short dbg_in;
-    public short dbg_acc;
     public short eskProducedLen;
 
-    private Cipher aesCtr;
-
     private void decode(byte[] m, int offset, byte[] mdec, int mdecOffset, int mdeclen) {
-        int i;
         int j = 0;
-
-        for(i = 0; i < mdeclen / 2; i++) {
+        int i;
+        for (i = 0; i < mdeclen / 2; i++) {
             mdec[mdecOffset + j++] = (byte)(m[offset + i] & 0x0F);
             mdec[mdecOffset + j++] = (byte)((m[offset + i] >> 4) & 0x0F);
         }
-
-        if(mdeclen % 2 != 0) {
+        if ((mdeclen % 2) != 0) {
             mdec[mdecOffset + j] = (byte)(m[offset + i] & 0x0F);
-        }
-    }
-
-    private void encode(byte[] m,byte[] menc, int mencOffset, int mlen) {
-        int i;
-        int j = 0;
-
-        for(i = 0; i < mlen / 2; i++, j += 2) {
-            menc[mencOffset + i] =
-                (byte)((m[j] & 0x0F) |
-                    ((m[j + 1] & 0x0F) << 4));
-        }
-
-        if(mlen % 2 != 0) {
-            menc[mencOffset + i] = (byte)(m[j] & 0x0F);
         }
     }
 
     private void aes_ctr_prf(byte[] out, int outOffset, int outLen, byte[] keyBytes) {
         AESKey key = (AESKey) KeyBuilder.buildKey(
-            KeyBuilder.TYPE_AES,
-            KeyBuilder.LENGTH_AES_128,
-            false
+                KeyBuilder.TYPE_AES,
+                KeyBuilder.LENGTH_AES_128,
+                false
         );
 
         key.setKey(keyBytes, (short)0);
 
         Cipher aes = Cipher.getInstance(
-            Cipher.ALG_AES_BLOCK_128_ECB_NOPAD,
-            false
+                Cipher.ALG_AES_BLOCK_128_ECB_NOPAD,
+                false
         );
 
         aes.init(key, Cipher.MODE_ENCRYPT);
@@ -409,20 +350,18 @@ class MayoSigner {
         short produced = 0;
 
         while (produced < outLen) {
-
-            // encrypt counter
             aes.doFinal(counter, (short)0, (short)16, block, (short)0);
 
-            short toCopy = (short)Math.min(16, outLen - produced);
+            short remaining = (short)(outLen - produced);
+            short toCopy = (remaining < 16) ? remaining : 16;
 
             Util.arrayCopyNonAtomic(
-                block, (short)0,
-                out, (short)(outOffset + produced),
-                toCopy
+                    block, (short)0,
+                    out, (short)(outOffset + produced),
+                    toCopy
             );
 
             incrementCounter(counter);
-
             produced += toCopy;
         }
     }
@@ -430,122 +369,93 @@ class MayoSigner {
     private void incrementCounter(byte[] counter) {
         for (short i = 15; i >= 0; i--) {
             counter[i]++;
-            if (counter[i] != 0) {
-                break; 
-            }
+            if (counter[i] != 0) break;
         }
-    }
-
-    private void unpack_m_vecs(byte[] in, int inOffset, byte[] out, int outOffset, int vecs, int m) {
-        int m_vec_limbs = (m + 15) / 16;
-        byte[] tmp = new byte[m_vec_limbs * 8];
-
-        for (int i = vecs - 1; i >= 0; i--) {
-            Util.arrayFillNonAtomic(tmp, (short)0, (short)tmp.length, (byte)0);
-            Util.arrayCopyNonAtomic(in, (short)(inOffset + i * m / 2), tmp, (short)0, (short)(m / 2));
-
-            Util.arrayCopyNonAtomic(tmp, (short)0, out, (short)(outOffset + i * m_vec_limbs * 8), (short)(m_vec_limbs * 8));
-        }
-    }
-
-    private void expand_P1_P2(byte[] esk, int P_offset, byte[] seed_pk) {
-        aes_ctr_prf(esk, P_offset, P1_BYTES + P2_BYTES, seed_pk);
-
-        int P1_limbs = P1_BYTES / 8;
-        int P2_limbs = P2_BYTES / 8;
-        int vecs = (P1_limbs + P2_limbs) / M_VEC_LIMBS;
-
-        byte[] tmp = new byte[P1_BYTES + P2_BYTES];
-
-        Util.arrayCopyNonAtomic(esk, (short)P_offset, tmp, (short)0, (short)(P1_BYTES + P2_BYTES));
-
-        unpack_m_vecs(tmp, 0, esk, P_offset, vecs, M);
     }
 
     private byte gf16_mul(byte x, byte y) {
         byte r = 0;
 
-        // process 4 bits (since GF(16))
         for (short i = 0; i < 4; i++) {
-
-            // if current bit of y is set → add x
             if (((y >> i) & 1) != 0) {
                 r ^= x;
             }
 
-            // multiply x by x (shift left)
-            boolean carry = (x & 0x8) != 0;  // highest bit (x^3)
-
+            boolean carry = (x & 0x8) != 0;
             x <<= 1;
 
             if (carry) {
-                x ^= 0x13;   // reduce with polynomial x^4 + x + 1
+                x ^= 0x13;
             }
 
-            x &= 0x0F;  // keep only 4 bits
+            x &= 0x0F;
         }
 
         return (byte)(r & 0x0F);
     }
 
-    private void m_vec_mul_add(
-        byte[] P,
-        short inOffset,
-        byte a,
-        short accOffset
-    ) {
-        int tmpLen = M / 2; // number of bytes (each holds two GF(16) nibbles)
+    private void m_vec_mul_add(byte[] data, short dataOffset, byte scalar, short accOffset) {
+        short bytesToProcess = (short)(M / 2);
 
-        // temporary buffer for input slice
-        byte[] tmp = new byte[tmpLen];
-
-        // copy input into tmp
-        Util.arrayCopyNonAtomic(
-            P, inOffset,
-            tmp, (short)0,
-            (short)tmpLen
-        );
-
-        // multiply each nibble by 'a' in GF(16) and XOR into accumulator
-        for (short i = 0; i < tmpLen; i++) {
-            byte inByte = tmp[i];
+        for (short i = 0; i < bytesToProcess; i++) {
+            byte inByte = data[(short)(dataOffset + i)];
 
             byte x0 = (byte)(inByte & 0x0F);
             byte x1 = (byte)((inByte >> 4) & 0x0F);
 
-            byte y0 = gf16_mul(x0, a);
-            byte y1 = gf16_mul(x1, a);
+            byte y0 = gf16_mul(x0, scalar);
+            byte y1 = gf16_mul(x1, scalar);
 
             byte result = (byte)((y0 & 0x0F) | ((y1 & 0x0F) << 4));
 
-            P[(short)(accOffset + i)] ^= result;
+            data[(short)(accOffset + i)] ^= result;
         }
     }
 
-    private void P1P1t_times_O(byte[] P, int P1_offset, byte[] esk, int O_offset, int L_offset) {
+    private void expand_P1_P2(byte[] esk, int P_offset, byte[] seed_pk) {
+        aes_ctr_prf(esk, P_offset, P1_BYTES + P2_BYTES, seed_pk);
+    }
 
-        int bs_mat_entries_used = 0;
+    private void P1P1t_times_O(byte[] esk, short P1_offset, short L_offset) {
+        short O_offset = (short)(L_offset + P2_BYTES);
+        short entries = (short)(P2_BYTES / (M / 2));
 
-        for (short r = 0; r < N_MINUS_O; r++) {
-            for (short c = r; c < N_MINUS_O; c++) {
+        for (short i = 0; i < P2_BYTES; i++) {
+            esk[(short)(L_offset + i)] = 0;
+        }
+
+        short bs_mat_entries_used = 0;
+
+        for (short r = 0; r < N_MINUS_O && r < entries; r++) {
+            for (short c = r; c < N_MINUS_O && c < entries; c++) {
 
                 if (c == r) {
                     bs_mat_entries_used++;
                     continue;
                 }
 
+                short P1_entry_offset = (short)(
+                        P1_offset + bs_mat_entries_used * (M / 2)
+                );
+
                 for (short k = 0; k < O_DIM; k++) {
 
-                    byte o_ck = esk[O_offset + (short)(c * O_DIM + k)];
-                    byte o_rk = esk[O_offset + (short)(r * O_DIM + k)];
+                    short idx_rk = (short)(r * O_DIM + k);
+                    short idx_ck = (short)(c * O_DIM + k);
 
-                    short P1_entry_offset = (short)(P1_offset + bs_mat_entries_used * M_VEC_LIMBS * 8);
+                    byte o_ck = esk[(short)(O_offset + idx_ck)];
+                    byte o_rk = esk[(short)(O_offset + idx_rk)];
 
-                    short acc_r_offset = (short)(L_offset + (r * O_DIM + k) * M_VEC_LIMBS * 8);
-                    short acc_c_offset = (short)(L_offset + (c * O_DIM + k) * M_VEC_LIMBS * 8);
+                    short acc_r_offset = (short)(
+                            L_offset + idx_rk * (M / 2)
+                    );
 
-                    m_vec_mul_add(P, P1_entry_offset, o_ck, acc_r_offset);
-                    m_vec_mul_add(P, P1_entry_offset, o_rk, acc_c_offset);
+                    short acc_c_offset = (short)(
+                            L_offset + idx_ck * (M / 2)
+                    );
+
+                    m_vec_mul_add(esk, P1_entry_offset, o_ck, acc_r_offset);
+                    m_vec_mul_add(esk, P1_entry_offset, o_rk, acc_c_offset);
                 }
 
                 bs_mat_entries_used++;
@@ -554,41 +464,24 @@ class MayoSigner {
     }
 
     public short expandSK(byte[] csk, byte[] esk, short eskOff) {
-        int ret = MAYO_OK;
-        short checkpoint = 1;
+        byte[] S = new byte[PK_SEED_BYTES + O_BYTES];
+        byte[] seed_pk = S;
 
-        try {
-            byte[] S = new byte[PK_SEED_BYTES + O_BYTES];
-            byte[] seed_pk = S;
+        int P_offset = eskOff;
+        int P1_offset = P_offset;
+        int L_offset = P_offset + P1_BYTES;
+        int O_offset = L_offset + P2_BYTES;
 
-            // Layout inside esk:
-            int P_offset = eskOff;
-            int P1_offset = P_offset;
-            int L_offset = P_offset + P1_BYTES;
-            int O_offset = L_offset + P2_BYTES;
+        aes_ctr_prf(S, 0, PK_SEED_BYTES + O_BYTES, csk);
 
-            // shake256 - replaced by AES-CTR PRF
-            aes_ctr_prf(S, 0, PK_SEED_BYTES + O_BYTES, csk);
-            checkpoint = 2;
+        decode(S, PK_SEED_BYTES, esk, O_offset, N_MINUS_O * O_DIM);
 
-            // decode directly into esk (O part)
-            decode(S, PK_SEED_BYTES, esk, O_offset, N_MINUS_O * O_DIM);
-            checkpoint = 3;
+        expand_P1_P2(esk, P1_offset, seed_pk);
 
-            // expand directly into esk (P1 + P2 area)
-            expand_P1_P2(esk, P1_offset, seed_pk);
-            checkpoint = 4;
-
-            // compute L in-place (overwrites P2) TODO: check why it does not pass this
-            P1P1t_times_O(esk, P1_offset, esk, O_offset, L_offset);
-            checkpoint = 5;
-
-            Util.arrayFillNonAtomic(S, (short)0, (short)(PK_SEED_BYTES + O_BYTES), (byte)0);
-        } catch (Throwable throwable) {
-            ISOException.throwIt((short)(0x6F00 | (checkpoint & 0xFF)));
-        }
+        P1P1t_times_O(esk, (short)P1_offset, (short)L_offset);
 
         eskProducedLen = (short)(P1_BYTES + P2_BYTES + O_BYTES);
+
         return MAYO_OK;
     }
 }
