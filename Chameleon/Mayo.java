@@ -607,4 +607,128 @@ class MayoSigner {
         }
         return 1;
     }
+
+    public short sign_signature (byte[] sig, short sigLen, byte[] m, short mLen, byte[] csk) {
+        short ret = MAYO_OK;
+        short M_BYTES = (short)(71); 
+        short M_MAX = 142;
+        short K_MAX = 12; 
+        short O_MAX = 17;
+        short N_MAX = 154;
+        short V_MAX = 142;
+
+        short digest_bytes = 32;
+        short salt_bytes = 24;
+        short sk_seed_bytes = (short)csk.length;
+        short totalLenWithCtr = (short)(digest_bytes + salt_bytes + sk_seed_bytes + 1);
+
+        byte[] esk = new byte[(short)(P1_BYTES + P2_BYTES + O_BYTES)];
+
+        byte[] tenc = new byte[M_BYTES];
+        byte[] t = new byte[M_MAX];
+        byte[] y = new byte[M_MAX];
+        byte[] salt = new byte[salt_bytes];
+        byte[] V = new byte[(short)(K_MAX * V_MAX + (K_MAX * O_MAX))];
+        byte[] Vdec = new byte[(short)(V_MAX * K_MAX)];
+        byte[] A = new byte[(short)(M_MAX * (K_MAX * O_MAX + 1))];
+        byte[] x = new byte[(short)(K_MAX * N_MAX)];
+        byte[] r = new byte[(short)(K_MAX * O_MAX)];
+        byte[] s = new byte[(short)(K_MAX * N_MAX)];
+        byte[] Ox = new byte[V_MAX];
+        byte[] tmp = new byte[(short)(digest_bytes + salt_bytes + sk_seed_bytes + 1)];
+
+        ret = expandSK(csk, esk, (short) 0);
+        if(ret != 0) {
+            return ret;
+        }
+
+        byte[] seed_sk = csk;
+
+        // hash the message (should be SHAKE)
+        MessageDigest sha = MessageDigest.getInstance(MessageDigest.ALG_SHA_256, false);
+        sha.doFinal(m, (short)0, mLen, tmp, (short)0);
+
+        short P1_offset = 0;
+        short L_offset = P1_BYTES;
+        byte[] Mtmp = new byte[(short)(K_MAX * O_MAX * M_MAX)];
+        Util.arrayFillNonAtomic(Mtmp, (short)0, (short)Mtmp.length, (byte)0);
+
+        random.generateData(tmp, digest_bytes, salt_bytes);
+        Util.arrayCopy(seed_sk, (short)0, tmp, (short)(digest_bytes + salt_bytes), sk_seed_bytes);
+        //SHAKE
+        short totalLen = (short)(digest_bytes + salt_bytes + sk_seed_bytes);
+        sha.doFinal(tmp, (short)0, totalLen, salt, (short)0);
+        
+        Util.arrayCopy(salt, (short)0, tmp, digest_bytes, salt_bytes);
+
+        short ctrOffset = (short)(digest_bytes + salt_bytes + sk_seed_bytes);
+        short tInputLen = (short)(digest_bytes + salt_bytes);
+        sha.doFinal(tmp, (short)0, tInputLen, tenc, (short)0);
+        decode(tenc, 0, t, 0, M_MAX);
+
+        boolean sol_found = false;
+        for (short ctr = 0; ctr < 256; ctr++) {
+            tmp[ctrOffset] = (byte)ctr;
+            
+            sha.doFinal(tmp, (short)0, totalLenWithCtr, V, (short)0);
+            
+            for (short i = 0; i < param_k; i++) {
+                short srcOffset = (short)(i * param_v_bytes);
+                short dstOffset = (short)(i * param_v);
+
+                decode(V, srcOffset, Vdec, dstOffset, param_v);
+            }
+            // todo
+            buildMatrixMtmp(Vdec, esk, Mtmp);
+            for (short i = 0; i < param_m; i++) { // rhs
+                y[i] = t[i];   // initial value
+            }
+            buildMatrixA(Mtmp, A);
+
+            short cols = (short)(param_k * param_o + 1);
+
+            for (short i = 0; i < param_m; i++) {
+                A[(short)(i * cols + (cols - 1))] = 0;
+            }
+
+            short rOffset = (short)(param_k * param_v_bytes);
+            decode(V, rOffset, r, (short)0, (short)(param_k * param_o));
+            short ok = sampleSolution(A, y, r, x, param_k, param_o, param_m, cols);
+
+            if (ok == 1) {
+                sol_found = true;
+                break;
+            }
+            Util.arrayFillNonAtomic(Mtmp, (short)0, (short)Mtmp.length, (byte)0);
+            Util.arrayFillNonAtomic(A, (short)0, (short)A.length, (byte)0);
+        }
+
+        if (!sol_found) {
+            ret = (short)-1;
+            return ret;  
+        }
+
+        for (short i = 0; i < param_k; i++) {
+            short viOffset = (short)(i * param_v);             
+            short xiOffset = (short)(i * param_o);             
+            short siOffset = (short)(i * param_n);             
+
+            matMul(esk, (short)(P1_BYTES + P2_BYTES), x, xiOffset, Ox, (short)0, param_o, param_v);
+
+            for (short j = 0; j < param_v; j++) {
+                s[(short)(siOffset + j)] =
+                    (byte)(Vdec[(short)(viOffset + j)] ^ Ox[j]);
+            }
+
+            Util.arrayCopy(x, xiOffset, s, (short)(siOffset + param_v), param_o);
+        }
+
+        encode(s, sig, (short)(param_n * param_k));
+        short sigOffset = (short)(param_sig_bytes - salt_bytes);
+
+        Util.arrayCopy(salt, (short)0, sig, sigOffset, salt_bytes);
+
+        // return ret;
+        return param_sig_bytes;
+    }
 }
