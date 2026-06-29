@@ -15,6 +15,7 @@ public class Mayo extends Applet {
     private static final byte INS_LOCK_CARD = (byte) 0x73;
     private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88;
     private static final byte INS_DEBUG_GET_ESK = (byte)0x92;
+    private static final byte INS_TEST_SAMPLE = (byte)0x93;
 
     private byte[] eskBuffer = new byte[4096];
     private short eskLen = 0;
@@ -100,9 +101,64 @@ public class Mayo extends Applet {
                 sendESK(apdu);
                 return;
 
+            case INS_TEST_SAMPLE:
+                testSampleSolution(apdu);
+                return;
+
             default:
                 ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
         }
+    }
+
+    private void testSampleSolution(APDU apdu) {
+        MayoSigner signer = new MayoSigner();
+        short k = 2;
+        short o = 2;
+        short m = 4;
+
+        short ko = (short)(k * o);
+        short cols = (short)(ko + 1);
+
+        byte[] A = new byte[(short)(m * cols)];
+        byte[] y = new byte[m];
+        byte[] r = new byte[ko];
+        byte[] x = new byte[ko];
+
+        for (short i = 0; i < A.length; i++) {
+            A[i] = (byte)((i + 1) & 0x0F);
+        }
+
+        for (short i = 0; i < m; i++) {
+            y[i] = (byte)((i + 3) & 0x0F);
+        }
+
+        for (short i = 0; i < ko; i++) {
+            r[i] = (byte)((i + 5) & 0x0F);
+        }
+
+        byte[] A_original = new byte[A.length];
+        Util.arrayCopy(A, (short)0, A_original, (short)0, (short)A.length);
+
+        short ok = signer.sampleSolution(A, y, r, x, k, o, m, cols);
+
+        if (ok == 0) {
+            ISOException.throwIt((short)0x6F01); // failed solving
+        }
+
+        byte[] check = new byte[m];
+        signer.matMul(A_original, x, check, cols, m);
+
+        for (short i = 0; i < m; i++) {
+            if (check[i] != y[i]) {
+                ISOException.throwIt((short)0x6F02); // wrong result
+            }
+        }
+
+        short outLen = ko > 64 ? 64 : ko;
+
+        apdu.setOutgoing();
+        apdu.setOutgoingLength(outLen);
+        apdu.sendBytesLong(x, (short)0, outLen);
     }
 
     private void sendESK(APDU apdu) {
@@ -323,6 +379,17 @@ class MayoSigner {
         return (byte)(r & 0x0F);
     }
 
+    private byte gf16_sub(byte a, byte b) {
+        return (byte) (a^b);
+    }
+
+    private byte gf16_inv(byte a) {
+        for (byte i = 1; i < 16; i++) {
+            if (gf16_mul(a, i) == 1) return i;
+        }
+        return 0; // should never happen
+    }
+
     private void m_vec_mul_add(byte[] data, short dataOffset, byte scalar, short accOffset) {
         short bytesToProcess = (short)(M / 2);
 
@@ -338,6 +405,20 @@ class MayoSigner {
             byte result = (byte)((y0 & 0x0F) | ((y1 & 0x0F) << 4));
 
             data[(short)(accOffset + i)] ^= result;
+        }
+    }
+
+    public void matMul(byte[] A, byte[] x, byte[] result, short cols, short rows) {
+        for (short i = 0; i < rows; i++) {
+            byte acc = 0;
+
+            for (short j = 0; j < (short)(cols - 1); j++) {
+                byte a = A[(short)(i * cols + j)];
+                byte prod = gf16_mul(a, x[j]);
+                acc ^= prod;
+            }
+
+            result[i] = acc;
         }
     }
 
@@ -412,5 +493,118 @@ class MayoSigner {
         eskProducedLen = (short)(P1_BYTES + P2_BYTES + O_BYTES);
 
         return MAYO_OK;
+    }
+
+    private void gaussianElimination(byte[] A, short m, short cols) {
+        short pivotRow = 0;
+
+        for (short col = 0; col < (short)(cols - 1) && pivotRow < m; col++) {
+
+            // find pivot
+            short pivot = -1;
+            for (short r = pivotRow; r < m; r++) {
+                if (A[(short)(r * cols + col)] != 0) {
+                    pivot = r;
+                    break;
+                }
+            }
+
+            if (pivot == -1) continue;
+
+            // swap rows
+            if (pivot != pivotRow) {
+                for (short c = 0; c < cols; c++) {
+                    byte tmp = A[(short)(pivotRow * cols + c)];
+                    A[(short)(pivotRow * cols + c)] =
+                        A[(short)(pivot * cols + c)];
+                    A[(short)(pivot * cols + c)] = tmp;
+                }
+            }
+
+            
+            byte pivotVal = A[(short)(pivotRow * cols + col)];
+            byte inv = gf16_inv(pivotVal);
+
+            for (short c = col; c < cols; c++) {
+                A[(short)(pivotRow * cols + c)] =
+                    gf16_mul(A[(short)(pivotRow * cols + c)], inv);
+            }
+
+            // eliminate below
+            for (short r = (short)(pivotRow + 1); r < m; r++) {
+                byte factor = A[(short)(r * cols + col)];
+                if (factor == 0) continue;
+
+                for (short c = col; c < cols; c++) {
+                    byte prod = gf16_mul(
+                        factor,
+                        A[(short)(pivotRow * cols + c)]
+                    );
+                    A[(short)(r * cols + c)] ^= prod;
+                }
+            }
+
+            pivotRow++;
+        }
+    }
+
+    public short sampleSolution (byte[] A, byte[] y, byte[] r, byte[] x, short k, short o, short m, short A_cols) {
+        short ko = (short) (k * o); 
+        
+        // x <- r
+        Util.arrayCopy(r, (short) 0, x, (short) 0, ko);
+
+        // compute Ar 
+        byte[] Ar = new byte[m];
+
+        for (short i = 0; i < m; i++) {
+            A[(short) (ko + i * A_cols)] = 0;
+        }
+
+        // todo
+        matMul(A, r, Ar, A_cols, m);
+
+        // last column = y - Ar
+        for(short i = 0; i < m; i++) {
+            A[(short)(ko + i * A_cols)] = (byte)(y[i] ^ Ar[i]);
+        }
+
+        gaussianElimination(A, m, A_cols);
+
+        byte fullRank = 0;
+        for(short i = 0; i < (short)(A_cols - 1); i++) {
+            fullRank |= A[(short)((m-1) * A_cols + i)];
+        }
+        if(fullRank == 0) {
+            return 0;
+        }
+
+        // back substitution
+        for(short row = (short) (m-1); row >= 0; row--) {
+            short pivotCol = -1;
+
+            for(short col = row; col < ko; col++) {
+                if(A[(short)(row * A_cols + col)] != 0) {
+                    pivotCol = col;
+                    break;
+                }
+            }
+            if(pivotCol == -1) {
+                return 0;
+            }
+
+            byte u = A[(short) (row*A_cols + (A_cols - 1))];
+
+            x[pivotCol] ^= u;
+
+            for(short i = 0; i < row; i++) {
+                byte a = A[(short) (i*A_cols + pivotCol)];
+                byte prod = gf16_mul(a, u);
+
+                short idx = (short)(i*A_cols + (A_cols - 1));
+                A[idx] ^= prod;
+            }
+        }
+        return 1;
     }
 }

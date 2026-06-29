@@ -16,7 +16,7 @@ public class MayoTest {
     private static int bytesSent = 0;
     private static int bytesReceived = 0;
 
-    private static long timeDeltaSign = 0;
+    // private static long timeDeltaSign = 0;
 
     public static void main(String[] args) {
 
@@ -83,7 +83,9 @@ public class MayoTest {
         System.out.println("ESK length = " + esk.length);
         System.out.println("ESK (first 64 bytes) = " + Arrays.toString(Arrays.copyOfRange(esk, 0, 64)));
 
-        int offset = 0;
+        send(simulator, new CommandAPDU(CLA, 0x93, 0x00, 0x00));
+
+        // int offset = 0;
 
         // while (true) {
         //     int p1 = (offset >> 8) & 0xFF;
