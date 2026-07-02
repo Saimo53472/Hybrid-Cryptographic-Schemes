@@ -2,12 +2,7 @@ package SHAKE;
 
 /**
  * Simple test runner. If BouncyCastle is available on the classpath, compare outputs.
- *
- * To compile and run (example):
- *   javac -cp bcprov-jdk15on-*.jar sha3ref/*.java
- *   java -cp .:bcprov-jdk15on-*.jar sha3ref.TestSHAKE256
- *
- * If you don't have BouncyCastle, the test still runs and prints our outputs.
+ * CHANGE!
  */
 public class TestSHAKE256
 {
@@ -16,7 +11,7 @@ public class TestSHAKE256
         byte[] empty = new byte[0];
 
         // Request 4 words (4 * 8 = 32 bytes)
-        long[] myWords = SHAKE256IntPair.shake256w(empty, 0, 0, 4);
+        long[] myWords = SHAKE256JC.shake256w(empty, 0, 0, 4);
 
         System.out.println("Our SHAKE256w(empty) first 4 words:");
         for (int i = 0; i < myWords.length; i++)
@@ -26,7 +21,7 @@ public class TestSHAKE256
 
         // Test SHAKE256x4 interleaved
         int totalWords = 8; // will produce 8 words interleaved across 4 instances
-        long[] myX4 = SHAKE256IntPair.shake256x4_interleaved(empty, 0, 0, totalWords);
+        long[] myX4 = SHAKE256JC.sequentialShake256x4Interleaved(empty, 0, 0, totalWords);
         System.out.println("Our SHAKE256x4_interleaved(empty) first " + totalWords + " words:");
         for (int i = 0; i < myX4.length; i++)
         {
