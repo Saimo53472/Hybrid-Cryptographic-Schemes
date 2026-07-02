@@ -37,7 +37,7 @@ public class MayoTest {
         }
 
         try {
-            byte[] qkey = loadRawFile("qkey.pem");
+            byte[] qkey = loadRawFile("expanded.bin");
             byte[] cert = loadCertificate("chameleon_cert.pem");
 
             int offset = 0;
@@ -55,6 +55,8 @@ public class MayoTest {
 
                 offset += len;
             }
+
+            System.out.println("Expanded key size = " + qkey.length);
 
             offset = 0;
 
