@@ -1,22 +1,22 @@
 package SHAKE;
 
 /**
- * Allocation-free Keccak-f[1600] permutation using 32-bit hi/lo lane pairs.
- * Use permute(state, scratch) on Java Card (scratch must be int[120]).
+ * Keccak-f[1600] permute with debug prints (hi/lo int scratch-based).
+ * Prints limited lane snapshots for the first two rounds (first 5 lanes).
  *
- * Also provides legacy permute(state) that allocates scratch (desktop convenience).
+ * Replace your KeccakF1600 temporarily with this file for debugging.
+ * Remove the debug prints once you find & fix the issue.
  */
-public final class KeccakF1600
+public final class KeccakF1600Debug
 {
     private static final int[] RHO_OFFSETS = new int[] {
-         0,  1, 62, 28, 27,
-        36, 44,  6, 55, 20,
-         3, 10, 43, 25, 39,
-        41, 45, 15, 21,  8,
-        18,  2, 61, 56, 14
+         0, 36,  3, 41, 18,
+         1, 44, 10, 45,  2,
+        62,  6, 43, 15, 61,
+        28, 55, 25, 21,  8,
+        27, 20, 39, 14, 32
     };
 
-    // Round constants split into hi / lo 32-bit parts (no long usage in Java Card paths).
     private static final int[] RC_HI = new int[] {
         0x00000000, 0x00000000, 0x80000000, 0x80000000,
         0x00000000, 0x00000000, 0x80000000, 0x80000000,
@@ -35,14 +35,26 @@ public final class KeccakF1600
         0x80008081, 0x00008080, 0x80000001, 0x80008008
     };
 
-    // Legacy convenience for desktop: allocates scratch (do NOT use this on-card).
-    public static void permute(byte[] state)
-    {
+    // Debug helper: print up to maxLanes lanes from scratch as 64-bit hex
+    private static void printLanesHiLoLimited(int[] scratch, int base_hi, int base_lo, String tag, int maxLanes) {
+        System.out.println(tag);
+        int m = Math.min(maxLanes, 25);
+        for (int i = 0; i < m; i++) {
+            long hi = ((long)scratch[base_hi + i]) & 0xFFFFFFFFL;
+            long lo = ((long)scratch[base_lo + i]) & 0xFFFFFFFFL;
+            long v = (hi << 32) | lo;
+            System.out.printf("lane[%2d] = 0x%016X (hi=0x%08X lo=0x%08X)%n", i, v, scratch[base_hi + i], scratch[base_lo + i]);
+        }
+        System.out.println();
+    }
+
+    // Legacy convenience - for desktop when scratch not provided (keeps old API)
+    public static void permute(byte[] state) {
         int[] scratch = new int[120];
         permute(state, scratch);
     }
 
-    // Java Card friendly: caller must supply scratch int[120]. No allocations inside.
+    // Scratch-based permute with debug prints
     public static void permute(byte[] state, int[] scratch)
     {
         if (state == null || state.length != 200) throw new IllegalArgumentException("state must be 200 bytes");
@@ -57,7 +69,7 @@ public final class KeccakF1600
         final int base_B_hi = 70;  // scratch[70..94]
         final int base_B_lo = 95;  // scratch[95..119]
 
-        // bytes -> hi/lo ints (little-endian lane encoding)
+        // Convert bytes -> hi/lo in scratch (little-endian lanes)
         for (int i = 0; i < 25; i++)
         {
             int off = i * 8;
@@ -72,7 +84,7 @@ public final class KeccakF1600
         // 24 rounds
         for (int round = 0; round < 24; round++)
         {
-            // Theta: C[x] = xor of column lanes
+            // Theta: C[x] = A[x,0]^...^A[x,4]
             for (int x = 0; x < 5; x++)
             {
                 int c_hi = scratch[base_hi + x] ^ scratch[base_hi + x + 5] ^ scratch[base_hi + x + 10]
@@ -83,7 +95,7 @@ public final class KeccakF1600
                 scratch[base_C_lo + x] = c_lo;
             }
 
-            // D[x] = C[x-1] ^ ROTL64(C[x+1], 1)
+            // D[x] = C[x-1] ^ ROTL64(C[x+1],1)
             for (int x = 0; x < 5; x++)
             {
                 int next = (x + 1) % 5;
@@ -109,6 +121,9 @@ public final class KeccakF1600
                 }
             }
 
+            // Debug: print Theta result (A) for first two rounds
+            if (round < 2) printLanesHiLoLimited(scratch, base_hi, base_lo, "HiLo: After Theta round " + round, 5);
+
             // Rho & Pi -> B
             for (int x = 0; x < 5; x++)
             {
@@ -118,8 +133,8 @@ public final class KeccakF1600
                     int offset = RHO_OFFSETS[idx] & 0xFF;
                     int a_hi = scratch[base_hi + idx];
                     int a_lo = scratch[base_lo + idx];
-
                     int newHi, newLo;
+
                     if (offset == 0)
                     {
                         newHi = a_hi;
@@ -127,8 +142,15 @@ public final class KeccakF1600
                     }
                     else if (offset < 32)
                     {
+                        // rotate left by offset (1..31)
                         newLo = (a_lo << offset) | (a_hi >>> (32 - offset));
                         newHi = (a_hi << offset) | (a_lo >>> (32 - offset));
+                    }
+                    else if (offset == 32)
+                    {
+                        // rotate-left by 32 swaps hi and lo
+                        newLo = a_hi;
+                        newHi = a_lo;
                     }
                     else
                     {
@@ -144,7 +166,10 @@ public final class KeccakF1600
                 }
             }
 
-            // Chi: A[x,y] = B[x,y] ^ ((~B[x+1,y]) & B[x+2,y])
+            // Debug: print B (Rho+Pi result) for first two rounds
+            if (round < 2) printLanesHiLoLimited(scratch, base_B_hi, base_B_lo, "HiLo: After Rho+Pi (B) round " + round, 5);
+
+            // Chi (B into A)
             for (int y = 0; y < 5; y++)
             {
                 for (int x = 0; x < 5; x++)
@@ -168,9 +193,15 @@ public final class KeccakF1600
                 }
             }
 
+            // Debug: print A after Chi for first two rounds
+            if (round < 2) printLanesHiLoLimited(scratch, base_hi, base_lo, "HiLo: After Chi round " + round, 5);
+
             // Iota: XOR round constant
             scratch[base_hi + 0] ^= RC_HI[round];
             scratch[base_lo + 0] ^= RC_LO[round];
+
+            // Debug: print A after Iota for first two rounds
+            if (round < 2) printLanesHiLoLimited(scratch, base_hi, base_lo, "HiLo: After Iota round " + round, 5);
         }
 
         // write back hi/lo -> state bytes (little-endian)
