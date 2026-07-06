@@ -137,8 +137,13 @@ public final class KeccakF1600
                         newHi = (a_lo << k) | (a_hi >>> (32 - k));
                     }
 
-                    int newX = (2 * x + 3 * y) % 5;
-                    int dst = newX + 5 * y;
+                    // int newX = (2 * x + 3 * y) % 5;
+                    // int dst = newX + 5 * y;
+
+                    int newX = y;
+                    int newY = (2 * x + 3 * y) % 5;
+                    int dst = newX + 5 * newY;
+
                     scratch[base_B_hi + dst] = newHi;
                     scratch[base_B_lo + dst] = newLo;
                 }
