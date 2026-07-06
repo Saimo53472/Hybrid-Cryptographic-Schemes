@@ -28,23 +28,9 @@ $env:PATH = "$env:JC_HOME\bin;$env:PATH"
 ```
 
 ## Test - Simulator
-Compile
-WSL
-```
-javac -cp .:jcardsim.jar:api_classic-3.0.5.jar Chameleon/ChameleonApplet.java
-```
 Pwsh
 ```
-javac --release 8 -cp ".;jcardsim.jar;api_classic-3.0.5.jar" Chameleon\ChameleonApplet.java
-```
-
-WSL
-```
-javac -cp .:jcardsim.jar:api_classic-3.0.5.jar ChameleonTest.java
-```
-Pwsh
-```
-javac -cp ".;jcardsim.jar;api_classic-3.0.5.jar" ChameleonTest.java
+javac -d out -cp "out;.;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" src/test/java/Chameleon/ChameleonTest.java
 ```
 
 To convert to cap:
@@ -69,7 +55,7 @@ java -cp .:jcardsim.jar:api_classic-3.0.5.jar ChameleonTest
 ```
 Pwsh
 ```
-java -cp ".;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" ChameleonTest
+java -cp "out;.;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" ChameleonTest
 ```
 
 ### Verifying the Signature 

@@ -12,6 +12,8 @@ import java.io.*;
 
 import javax.smartcardio.*;
 
+import Chameleon.ChameleonApplet;
+
 import java.math.BigInteger;
 import java.io.ByteArrayOutputStream;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -39,7 +41,7 @@ public class ChameleonTest {
         AID aid = new AID(aidBytes, (short) 0, (byte) aidBytes.length);
 
         // Install + select
-        simulator.installApplet(aid, Chameleon.ChameleonApplet.class);
+        simulator.installApplet(aid, ChameleonApplet.class);
         simulator.selectApplet(aid);
 
         System.out.println("Applet selected");
@@ -96,14 +98,6 @@ public class ChameleonTest {
 
         // 3. Lock card
         send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
-
-        // * debug
-        ResponseAPDU eskResp = send(simulator, new CommandAPDU(CLA, 0x92, 0x00, 0x00));
-
-        byte[] esk = eskResp.getData();
-
-        System.out.println("ESK length = " + esk.length);
-        System.out.println("ESK (first 64 bytes) = " + Arrays.toString(Arrays.copyOfRange(esk, 0, 64)));
 
         // 4. Get certificate
         int offset = 0;

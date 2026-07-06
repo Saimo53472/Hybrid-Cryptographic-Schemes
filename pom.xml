@@ -13,6 +13,12 @@
             <artifactId>jcardsim</artifactId>
             <version>3.0.5-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.javacard</groupId>
+            <artifactId>javacard-api</artifactId>
+            <version>3.0.5</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>

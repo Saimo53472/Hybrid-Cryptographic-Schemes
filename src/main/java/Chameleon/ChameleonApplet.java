@@ -21,10 +21,6 @@ public class ChameleonApplet extends Applet {
 
     private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88;
 
-    private static final byte INS_DEBUG_GET_ESK = (byte)0x92; // DEBUG
-    private byte[] eskBuffer = new byte[4096];
-    private short eskLen = 0;
-
     private byte[] dataToSign; // data to be signed
     private short dataToSignLen;
     private static final short TOTAL_LEN = 255; // total length of data to be signed (including padding)
@@ -136,30 +132,9 @@ public class ChameleonApplet extends Applet {
                 internalAuthenticate(apdu);
                 return;
 
-            case INS_DEBUG_GET_ESK:
-                sendESK(apdu);
-                return;
-
             default:
                 ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
         }
-    }
-
-    private void sendESK(APDU apdu) {
-        MayoSigner signer = new MayoSigner();
-
-        short status = signer.expandSK(pqPrivateKey, eskBuffer, (short)0);
-
-        if (status != 0) {
-            ISOException.throwIt((short)(0x6F00 | (status & 0xFF)));
-        }
-
-        eskLen = signer.eskProducedLen;
-        short outLen = eskLen > 200 ? 200 : eskLen;
-
-        apdu.setOutgoing();
-        apdu.setOutgoingLength(outLen);
-        apdu.sendBytesLong(eskBuffer, (short)0, outLen);
     }
 
     private void loadPrivateKeyBase(APDU apdu) {
@@ -257,8 +232,7 @@ public class ChameleonApplet extends Applet {
     }
 
     private void createSignatureDelta(APDU apdu) {
-        MayoSigner signer = new MayoSigner();
-        signatureLen = 0;
+        //
     }
 
     private void sendCertificate(APDU apdu) {
