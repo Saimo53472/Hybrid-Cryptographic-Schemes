@@ -30,7 +30,7 @@ $env:PATH = "$env:JC_HOME\bin;$env:PATH"
 ## Test - Simulator
 Pwsh
 ```
-javac -d out -cp "out;.;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" src/test/java/Chameleon/ChameleonTest.java
+javac -source 8 -target 8 -d out -cp "out;.;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" src/main/java/Chameleon/ChameleonApplet.java
 ```
 
 To convert to cap:
@@ -40,12 +40,12 @@ $JC_HOME/bin/converter.sh -classdir . -applet 0xa0:0x00:0x00:0x00:0x00:0x00:0x01
 ```
 Pwsh
 ``` 
-& "$env:JC_HOME\bin\converter.bat" -classdir . -applet 0xa0:0x00:0x00:0x00:0x00:0x00:0x01 ChameleonApplet Chameleon 0xa0:0x00:0x00:0x00:0x00:0x00 1.0
+& "$env:JC_HOME\bin\converter.bat" -classdir out -d capout -out CAP EXP JCA -applet 0xa0:0x00:0x00:0x00:0x00:0x00:0x01 Chameleon.ChameleonApplet Chameleon 0xa0:0x00:0x00:0x00:0x00:0x00 1.0
 ```
 
 Install the applet on the card:
 ```
-java -jar gp.jar -install ChameleonApplet.cap -r "SCM Microsystems Inc. SCR33x USB Smart Card Reader 0"
+java -jar gp.jar -install .\capout\Chameleon\javacard\Chameleon.cap -r "SCM Microsystems Inc. SCR33x USB Smart Card Reader 0"
 ```
 
 Run 
