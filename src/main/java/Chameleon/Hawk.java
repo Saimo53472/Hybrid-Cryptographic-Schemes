@@ -245,23 +245,22 @@ class HawkSigner{
      * Regenerate f and g polynomials from seed using SHAKE256
      */
     public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed) {
-        byte[] qb = new byte[8];
-
-        SHAKE256JC shake = new SHAKE256JC();
-
+        byte[] state = new byte[200];
+        int[] scratch = new int[120];
         for (byte j = 0; j < 4; j++)
         {
-            shake.reset();
+            SHAKE256JC shake = new SHAKE256JC(state, scratch);
             shake.absorbXor(seed, (short)0, (short)24);
 
             byte[] singleByte = new byte[1];
             singleByte[0] = j;
             shake.absorbXor(singleByte, (short)0, (short)1);
 
-            shake.finalizeSqueeze(); // check what update and doFinal are doing in the original code
+            shake.finalizeSqueeze();
 
             for (short u = 0; u < 1024; u += 32)
             {
+                byte[] qb = new byte[8];
                 shake.squeezeBytes(qb, (short)0, (short)8);
 
                 for (short i = 0; i < 8; i++)
@@ -279,6 +278,151 @@ class HawkSigner{
                 }
             }
         }
+    }
+
+    // Encode 32-bit integer as little-endian bytes
+    public static void enc32le(byte[] dst, int dstOffset, int x)
+    {
+        dst[dstOffset] = (byte)(x & 0xFF);
+        dst[dstOffset + 1] = (byte)((x >>> 8) & 0xFF);
+        dst[dstOffset + 2] = (byte)((x >>> 16) & 0xFF);
+        dst[dstOffset + 3] = (byte)((x >>> 24) & 0xFF);
+    }
+
+    // Extract the lowest bit of each coefficient
+    private static void extract_lowbit(int logn, byte[] dst, byte[] src)
+    {
+        int n = 1 << logn;
+        for (int i = 0; i < n; i += 8)
+        {
+            byte val = 0;
+            for (int j = 0; j < 8; j++)
+            {
+                val |= ((src[i + j] & 1) << j);
+            }
+            dst[i >> 3] = val;
+        }
+    }
+
+    static short tbmask(short x) {
+        return (short)(x >> 15);
+    }
+
+    public static boolean encodeSig(int logn, byte[] sig, short sigOffset, short sigLen,byte[] salt, short saltOffset,
+        short saltLen, short[] s1, short s1Offset) {
+        short n = (short)(1 << logn);
+        byte low = (byte)((logn == 10) ? 6 : 5);
+
+        short bufOffset = sigOffset;
+        short remainingLen = sigLen;
+
+        short minSize = (short)(saltLen + (((short)(low + 2)) << (logn - 3)));
+
+        if (remainingLen < minSize) {
+            return false;
+        }
+
+        // 1. Copy salt
+        Util.arrayCopyNonAtomic(salt, saltOffset, sig, bufOffset, saltLen);
+
+        bufOffset += saltLen;
+        remainingLen -= saltLen;
+
+        // 2. Sign bits
+        short u;
+        short v;
+
+        for (u = 0; u < n; u += 8) {
+
+            byte x = 0;
+
+            for (v = 0; v < 8; v++) {
+                short coeff = s1[(short)(s1Offset + u + v)];
+                byte signBit = (byte)((coeff >> 15) & 1);
+                x |= (byte)(signBit << v);
+            }
+
+            sig[(short)(bufOffset + (u >> 3))] = x;
+        }
+
+        bufOffset += (short)(n >> 3);
+        remainingLen -= (short)(n >> 3);
+
+        // 3. Fixed-size low bits; reimplemented without long. - check if this is correct!!
+        short lowMask = (short)((1 << low) - 1);
+
+        for (u = 0; u < n; u++) {
+
+            short w = s1[(short)(s1Offset + u)];
+            short mask = tbmask(w);
+
+            w ^= mask;
+
+            int val = w & lowMask;
+
+            byte bitsRemaining = low;
+
+            while (bitsRemaining > 0) {
+
+                if (remainingLen <= 0) {
+                    return false;
+                }
+
+                sig[bufOffset++] = (byte)(val & 0xFF);
+                remainingLen--;
+
+                val >>>= 8;
+                bitsRemaining -= 8;
+            }
+        }
+
+        // 4. Variable-size unary encoding
+        int acc = 0;
+        short accLen = 0;
+
+        for (u = 0; u < n; u++) {
+
+            short w = s1[(short)(s1Offset + u)];
+            short mask = tbmask(w);
+
+            w ^= mask;
+
+            short k = (short)((w & 0xFFFF) >>> low);
+
+            acc |= (1 << (accLen + k));
+            accLen += (short)(1 + k);
+
+            while (accLen >= 8) {
+
+                if (remainingLen <= 0) {
+                    return false;
+                }
+
+                sig[bufOffset++] = (byte)acc;
+                remainingLen--;
+
+                acc >>>= 8;
+                accLen -= 8;
+            }
+        }
+
+        /*
+        * Flush remaining bits
+        */
+        if (accLen > 0) {
+
+            if (remainingLen <= 0) {
+                return false;
+            }
+
+            sig[bufOffset++] = (byte)acc;
+            remainingLen--;
+        }
+
+        // 5. Zero padding
+        Util.arrayFillNonAtomic(sig, bufOffset, remainingLen, (byte)0);
+
+        return true;
     }
 
     // Sign method
@@ -318,7 +462,7 @@ class HawkSigner{
         byte[] F2, G2;
         byte[] hpub;
 
-        // Regenerate f and g from seed
+        // Regenerate f and g from seed // DecodePrivate(priv) & Regeneratefg(kgseed)
         byte[] seed = new byte[seedLen];
         Util.arrayCopy(priv, 0, seed, 0, seedLen);
         regen_fg(f, 0, g, 0, seed);
@@ -328,7 +472,6 @@ class HawkSigner{
 
         // Compute hm = SHAKE256(message || hpub)
         byte[] hm = new byte[64];
-        shake256jc.reset();
         shake256jc.absorbXor(hpub, 0, hpubLen);
         shake256jc.finalizeSqueeze();
         shake256jc.squeezeBytes(hm, 0, 64);
@@ -351,23 +494,23 @@ class HawkSigner{
                 byte[] tbuf = new byte[4];
                 enc32le(tbuf, 0, attempt);
 
-                shake256jc.reset();
-                shake256jc.absorbXor(hm, 0, hm.length);
-                shake256jc.absorbXor(priv, 0, seedLen);
-                shake256jc.absorbXor(tbuf, 0, tbuf.length);
-                shake256jc.absorbXor(salt, 0, saltLen);
-                shake256jc.finalizeSqueeze();
-                shake256jc.squeezeBytes(salt, 0, saltLen);
+                SHAKE256JC saltShake = new SHAKE256JC(256);
+                saltShake.absorbXor(hm, 0, hm.length);
+                saltShake.absorbXor(priv, 0, seedLen);
+                saltShake.absorbXor(tbuf, 0, tbuf.length);
+                saltShake.absorbXor(salt, 0, saltLen);
+                saltShake.finalizeSqueeze();
+                saltShake.squeezeBytes(salt, 0, saltLen);
             }
 
             // Compute h = SHAKE256(hm || salt)
-            shake256jc.reset();
-            shake256jc.absorbXor(hm, 0, hm.length);
-            shake256jc.absorbXor(salt, 0, saltLen);
-            shake256jc.finalizeSqueeze();
-            
+            SHAKE256JC hShake = new SHAKE256JC();
+            hShake.absorbXor(hm, 0, hm.length);
+            hShake.absorbXor(salt, 0, saltLen);
+            hShake.finalizeSqueeze();
+
             // Squeeze h0 and h1 (total n >> 2 bytes)
-            shake256jc.squeezeBytes(ww, h0Offset, n >> 2);
+            hShake.squeezeBytes(ww, h0Offset, n >> 2);
 
             // Extract low bits and compute t = B*h (mod 2)
             byte[] f2 = new byte[n >> 3];
@@ -384,22 +527,18 @@ class HawkSigner{
 
             // Sample x using Gaussian distribution
             int xsn;
-            if (useShake != 0) {
-                byte[] tbuf = new byte[4];
-                enc32le(tbuf, 0, attempt + 1);
+            byte[] tbuf = new byte[4];
+            enc32le(tbuf, 0, attempt + 1);
 
-                SHAKE256JC gaussShake = new SHAKE256JC();
+            SHAKE256JC gaussShake = new SHAKE256JC();
 
-                gaussShake.reset();
-                gaussShake.absorbXor(hm, 0, hm.length);
-                gaussShake.absorbXor(priv, 0, seedLen);
-                gaussShake.absorbXor(tbuf, 0, tbuf.length);
-                gaussShake.finalizeSqueeze();
+            gaussShake.reset();
+            gaussShake.absorbXor(hm, 0, hm.length);
+            gaussShake.absorbXor(priv, 0, seedLen);
+            gaussShake.absorbXor(tbuf, 0, tbuf.length);
+            gaussShake.finalizeSqueeze();
 
-                xsn = sigGauss(logn, gaussShake, x0, 0, ww, t0Offset, tmp8, singleByte);
-            } else {
-                xsn = sigGaussAlt(logn, x0, 0, ww, t0Offset);
-            }
+            xsn = sigGauss(logn, gaussShake, x0, 0, ww, t0Offset, tmp8, singleByte);
 
             // Reject if squared norm is too large
             if (xsn > maxXnorm) {
@@ -435,9 +574,9 @@ class HawkSigner{
 
             short[] s1 = w3;
 
-            int ps = polySymBreak(logn, s1, 0);
+            short ps = polySymBreak(logn, s1, 0);
             int lim = 1 << ((logn == 10) ? 10 : 9);
-            int nm = ~tbmask(ps - 1); // ?
+            short nm = (short) ~tbmask((short)(ps - 1));
 
             byte[] h1buf = new byte[n >> 3];
             Util.arrayCopy(ww, h1Offset, h1buf, 0, n >> 3);
