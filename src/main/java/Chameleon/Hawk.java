@@ -199,7 +199,6 @@ class HawkSigner{
     private int logn;
     private int n;
     private static final int Q;
-    private static final int Q0I; // problem
     private static final int R2;
     private int maxLogn;
     private short saltLen;
@@ -343,7 +342,6 @@ class HawkSigner{
         logn = 9;
         n = 1 << logn; // 2^logn = 512
         Q = 18433;
-        Q0I = (int)0xEBC7A5FF; // problem
         R2 = 806;
         maxLogn = 9;
         saltLen = 24;
@@ -536,10 +534,18 @@ class HawkSigner{
      */
     public int mq18433MontyRed(int x)
     {
-        int step1 = x * Q0I; // problem
-        int step2 = (step1 >>> 16) * Q;
+        int xLo = x & 0xFFFF;
+        int xHi = x >>> 16;
+
+        int pLL = xLo * 18431;
+        int pLH = xLo * 60352;
+        int pHL = xHi * 18431;
+
+        int word16 = ((pLL >>> 16) + pLH + pHL) & 0xFFFF;
+        int step2 = word16 * Q;
         int result = (step2 >>> 16) + 1;
-        int nonzero = -((x | -x) >>> 31);  // -1 if x != 0, 0 if x == 0
+
+        int nonzero = -((x | -x) >>> 31);
         return result & nonzero;
     }
 
