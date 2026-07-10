@@ -198,16 +198,153 @@ class HawkSigner{
     private int q;
     private int logn;
     private int n;
+    private static final int Q;
+    private static final int Q0I; // problem
+    private static final int R2;
     private int maxLogn;
-    private int saltLen;
+    private short saltLen;
     private int maxXnorm;
     private RandomData random;
+    private static final short[] GM = new short[]
+        {
+            4564, 17110, 12162, 16208, 10701, 9705, 3451, 5078,
+            12400, 10202, 8245, 13131, 4631, 3492, 17179, 5622,
+            5537, 3399, 2485, 9938, 345, 14064, 10152, 789,
+            5092, 15713, 12632, 6516, 16107, 2314, 15385, 17281,
+            383, 5515, 5019, 13218, 3293, 4728, 9704, 14263,
+            4417, 218, 16011, 2568, 5635, 8516, 18352, 12887,
+            13102, 15257, 14316, 12813, 8886, 11051, 13356, 15353,
+            12059, 6880, 17926, 11710, 8052, 1737, 16384, 18094,
+            3410, 14787, 13788, 14210, 2656, 17550, 7950, 4311,
+            18150, 4973, 11548, 7848, 15326, 15517, 97, 11648,
+            17990, 17685, 10847, 14695, 282, 1558, 6535, 10743,
+            2399, 181, 10165, 8051, 12204, 18401, 13377, 7233,
+            10892, 15728, 15002, 11766, 8462, 15245, 12420, 8613,
+            5053, 12360, 17415, 12678, 4606, 870, 8429, 9572,
+            6542, 1892, 4008, 17045, 371, 10155, 819, 15114,
+            1522, 13638, 16576, 17586, 16840, 7671, 13873, 12065,
+            7433, 7599, 2497, 5298, 16406, 3443, 9437, 6905,
+            14589, 17851, 209, 17496, 1698, 7028, 4444, 8211,
+            9159, 16089, 16741, 9085, 2658, 4488, 8650, 3995,
+            6532, 11903, 508, 192, 4039, 17347, 12742, 6993,
+            14812, 17645, 4527, 695, 8380, 16230, 2153, 3136,
+            2133, 4725, 9230, 13213, 6548, 18005, 6108, 16097,
+            16952, 13519, 16207, 12802, 16047, 7081, 12818, 8328,
+            17091, 8927, 9558, 9273, 9301, 10337, 11142, 5082,
+            11846, 15508, 17108, 8498, 16135, 3776, 6752, 12857,
+            3590, 486, 3056, 4203, 10364, 17125, 14532, 3025,
+            18386, 12029, 1983, 7426, 13553, 623, 6269, 15287,
+            16399, 12294, 6987, 8011, 1378, 14019, 3042, 3472,
+            4734, 12820, 16363, 7781, 3644, 16472, 3523, 14104,
+            11521, 18288, 13956, 4549, 6314, 16320, 16373, 16203,
+            15299, 7524, 9080, 15914, 17765, 12520, 5829, 13379,
+            9482, 7938, 760, 13350, 9526, 15502, 16160, 6398,
+            7067, 1655, 3428, 7827, 10564, 1235, 10800, 8291,
+            15614, 14755, 8732, 3010, 12821, 7168, 8131, 1912,
+            8093, 10461, 12301, 11616, 13947, 8029, 15138, 8334,
+            13345, 13462, 7201, 11285, 8232, 5869, 5652, 8087,
+            9232, 151, 5425, 15984, 9061, 10972, 874, 6136,
+            9299, 4966, 10442, 5398, 6605, 14398, 7625, 7091,
+            10974, 14743, 6836, 17243, 504, 7883, 10503, 12533,
+            3111, 13658, 1303, 6153, 12791, 335, 16064, 6652,
+            14432, 10970, 558, 5436, 300, 13031, 12835, 7899,
+            8435, 7252, 2970, 12879, 2786, 16438, 16584, 2204,
+            5974, 6467, 7971, 14624, 9637, 9448, 18144, 7293,
+            18121, 10042, 1398, 12430, 157, 6881, 18084, 12060,
+            5783, 444, 14853, 7936, 13337, 10411, 4401, 12549,
+            17699, 1174, 1162, 5374, 3796, 709, 1424, 8521,
+            2238, 991, 9114, 15056, 4900, 16221, 731, 18419,
+            14885, 1707, 11644, 7594, 14783, 4281, 12810, 5277,
+            10528, 15155, 16633, 13979, 5573, 7912, 15085, 4250,
+            13224, 11094, 1717, 11970, 4689, 11787, 613, 14891,
+            6892, 1734, 15910, 17044, 1022, 16497, 7473, 4421,
+            17061, 2094, 17491, 14013, 1872, 13480, 10045, 17585,
+            1562, 10460, 12143, 11266, 2168, 15769, 3047, 7683,
+            14260, 9889, 14090, 14179, 4404, 11389, 11461, 4622,
+            18349, 14047, 7466, 13272, 5005, 12487, 615, 1829,
+            13229, 15305, 3467, 11180, 2855, 8191, 3868, 9735,
+            18383, 13189, 933, 7900, 18340, 17527, 4316, 14694,
+            5680, 9549, 15669, 5777, 17938, 7070, 11080, 4478,
+            1466, 10714, 15409, 8001, 7888, 3707, 14283, 7140,
+            3046, 14214, 15419, 16423, 18200, 10217, 10615, 18381,
+            13138, 1337, 8483, 7125, 6741, 10966, 18359, 4036,
+            11656, 2954, 5907, 1652, 12095, 11393, 12093, 6022,
+            11472, 6513, 15239, 12291, 16914, 3635, 2907, 373,
+            12897, 8503, 16298, 8337, 10348, 11023, 8932, 5553,
+            12984, 11729, 9882, 13024, 556, 65, 10270, 4317,
+            14404, 9508, 9191, 9860, 14257, 11049, 13040, 14653,
+            13038, 9282, 10349, 4492, 6555, 9154, 8558, 14991,
+            4583, 3619, 379, 13206, 11105, 7100, 15820, 14978,
+            7277, 12620, 3196, 11513, 7268, 16100, 46, 12935,
+            10191, 4142, 9281, 11926, 14900, 14340, 16894, 5224,
+            9309, 13388, 13942, 3818, 2937, 7206, 14135, 15212,
+            7925, 1689, 8800, 1294, 5524, 14570, 16368, 11992,
+            9491, 4458, 3910, 11928, 13598, 1656, 3586, 8177,
+            13056, 2322, 16649, 1648, 14699, 18328, 1843, 116,
+            10016, 4221, 3330, 2710, 5358, 11169, 13567, 1354,
+            8715, 3439, 8805, 5505, 10680, 17825, 14534, 8396,
+            4185, 3904, 8543, 2358, 13314, 13160, 14784, 16183,
+            3842, 13644, 17524, 1253, 13782, 16530, 12687, 15971,
+            13700, 17515, 2420, 10494, 7049, 8615, 15561, 10671,
+            10485, 1060, 1583, 2340, 6599, 16718, 5525, 8039,
+            12196, 15350, 10577, 8497, 16786, 10118, 13406, 2164,
+            696, 7375, 3971, 630, 13829, 4501, 10704, 8545,
+            8124, 10763, 4718, 6718, 13636, 11540, 16886, 2173,
+            13510, 4961, 9652, 3648, 3009, 16232, 2469, 3836,
+            4933, 3461, 12281, 13205, 11756, 13442, 4041, 4285,
+            3661, 16043, 9473, 11418, 13814, 10301, 5454, 10915,
+            8727, 17232, 13005, 3609, 9965, 5508, 3913, 10768,
+            11368, 3716, 15705, 10290, 10822, 12073, 8935, 4393,
+            3878, 18157, 11691, 13998, 11637, 16445, 17690, 4654,
+            12911, 9234, 2765, 6125, 12586, 12014, 18046, 2176,
+            17540, 7355, 811, 12063, 17878, 11837, 8513, 13958,
+            16653, 12390, 3722, 4745, 7749, 8299, 2499, 10669,
+            16214, 3951, 15969, 375, 13937, 18040, 11638, 9914,
+            16136, 15678, 7102, 12699, 9368, 15152, 16159, 12929,
+            14186, 13925, 6623, 7438, 5741, 16684, 153, 14572,
+            14261, 3358, 14440, 14021, 15097, 18043, 12112, 10964,
+            5242, 13012, 9833, 1249, 16386, 5032, 2437, 10065,
+            1738, 3850, 11, 1891, 3970, 7161, 7025, 17895,
+            6303, 14429, 12523, 17941, 6931, 5087, 11127, 10882,
+            13926, 16149, 7788, 11652, 8944, 913, 15223, 6189,
+            9511, 2869, 10910, 8768, 6262, 5705, 16606, 5986,
+            10784, 2189, 14068, 10397, 14897, 15500, 15844, 5698,
+            5743, 3622, 853, 14256, 9576, 2313, 15227, 16931,
+            3810, 1440, 6324, 6309, 3400, 6365, 10288, 15790,
+            16146, 5667, 10602, 11119, 5700, 7960, 4236, 2617,
+            12801, 8757, 1131, 5072, 16068, 17394, 1735, 5010,
+            2908, 12275, 3985, 1361, 17206, 13615, 12942, 9536,
+            12505, 6468, 8129, 14974, 2983, 1708, 11802, 7944,
+            17712, 8436, 5712, 3320, 13774, 13479, 9887, 17235,
+            4487, 3873, 3645, 9941, 16825, 13471, 8623, 14435,
+            5656, 396, 7269, 9569, 935, 13271, 13889, 18167,
+            6320, 14000, 40, 15255, 4382, 7607, 3761, 8098,
+            15702, 11450, 2666, 7539, 13722, 2864, 10120, 7018,
+            11627, 8023, 14190, 6234, 15359, 2757, 11647, 6434,
+            1917, 14513, 7362, 10475, 985, 82, 12956, 10267,
+            10798, 2920, 535, 8185, 17135, 16491, 6525, 2321,
+            11245, 14410, 9521, 11291, 4326, 4683, 2594, 16946,
+            12878, 3561, 9648, 11339, 9944, 13628, 14996, 14086,
+            16837, 8831, 12823, 12539, 2930, 16057, 11685, 16318,
+            11722, 14300, 10574, 9657, 17379, 8165, 18193, 635,
+            17483, 10962, 17727, 2636, 16666, 1219, 8272, 2691,
+            15755, 15534, 2783, 17598, 9028, 5299, 7757, 11350,
+            9421, 803, 16276, 4555, 2408, 15134, 13315, 6629,
+            2575, 12004, 16466, 17109, 14006, 9793, 17355, 17445,
+            9993, 6970, 13713, 6344, 17481, 5591, 17027, 2952,
+            268, 827, 1635, 12955, 8609, 13704, 8571, 3820,
+            15205, 13149, 13046, 12333, 8005, 13766, 18367, 7087,
+            5414, 14093, 14734, 10939, 12282, 6674, 3811, 13342
+        };
 
     // Constructor
     public HawkSigner() {
         q = 1;
         logn = 9;
         n = 1 << logn; // 2^logn = 512
+        Q = 18433;
+        Q0I = (int)0xEBC7A5FF; // problem
+        R2 = 806;
         maxLogn = 9;
         saltLen = 24;
         maxXnorm = 8317;
@@ -216,15 +353,15 @@ class HawkSigner{
 
     // Methods
     // Size calculations for private key and signature
-    private static int HAWK_PRIVKEY_SIZE(int logn)
+    private static short HAWK_PRIVKEY_SIZE(int logn)
     {
         int n = 1 << logn;
-        return 8 + (1 << (logn - 5)) + 2 * (n >> 3) + (n >> 4);
+        return (short)(8 + (1 << (logn - 5)) + 2 * (n >> 3) + (n >> 4));
     }
 
-    private static int HAWK_SIG_SIZE(int logn)
+    private static short HAWK_SIG_SIZE(int logn)
     {
-        return 249 + 306 * (2 >> (10 - logn)) + 360 * (1 >> (10 - logn));
+        return (short)(249 + 306 * (2 >> (10 - logn)) + 360 * (1 >> (10 - logn)));
     }
 
     /**
@@ -307,14 +444,222 @@ class HawkSigner{
     static short tbmask(short x) {
         return (short)(x >> 15);
     }
+    
+    static int tbmaskInt(int x) {
+        return x >> 31;
+    }
 
-    public static boolean encodeSig(int logn, byte[] sig, short sigOffset, short sigLen,byte[] salt, short saltOffset,
+    private static void bpXor512(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset)
+    {
+        for (int u = 0; u < 64; u++)
+        {
+            d[dOffset + u] = (byte)(a[aOffset + u] ^ b[bOffset + u]);
+        }
+    }
+
+    // Basis multiplication modulo 2
+    public static void basisM2Mul(int logn, byte[] t0, int t0Offset, byte[] t1, int t1Offset,
+        byte[] h0, int h0Offset, byte[] h1, int h1Offset,
+        byte[] f2, int f2Offset, byte[] g2, int g2Offset,
+        byte[] F2, int F2Offset, byte[] G2, int G2Offset,
+        byte[] tmp, int tmpOffset) {
+        
+        int n = 1 << logn;
+        int byteLen = n >> 3;
+
+        int w1Offset = tmpOffset;
+        int w2Offset = w1Offset + byteLen;
+
+        bpMulmod512(logn, t0, t0Offset, h0, h0Offset, f2, f2Offset, tmp, w2Offset); // still need to resolve
+        bpMulmod512(logn, tmp, w1Offset, h1, h1Offset, F2, F2Offset, tmp, w2Offset);
+        bpXor512(t0, t0Offset, t0, t0Offset, tmp, w1Offset);
+        bpMulmod512(logn, t1, t1Offset, h0, h0Offset, g2, g2Offset, tmp, w2Offset);
+        bpMulmod512(logn, tmp, w1Offset, h1, h1Offset, G2, G2Offset, tmp, w2Offset);
+        bpXor512(t1, t1Offset, t1, t1Offset, tmp, w1Offset);
+    }
+
+    /**
+     * Convert a signed byte to a mod q value in the range [0, q-1]
+     * This is the equivalent of Zq(set_small)
+     */
+    public short mq18433SetSmall(byte x)
+    {
+        // C formula: uint32_t y = (uint32_t)-x; y += Q & (y >> 16); return Q - y;
+        // This returns values in [1..Q] where Q represents 0 mod Q.
+        int xInt = (int)x;   // sign-extend byte to int
+        int y = -xInt;       // same bit pattern as C's (uint32_t)-x
+        y += Q & (y >>> 16); // unsigned right shift to detect negative (large unsigned) values
+        return (short)(Q - y);
+    }
+
+    /**
+     * Convert a small polynomial (signed 8-bit coefficients) to mod q representation.
+     * This is the equivalent of Zq(poly_set_small)
+     */
+    public void mq18433PolySetSmall(int logn, short[] d, int dOffset, byte[] a, int aOffset)
+    {
+        int n = 1 << logn;
+        for (int u = 0; u < n; u++)
+        {
+            d[dOffset + u] = mq18433SetSmall(a[aOffset + u]);
+        }
+    }
+
+    /**
+     * Modular subtraction: (x - y) mod Q, result in [1..Q] where Q represents 0 mod Q.
+     * Matches the C formula: {@code d = y-x; d += Q & (d>>16); return Q-d;}
+     */
+    public int mq18433Sub(int x, int y)
+    {
+        int d = y - x;
+        d += Q & (d >> 16);
+        return Q - d;
+    }
+
+    /**
+     * Modular addition: (x + y) mod Q, result in [1..Q] where Q represents 0 mod Q.
+     * Matches the C formula: {@code d = Q-(x+y); d += Q & (d>>16); return Q-d;}
+     */
+    public int mq18433Add(int x, int y)
+    {
+        int d = Q - (x + y);
+        d += Q & (d >> 16);
+        return Q - d;
+    }
+
+    /**
+     * Montgomery reduction. The Hawk protocol never feeds x == 0 here (NTT/INTT
+     * butterfly products in [1..Q] representation, where Q itself represents 0),
+     * but the original short-circuit `if (x == 0) return 0;` is a data-dependent
+     * branch on a secret-derived intermediate — replaced with a branchless mask
+     * to preserve byte-identity while removing the L1 timing channel.
+     */
+    public int mq18433MontyRed(int x)
+    {
+        int step1 = x * Q0I; // problem
+        int step2 = (step1 >>> 16) * Q;
+        int result = (step2 >>> 16) + 1;
+        int nonzero = -((x | -x) >>> 31);  // -1 if x != 0, 0 if x == 0
+        return result & nonzero;
+    }
+
+    /**
+     * Montgomery multiplication: returns (x * y) mod Q in Montgomery form
+     */
+    public int mq18433MontyMul(int x, int y)
+    {
+        return mq18433MontyRed(x * y);
+    }
+
+     /**
+     * Convert a number to Montgomery form
+     */
+    public int mq18433ToMonty(int x)
+    {
+        return mq18433MontyRed(x * R2);
+    }
+
+    /**
+     * Number Theoretic Transform (NTT) for modulus 18433
+     */
+    public void mq18433NTT(int logn, short[] a, int aOffset)
+    {
+        if (logn == 0)
+        {
+            return;
+        }
+
+        int t = 1 << logn;
+
+        for (int lm = 0; lm < logn; lm++)
+        {
+            int m = 1 << lm;
+            int ht = t >> 1;
+            int v0 = 0;
+
+            for (int u = 0; u < m; u++)
+            {
+                int s = GM[u + m] & 0xFFFF; // NTT root
+
+                for (int v = 0; v < ht; v++)
+                {
+                    int k1 = aOffset + v0 + v;
+                    int k2 = k1 + ht;
+
+                    int x1 = a[k1] & 0xFFFF;
+                    int x2 = a[k2] & 0xFFFF;
+
+                    // Montgomery multiplication
+                    int x2_monty = mq18433MontyMul(x2, s);
+
+                    // Butterfly operation
+                    a[k1] = (short)mq18433Add(x1, x2_monty);
+                    a[k2] = (short)mq18433Sub(x1, x2_monty);
+                }
+                v0 += t;
+            }
+            t = ht;
+        }
+    }
+
+    public static int mq18433Snorm(int x)
+    {
+        int mask = ((Q >> 1) - x) >> 31;  // -1 if x > Q/2, 0 otherwise
+        return x - (Q & mask);
+    }
+
+    /**
+     * Apply signed normalization to polynomial coefficients
+     */
+    public static void mq18433PolySnorm(int logn, short[] d, int dOffset)
+    {
+        int n = 1 << logn;
+        for (int u = 0; u < n; u++)
+        {
+            d[dOffset + u] = (short)mq18433Snorm(d[dOffset + u] & 0xFFFF);
+        }
+    }
+
+        /**
+     * Returned value:
+     * 1   first non-zero coefficient of s is positive
+     * -1   first non-zero coefficient of s is negative
+     * 0   s is entirely zero
+     */
+    public static int polySymBreak(int logn, short[] s, int sOffset)
+    {
+        // Matches C's poly_symbreak exactly:
+        //   returns 0 if polynomial is all-zero
+        //   returns 1 if first non-zero coefficient is positive
+        //   returns -1 (= 0xFFFFFFFF as uint32) if first non-zero coefficient is negative
+        // The caller uses ~tbmask(r-1) to decide negation:
+        //   r=0:  tbmask(-1)= -1, ~(-1)=0   -> no negation
+        //   r=1:  tbmask(0) =  0, ~0  =-1   -> negate (positive first coeff -> negate)
+        //   r=-1: tbmask(-2)= -1, ~(-1)=0   -> no negation (negative first coeff)
+        int n = 1 << logn;
+        int r = 0;
+        int c = 0xFFFFFFFF; // Mask for tracking first non-zero
+
+        for (int u = 0; u < n; u++)
+        {
+            int x = s[sOffset + u];
+            int nz = c & tbmaskInt(x | -x); // Non-zero mask
+            c &= ~nz; // Clear the bit for this coefficient
+            r |= nz & (tbmaskInt(x) | 1); // r=1 if positive, r=-1 if negative
+        }
+
+        // Return raw r (same bit pattern as C's uint32_t return value):
+        //   0 = all-zero, 1 = positive first coeff, -1 (=0xFFFFFFFF) = negative first coeff
+        return r;
+    }
+
+    public static boolean encodeSig(int logn, byte[] sig, short sigOffset, short sigLen, byte[] salt, short saltOffset,
         short saltLen, short[] s1, short s1Offset) {
         short n = (short)(1 << logn);
         byte low = (byte)((logn == 10) ? 6 : 5);
 
         short bufOffset = sigOffset;
-        short remainingLen = sigLen;
+        short remainingLen = (short)sigLen;
 
         short minSize = (short)(saltLen + (((short)(low + 2)) << (logn - 3)));
 
@@ -427,6 +772,16 @@ class HawkSigner{
         return true;
     }
 
+    public void reset(byte[] state, int[] scratch) {
+        for (int i = 0; i < 200; i++) {
+            state[i] = 0;
+        }
+
+        for (int i = 0; i < 120; i++) {
+            scratch[i] = 0;
+        }
+    }
+
     // Sign method
     public int sign(int logn, int useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, int privLen, byte[] tmp, int tmpLen) {
         // Ensure proper alignment for 64-bit access
@@ -467,7 +822,7 @@ class HawkSigner{
         // Regenerate f and g from seed // DecodePrivate(priv) & Regeneratefg(kgseed)
         byte[] seed = new byte[seedLen];
         Util.arrayCopy(priv, 0, seed, 0, seedLen);
-        regen_fg(f, 0, g, 0, seed);
+        regen_fg(f, (short) 0, g, (short) 0, seed);
         Util.arrayCopy(priv, seedLen, F2, 0, n >> 3);
         Util.arrayCopy(priv, seedLen + (n >> 3), G2, 0, n >> 3);
         Util.arrayCopy(priv, seedLen + 2 * (n >> 3), hpub, 0, hpubLen);
@@ -492,11 +847,14 @@ class HawkSigner{
             byte[] salt = new byte[saltLen];
             random.nextBytes(salt);
 
+            byte[] state = new byte[200];
+            int[] scratch = new int[120];
+
             if (useShake != 0) {
                 byte[] tbuf = new byte[4];
                 enc32le(tbuf, 0, attempt);
 
-                SHAKE256JC saltShake = new SHAKE256JC(256);
+                SHAKE256JC saltShake = new SHAKE256JC(state, scratch);
                 saltShake.absorbXor(hm, 0, hm.length);
                 saltShake.absorbXor(priv, 0, seedLen);
                 saltShake.absorbXor(tbuf, 0, tbuf.length);
@@ -506,7 +864,8 @@ class HawkSigner{
             }
 
             // Compute h = SHAKE256(hm || salt)
-            SHAKE256JC hShake = new SHAKE256JC();
+            reset(state, scratch);
+            SHAKE256JC hShake = new SHAKE256JC(state, scratch);
             hShake.absorbXor(hm, 0, hm.length);
             hShake.absorbXor(salt, 0, saltLen);
             hShake.finalizeSqueeze();
@@ -532,7 +891,8 @@ class HawkSigner{
             byte[] tbuf = new byte[4];
             enc32le(tbuf, 0, attempt + 1);
 
-            SHAKE256JC gaussShake = new SHAKE256JC();
+            reset(state, scratch);
+            SHAKE256JC gaussShake = new SHAKE256JC(state, scratch);
 
             gaussShake.reset();
             gaussShake.absorbXor(hm, 0, hm.length);
@@ -571,12 +931,12 @@ class HawkSigner{
                     mq18433MontyMul(w2[u] & 0xFFFF, w3[u] & 0xFFFF),
                     w1[u] & 0xFFFF));
             }
-            mq18433INTT(logn, w3, 0);
+            mq18433NTT(logn, w3, 0);
             mq18433PolySnorm(logn, w3, 0);
 
             short[] s1 = w3;
 
-            short ps = polySymBreak(logn, s1, 0);
+            int ps = polySymBreak(logn, s1, 0);
             int lim = 1 << ((logn == 10) ? 10 : 9);
             short nm = (short) ~tbmask((short)(ps - 1));
 
@@ -601,8 +961,8 @@ class HawkSigner{
             }
 
             // Encode signature
-            int sigLen = HAWK_SIG_SIZE(logn);
-            if (encodeSig(logn, tmp, 0, sigLen, salt, 0, saltLen, s1, 0)) {
+            short sigLen = HAWK_SIG_SIZE(logn);
+            if (encodeSig(logn, tmp, (short)0, sigLen, salt, (short)0, saltLen, s1, (short)0)) {
                 if (sig != null) {
                     Util.arrayCopy(tmp, 0, sig, 0, sigLen);
                 }

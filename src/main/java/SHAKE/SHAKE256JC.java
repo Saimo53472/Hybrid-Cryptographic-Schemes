@@ -32,7 +32,9 @@ public final class SHAKE256JC
 
     public void reset()
     {
-        for (int i = 0; i < STATE_SIZE; i++) state[i] = 0;
+        for (int i = 0; i < STATE_SIZE; i++) {
+            state[i] = 0;
+        }
         ratePos = 0;
         squeezing = false;
     }
