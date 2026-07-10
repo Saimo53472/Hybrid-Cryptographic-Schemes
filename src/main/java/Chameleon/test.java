@@ -1,168 +1,318 @@
 package Chameleon;
 
-import SHAKE.SHAKE256JC;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.lang.reflect.Method;
+import javacard.framework.Util;
 
 public class test {
-        /**
-     * Hamming weight of a byte (number of 1 bits)
-     */
-    private static byte popcount8(byte x)
-    {
-        short v = (short)(x & 0xFF);
-
-        v = (short)((v & 0x55) + ((v >>> 1) & 0x55));
-        v = (short)((v & 0x33) + ((v >>> 2) & 0x33));
-        v = (short)((v & 0x0F) + ((v >>> 4) & 0x0F));
-
-        return (byte)v;
+    static short tbmask(short x) {
+        return (short)(x >> 15);
     }
 
-    /**
-     * Regenerate f and g polynomials from seed using SHAKE256
-     */
-    public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed) {
-        for (byte j = 0; j < 4; j++)
-        {
-            byte[] state = new byte[200];
-            int[] scratch = new int[120];
+    static int tbmaski(int x) {
+        return x >> 15;
+    }
 
-            SHAKE256JC shake = new SHAKE256JC(state, scratch);
-            shake.absorbXor(seed, (short)0, (short)24);
+    public static boolean encodeSig(int logn, byte[] sig, short sigOffset, short sigLen,byte[] salt, short saltOffset,
+        short saltLen, short[] s1, short s1Offset) {
+        short n = (short)(1 << logn);
+        byte low = (byte)((logn == 10) ? 6 : 5);
 
-            byte[] singleByte = new byte[1];
-            singleByte[0] = j;
-            shake.absorbXor(singleByte, (short)0, (short)1);
+        short bufOffset = sigOffset;
+        short remainingLen = sigLen;
 
-            shake.finalizeSqueeze();
+        short minSize = (short)(saltLen + (((short)(low + 2)) << (logn - 3)));
 
-            for (short u = 0; u < 1024; u += 32)
-            {
-                byte[] qb = new byte[8];
-                shake.squeezeBytes(qb, (short)0, (short)8);
+        if (remainingLen < minSize) {
+            return false;
+        }
 
-                for (short i = 0; i < 8; i++)
-                {
-                    byte coeff = (byte)(popcount8(qb[i]) - 4);
+        // 1. Copy salt
+        Util.arrayCopyNonAtomic(salt, saltOffset, sig, bufOffset, saltLen);
 
-                    if (u < 512)
-                    {
-                        f[(short)(fOff + u + (j << 3) + i)] = coeff;
-                    }
-                    else
-                    {
-                        g[(short)(gOff + (u - 512) + (j << 3) + i)] = coeff;
-                    }
+        bufOffset += saltLen;
+        remainingLen -= saltLen;
+
+        // 2. Sign bits
+        short u;
+        short v;
+
+        for (u = 0; u < n; u += 8) {
+
+            byte x = 0;
+
+            for (v = 0; v < 8; v++) {
+                short coeff = s1[(short)(s1Offset + u + v)];
+                byte signBit = (byte)((coeff >> 15) & 1);
+                x |= (byte)(signBit << v);
+            }
+
+            sig[(short)(bufOffset + (u >> 3))] = x;
+        }
+
+        bufOffset += (short)(n >> 3);
+        remainingLen -= (short)(n >> 3);
+
+        // 3. Fixed-size low bits; reimplemented without long. - check if this is correct!!
+        short lowMask = (short)((1 << low) - 1);
+
+        int acc8 = 0;
+        short accBits = 0;
+
+        for (u = 0; u < n; u++) {
+
+            short w = s1[(short)(s1Offset + u)];
+            short mask = tbmask(w);
+
+            w ^= mask;                 // abs(w)
+
+            acc8 |= (w & lowMask) << accBits;
+            accBits += low;
+
+            while (accBits >= 8) {
+
+                if (remainingLen <= 0) {
+                    return false;
                 }
+
+                sig[bufOffset++] = (byte)(acc8 & 0xFF);
+
+                acc8 >>>= 8;
+                accBits -= 8;
+                remainingLen--;
             }
         }
+        // 4. Variable-size unary encoding
+        int acc = 0;
+        short accLen = 0;
+
+        for (u = 0; u < n; u++) {
+
+            short w = s1[(short)(s1Offset + u)];
+            short mask = tbmask(w);
+
+            w ^= mask;
+
+            short k = (short)((w & 0xFFFF) >>> low);
+
+            acc |= (1 << (accLen + k));
+            accLen += (short)(1 + k);
+
+            while (accLen >= 8) {
+
+                if (remainingLen <= 0) {
+                    return false;
+                }
+
+                sig[bufOffset++] = (byte)acc;
+                remainingLen--;
+
+                acc >>>= 8;
+                accLen -= 8;
+            }
+        }
+
+        /*
+        * Flush remaining bits
+        */
+        if (accLen > 0) {
+
+            if (remainingLen <= 0) {
+                return false;
+            }
+
+            sig[bufOffset++] = (byte)acc;
+            remainingLen--;
+        }
+
+        // 5. Zero padding
+        Util.arrayFillNonAtomic(sig, bufOffset, remainingLen, (byte)0);
+
+        return true;
     }
 
-    public static void testRegenFg()
+        /**
+     * Encode the signature, with output length exactly sigLen bytes.
+     * Padding is applied if necessary. Returned value is 1 on success, 0
+     * on error; an error is reported if the signature does not fit in the
+     * provided buffer.
+     */
+    public static boolean encodeSigReference(int logn, byte[] sig, int sigOffset, int sigLen,
+                                    byte[] salt, int saltOffset, int saltLen,
+                                    short[] s1, int s1Offset)
     {
-        try
+        int n = 1 << logn;
+        int low = (logn == 10) ? 6 : 5;
+        int bufOffset = sigOffset;
+        int remainingLen = sigLen;
+
+        // Check minimal size, including at least n bits for the variable part
+        int minSize = saltLen + ((low + 2) << (logn - 3));
+        if (remainingLen < minSize)
         {
-            int logn = 9;
+            return false;
+        }
+
+        // 1. Copy salt
+        System.arraycopy(salt, saltOffset, sig, bufOffset, saltLen);
+        bufOffset += saltLen;
+        remainingLen -= saltLen;
+
+        // 2. Sign bits (1 bit per coefficient)
+        for (int u = 0; u < n; u += 8)
+        {
+            int x = 0;
+            for (int v = 0; v < 8; v++)
+            {
+                int signBit = (s1[s1Offset + u + v] >> 15) & 1;
+                x |= signBit << v;
+            }
+            sig[bufOffset + (u >> 3)] = (byte)x;
+        }
+        bufOffset += (n >> 3);
+        remainingLen -= (n >> 3);
+
+        // 3. Fixed-size parts (low bits of absolute values)
+        int lowMask = (1 << low) - 1;
+        for (int u = 0; u < n; u += 8)
+        {
+            long x = 0;
+            for (int v = 0, shift = 0; v < 8; v++, shift += low)
+            {
+                int w = s1[s1Offset + u + v];
+                int mask = tbmaski(w);
+                w ^= mask; // Absolute value
+                x |= (long)(w & lowMask) << shift;
+            }
+
+            // Write bytes (little-endian)
+            for (int i = 0; i < low; i++)
+            {
+                if (remainingLen <= 0)
+                {
+                    return false;
+                }
+                sig[bufOffset++] = (byte)(x & 0xFF);
+                x >>>= 8;
+            }
+        }
+        remainingLen -= low << (logn - 3);
+
+        // 4. Variable-size parts (remaining bits using unary-like encoding)
+        int acc = 0;
+        int accLen = 0;
+
+        for (int u = 0; u < n; u++)
+        {
+            int w = s1[s1Offset + u];
+            int mask = tbmaski(w);
+            w ^= mask; // Absolute value
+            int k = w >>> low; // Remaining bits after low bits
+
+            // Unary encoding: k zeros followed by a one
+            acc |= 1 << (accLen + k);
+            accLen += 1 + k;
+
+            // Flush complete bytes
+            while (accLen >= 8)
+            {
+                if (remainingLen <= 0)
+                {
+                    return false;
+                }
+                sig[bufOffset++] = (byte)(acc & 0xFF);
+                remainingLen--;
+                acc >>>= 8;
+                accLen -= 8;
+            }
+        }
+
+        // Flush remaining bits
+        if (accLen > 0)
+        {
+            if (remainingLen <= 0)
+            {
+                return false;
+            }
+            sig[bufOffset++] = (byte)(acc & 0xFF);
+            remainingLen--;
+        }
+
+        // 5. Padding with zeros
+        for (int i = 0; i < remainingLen; i++)
+        {
+            sig[bufOffset + i] = 0;
+        }
+
+        return true;
+    }    
+
+    public static void testEncodeSig() {
+        SecureRandom rnd = new SecureRandom();
+
+        for (int t = 0; t < 10000; t++) {
+
+            int logn = rnd.nextBoolean() ? 9 : 10;
             int n = 1 << logn;
 
-            byte[] seed = new byte[24];
-            new SecureRandom().nextBytes(seed);
+            byte[] salt = new byte[40];
+            rnd.nextBytes(salt);
 
-            // Your implementation
-            byte[] myF = new byte[n];
-            byte[] myG = new byte[n];
+            short[] s1 = new short[n];
 
-            test impl = new test();
-            impl.regen_fg(myF, (short)0, myG, (short)0, seed);
+            for (int i = 0; i < n; i++) {
+                s1[i] = (short)(rnd.nextInt(2048) - 1024);
+            }
 
-            // BC implementation through reflection
-            byte[] bcF = new byte[n];
-            byte[] bcG = new byte[n];
+            byte[] sigRef = new byte[4096];
+            byte[] sigJC  = new byte[4096];
 
-            Class<?> hawkClass = Class.forName("org.bouncycastle.pqc.crypto.hawk.HawkEngine");
-
-            Method regen =
-                hawkClass.getDeclaredMethod(
-                    "hawkRegenFg",
-                    int.class,
-                    byte[].class,
-                    byte[].class,
-                    byte[].class);
-
-            regen.setAccessible(true);
-
-            regen.invoke(
-                null,
+            boolean r1 = encodeSigReference(
                 logn,
-                bcF,
-                bcG,
-                seed);
+                sigRef, (short)0, (short)sigRef.length,
+                salt, (short)0, (short)salt.length,
+                s1, (short)0
+            );
 
-            boolean fMatch = Arrays.equals(myF, bcF);
-            boolean gMatch = Arrays.equals(myG, bcG);
+            boolean r2 = encodeSig(
+                logn,
+                sigJC, (short)0, (short)sigJC.length,
+                salt, (short)0, (short)salt.length,
+                s1, (short)0
+            );
 
-            System.out.println("f match = " + fMatch);
-            System.out.println("g match = " + gMatch);
+            if (r1 != r2) {
+                throw new RuntimeException("Return mismatch");
+            }
 
-            if (!fMatch)
-            {
-                for (int i = 0; i < n; i++)
-                {
-                    if (myF[i] != bcF[i])
-                    {
+            if (!Arrays.equals(sigRef, sigJC)) {
+
+                System.out.println("FAILED at test " + t);
+
+                for (int i = 0; i < sigRef.length; i++) {
+
+                    if (sigRef[i] != sigJC[i]) {
+
                         System.out.printf(
-                            "f mismatch @ %d ours=%d bc=%d%n",
-                            i, myF[i], bcF[i]);
+                            "Mismatch at %d: ref=%02X jc=%02X%n",
+                            i,
+                            sigRef[i] & 0xFF,
+                            sigJC[i] & 0xFF
+                        );
+
                         break;
                     }
                 }
-            }
 
-            if (!gMatch)
-            {
-                for (int i = 0; i < n; i++)
-                {
-                    if (myG[i] != bcG[i])
-                    {
-                        System.out.printf(
-                            "g mismatch @ %d ours=%d bc=%d%n",
-                            i, myG[i], bcG[i]);
-                        break;
-                    }
-                }
+                return;
             }
         }
-        catch (ClassNotFoundException e)
-        {
-            System.out.println("BouncyCastle not found.");
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        // try
-        // {
-        //     Class<?> c =
-        //         Class.forName("org.bouncycastle.pqc.crypto.hawk.HawkEngine");
 
-        //     System.out.println("Loaded.");
-
-        //     Method[] ms = c.getDeclaredMethods();
-
-        //     for(Method m : ms)
-        //     {
-        //         System.out.println(m);
-        //     }
-        // }
-        catch(Throwable t)
-        {
-            t.printStackTrace();
-        }
+        System.out.println("All tests passed");
     }
 
     public static void main(String[] args){
-        testRegenFg();
+        testEncodeSig();
     }
 }

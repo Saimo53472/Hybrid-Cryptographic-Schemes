@@ -348,31 +348,33 @@ class HawkSigner{
         bufOffset += (short)(n >> 3);
         remainingLen -= (short)(n >> 3);
 
-        // 3. Fixed-size low bits; reimplemented without long. - check if this is correct!!
+        // 3. Fixed-size low bits; reimplemented without long.
         short lowMask = (short)((1 << low) - 1);
+
+        int acc8 = 0; // using int for accumulation to avoid long arithmetic
+        short accBits = 0;
 
         for (u = 0; u < n; u++) {
 
             short w = s1[(short)(s1Offset + u)];
             short mask = tbmask(w);
 
-            w ^= mask;
+            w ^= mask;                 // abs(w)
 
-            int val = w & lowMask;
+            acc8 |= (w & lowMask) << accBits;
+            accBits += low;
 
-            byte bitsRemaining = low;
-
-            while (bitsRemaining > 0) {
+            while (accBits >= 8) {
 
                 if (remainingLen <= 0) {
                     return false;
                 }
 
-                sig[bufOffset++] = (byte)(val & 0xFF);
-                remainingLen--;
+                sig[bufOffset++] = (byte)(acc8 & 0xFF);
 
-                val >>>= 8;
-                bitsRemaining -= 8;
+                acc8 >>>= 8;
+                accBits -= 8;
+                remainingLen--;
             }
         }
 
