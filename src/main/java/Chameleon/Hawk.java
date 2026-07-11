@@ -181,9 +181,38 @@ public class Hawk {
         dataToSignLen = pos;
     }
 
-    private void createSignatureDelta(APDU apdu) {
-        MayoSigner signer = new MayoSigner();
-        signatureLen = 0;
+    private void createSignatureDelta(APDU apdu)
+    {
+        if (dataToSignLen == 0)
+            ISOException.throwIt(
+                ISO7816.SW_CONDITIONS_NOT_SATISFIED);
+
+        byte[] state = new byte[200];
+        int[] scratch = new int[120];
+
+        SHAKE256JC shake = new SHAKE256JC(state, scratch);
+        HawkSigner signer = new HawkSigner();
+
+        byte[] tmp =
+            new byte[6 * 1024]; // whatever size sign() requires
+
+        int ret =
+            signer.sign(
+                9,
+                1,
+                signatureBuffer,
+                shake,
+                pqPrivateKey,
+                pqKeyLen,
+                tmp,
+                tmp.length);
+
+        if (ret == 0)
+        {
+            ISOException.throwIt(ISO7816.SW_UNKNOWN);
+        }
+
+        signatureLen = HawkSigner.HAWK_SIG_SIZE(9);
     }
 
     private void sendSignatureDelta(APDU apdu) {
@@ -418,7 +447,7 @@ class HawkSigner{
         return (short)(8 + (1 << (logn - 5)) + 2 * (n >> 3) + (n >> 4));
     }
 
-    private static short HAWK_SIG_SIZE(int logn)
+    public static short HAWK_SIG_SIZE(int logn)
     {
         return (short)(249 + 306 * (2 >> (10 - logn)) + 360 * (1 >> (10 - logn)));
     }
