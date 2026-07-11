@@ -196,16 +196,7 @@ public class Hawk {
         byte[] tmp =
             new byte[6 * 1024]; // whatever size sign() requires
 
-        int ret =
-            signer.sign(
-                9,
-                1,
-                signatureBuffer,
-                shake,
-                pqPrivateKey,
-                pqKeyLen,
-                tmp,
-                tmp.length);
+        int ret = signer.signMessage(9, signatureBuffer, dataToSign, dataToSignLen, pqPrivateKey, pqKeyLen, tmp, tmp.length);
 
         if (ret == 0)
         {
@@ -1269,5 +1260,39 @@ class HawkSigner{
                 return 1;
             }
         }
+    }
+
+    public int signMessage(
+        int logn,
+        byte[] sig,
+        byte[] message,
+        short messageLen,
+        byte[] priv,
+        int privLen,
+        byte[] tmp,
+        int tmpLen)
+    {
+        byte[] state = new byte[200];
+        int[] scratch = new int[120];
+
+        SHAKE256JC sc =
+            new SHAKE256JC(state, scratch);
+
+        // Equivalent of hawkSignStart(sc)
+        sc.reset();
+
+        // Equivalent of sc.update(message, 0, mlen);
+        sc.absorbXor(message, 0, messageLen);
+
+        // Equivalent of hawkSignFinish(...)
+        return sign(
+            logn,
+            1,
+            sig,
+            sc,
+            priv,
+            privLen,
+            tmp,
+            tmpLen);
     }
 }
