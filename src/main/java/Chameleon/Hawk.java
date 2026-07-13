@@ -34,18 +34,18 @@ public class Hawk {
     private short pqKeyLen = 0;
 
     protected Hawk() {
-      this.register();
-   }
+        this.register();
+    }
 
-   public static void install(byte[] var0, short var1, byte var2) {
-      new Hawk();
-   }
+    public static void install(byte[] var0, short var1, byte var2) {
+        new Hawk();
+    }
 
     public void process(APDU apdu) {
         byte[] apduBuffer = apdu.getBuffer();
 
         if ((apduBuffer[ISO7816.OFFSET_CLA] == 0) &&
-            (apduBuffer[ISO7816.OFFSET_INS] == (byte)0xA4)) {
+                (apduBuffer[ISO7816.OFFSET_INS] == (byte) 0xA4)) {
             return;
         }
 
@@ -127,15 +127,13 @@ public class Hawk {
 
         byte[] buf = apdu.getBuffer();
 
-        short offset = (short)(
-            ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
-             (buf[ISO7816.OFFSET_P2] & 0xFF)
-        );
+        short offset = (short) (((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
+                (buf[ISO7816.OFFSET_P2] & 0xFF));
 
         if (offset >= certLen)
             ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
 
-        short remaining = (short)(certLen - offset);
+        short remaining = (short) (certLen - offset);
         short chunk = remaining > 200 ? 200 : remaining;
 
         apdu.setOutgoing();
@@ -161,16 +159,16 @@ public class Hawk {
         local[pos++] = 0x08;
 
         byte[] dynamic = new byte[] {
-            (byte)0x6c,(byte)0x55,(byte)0x44,(byte)0x79,
-            (byte)0x7a,(byte)0x91,(byte)0x11,(byte)0x5d
+                (byte) 0x6c, (byte) 0x55, (byte) 0x44, (byte) 0x79,
+                (byte) 0x7a, (byte) 0x91, (byte) 0x11, (byte) 0x5d
         };
 
-        Util.arrayCopy(dynamic, (short)0, local, pos, (short)8);
+        Util.arrayCopy(dynamic, (short) 0, local, pos, (short) 8);
         pos += 8;
 
-        short paddingLen = (short)(255 - pos - 4);
+        short paddingLen = (short) (255 - pos - 4);
         for (short i = 0; i < paddingLen; i++) {
-            local[pos++] = (byte)0xBB;
+            local[pos++] = (byte) 0xBB;
         }
 
         local[pos++] = 0x01;
@@ -181,11 +179,10 @@ public class Hawk {
         dataToSignLen = pos;
     }
 
-    private void createSignatureDelta(APDU apdu)
-    {
+    private void createSignatureDelta(APDU apdu) {
         if (dataToSignLen == 0)
             ISOException.throwIt(
-                ISO7816.SW_CONDITIONS_NOT_SATISFIED);
+                    ISO7816.SW_CONDITIONS_NOT_SATISFIED);
 
         byte[] state = new byte[200];
         int[] scratch = new int[120];
@@ -193,13 +190,12 @@ public class Hawk {
         SHAKE256JC shake = new SHAKE256JC(state, scratch);
         HawkSigner signer = new HawkSigner();
 
-        byte[] tmp =
-            new byte[6 * 1024]; // whatever size sign() requires
+        byte[] tmp = new byte[6 * 1024]; // whatever size sign() requires
 
-        int ret = signer.signMessage(9, signatureBuffer, dataToSign, dataToSignLen, pqPrivateKey, pqKeyLen, tmp, tmp.length);
+        int ret = signer.signMessage(9, signatureBuffer, dataToSign, dataToSignLen, pqPrivateKey, pqKeyLen, tmp,
+                tmp.length);
 
-        if (ret == 0)
-        {
+        if (ret == 0) {
             ISOException.throwIt(ISO7816.SW_UNKNOWN);
         }
 
@@ -209,11 +205,11 @@ public class Hawk {
     private void sendSignatureDelta(APDU apdu) {
         apdu.setOutgoing();
         apdu.setOutgoingLength(signatureLen);
-        apdu.sendBytesLong(signatureBuffer, (short)0, signatureLen);
+        apdu.sendBytesLong(signatureBuffer, (short) 0, signatureLen);
     }
 }
 
-class HawkSigner{
+class HawkSigner {
     // Parameters
     private int q;
     private int logn;
@@ -224,8 +220,7 @@ class HawkSigner{
     private short saltLen;
     private int maxXnorm;
     private RandomData random;
-    private static final short[] GM = new short[]
-        {
+    private static final short[] GM = new short[] {
             4564, 17110, 12162, 16208, 10701, 9705, 3451, 5078,
             12400, 10202, 8245, 13131, 4631, 3492, 17179, 5622,
             5537, 3399, 2485, 9938, 345, 14064, 10152, 789,
@@ -354,65 +349,65 @@ class HawkSigner{
             268, 827, 1635, 12955, 8609, 13704, 8571, 3820,
             15205, 13149, 13046, 12333, 8005, 13766, 18367, 7087,
             5414, 14093, 14734, 10939, 12282, 6674, 3811, 13342
-        };
+    };
 
-        // Hawk-512 (logn = 9, n = 512)
+    // Hawk-512 (logn = 9, n = 512)
     public static final short[] SIG_GAUSS_HI_HAWK_512 = {
-        (short)0x580B, (short)0x35F9,
-        (short)0x1D34, (short)0x0DD7,
-        (short)0x05B7, (short)0x020C,
-        (short)0x00A2, (short)0x002B,
-        (short)0x000A, (short)0x0001
+            (short) 0x580B, (short) 0x35F9,
+            (short) 0x1D34, (short) 0x0DD7,
+            (short) 0x05B7, (short) 0x020C,
+            (short) 0x00A2, (short) 0x002B,
+            (short) 0x000A, (short) 0x0001
     };
 
     public static final int SG_MAX_HI_HAWK_512 = SIG_GAUSS_HI_HAWK_512.length;
 
     public static final long[] SIG_GAUSS_LO_HAWK_512 = {
-        0x0C27920A04F8F267L, 0x3C689D9213449DC9L,
-        0x1C4FF17C204AA058L, 0x7B908C81FCE3524FL,
-        0x5E63263BE0098FFDL, 0x4EBEFD8FF4F07378L,
-        0x56AEDFB0876A3BD8L, 0x4628BC6B23887196L,
-        0x061E21D588CC61CCL, 0x7F769211F07B326FL,
-        0x2BA568D92EEC18E7L, 0x0668F461693DFF8FL,
-        0x00CF0F8687D3B009L, 0x001670DB65964485L,
-        0x000216A0C344EB45L, 0x00002AB6E11C2552L,
-        0x000002EDF0B98A84L, 0x0000002C253C7E81L,
-        0x000000023AF3B2E7L, 0x0000000018C14ABFL,
-        0x0000000000EBCC6AL, 0x000000000007876EL,
-        0x00000000000034CFL, 0x000000000000013DL,
-        0x0000000000000006L, 0x0000000000000000L
+            0x0C27920A04F8F267L, 0x3C689D9213449DC9L,
+            0x1C4FF17C204AA058L, 0x7B908C81FCE3524FL,
+            0x5E63263BE0098FFDL, 0x4EBEFD8FF4F07378L,
+            0x56AEDFB0876A3BD8L, 0x4628BC6B23887196L,
+            0x061E21D588CC61CCL, 0x7F769211F07B326FL,
+            0x2BA568D92EEC18E7L, 0x0668F461693DFF8FL,
+            0x00CF0F8687D3B009L, 0x001670DB65964485L,
+            0x000216A0C344EB45L, 0x00002AB6E11C2552L,
+            0x000002EDF0B98A84L, 0x0000002C253C7E81L,
+            0x000000023AF3B2E7L, 0x0000000018C14ABFL,
+            0x0000000000EBCC6AL, 0x000000000007876EL,
+            0x00000000000034CFL, 0x000000000000013DL,
+            0x0000000000000006L, 0x0000000000000000L
     };
 
     public static final int[] SIG_GAUSS_LO_HI_HAWK_512 = {
-        0x0C27920A, 0x3C689D92,
-        0x1C4FF17C, 0x7B908C81,
-        0x5E63263B, 0x4EBEFD8F,
-        0x56AEDFB0, 0x4628BC6B,
-        0x061E21D5, 0x7F769211,
-        0x2BA568D9, 0x0668F461,
-        0x00CF0F86, 0x001670DB,
-        0x000216A0, 0x00002AB6,
-        0x000002ED, 0x0000002C,
-        0x00000002, 0x00000000,
-        0x00000000, 0x00000000,
-        0x00000000, 0x00000000,
-        0x00000000, 0x00000000 
+            0x0C27920A, 0x3C689D92,
+            0x1C4FF17C, 0x7B908C81,
+            0x5E63263B, 0x4EBEFD8F,
+            0x56AEDFB0, 0x4628BC6B,
+            0x061E21D5, 0x7F769211,
+            0x2BA568D9, 0x0668F461,
+            0x00CF0F86, 0x001670DB,
+            0x000216A0, 0x00002AB6,
+            0x000002ED, 0x0000002C,
+            0x00000002, 0x00000000,
+            0x00000000, 0x00000000,
+            0x00000000, 0x00000000,
+            0x00000000, 0x00000000
     };
 
     public static final int[] SIG_GAUSS_LO_LO_HAWK_512 = {
-        0x04F8F267, 0x13449DC9,
-        0x204AA058, 0xFCE3524F,
-        0xE0098FFD, 0xF4F07378,
-        0x876A3BD8, 0x23887196,
-        0x88CC61CC, 0xF07B326F,
-        0x2EEC18E7, 0x693DFF8F,
-        0x87D3B009, 0x65964485,
-        0xC344EB45, 0xE11C2552,
-        0xF0B98A84, 0x253C7E81,
-        0x3AF3B2E7, 0x18C14ABF,
-        0x00EBCC6A, 0x0007876E,
-        0x000034CF, 0x0000013D,
-        0x00000006, 0x00000000
+            0x04F8F267, 0x13449DC9,
+            0x204AA058, 0xFCE3524F,
+            0xE0098FFD, 0xF4F07378,
+            0x876A3BD8, 0x23887196,
+            0x88CC61CC, 0xF07B326F,
+            0x2EEC18E7, 0x693DFF8F,
+            0x87D3B009, 0x65964485,
+            0xC344EB45, 0xE11C2552,
+            0xF0B98A84, 0x253C7E81,
+            0x3AF3B2E7, 0x18C14ABF,
+            0x00EBCC6A, 0x0007876E,
+            0x000034CF, 0x0000013D,
+            0x00000006, 0x00000000
     };
 
     public static final int SG_MAX_LO_HAWK_512 = SIG_GAUSS_LO_HAWK_512.length;
@@ -432,29 +427,26 @@ class HawkSigner{
 
     // Methods
     // Size calculations for private key and signature
-    private static short HAWK_PRIVKEY_SIZE(int logn)
-    {
+    private static short HAWK_PRIVKEY_SIZE(int logn) {
         int n = 1 << logn;
-        return (short)(8 + (1 << (logn - 5)) + 2 * (n >> 3) + (n >> 4));
+        return (short) (8 + (1 << (logn - 5)) + 2 * (n >> 3) + (n >> 4));
     }
 
-    public static short HAWK_SIG_SIZE(int logn)
-    {
-        return (short)(249 + 306 * (2 >> (10 - logn)) + 360 * (1 >> (10 - logn)));
+    public static short HAWK_SIG_SIZE(int logn) {
+        return (short) (249 + 306 * (2 >> (10 - logn)) + 360 * (1 >> (10 - logn)));
     }
 
     /**
      * Hamming weight of a byte (number of 1 bits)
      */
-    private static byte popcount8(byte x)
-    {
-        short v = (short)(x & 0xFF);
+    private static byte popcount8(byte x) {
+        short v = (short) (x & 0xFF);
 
-        v = (short)((v & 0x55) + ((v >>> 1) & 0x55));
-        v = (short)((v & 0x33) + ((v >>> 2) & 0x33));
-        v = (short)((v & 0x0F) + ((v >>> 4) & 0x0F));
+        v = (short) ((v & 0x55) + ((v >>> 1) & 0x55));
+        v = (short) ((v & 0x33) + ((v >>> 2) & 0x33));
+        v = (short) ((v & 0x0F) + ((v >>> 4) & 0x0F));
 
-        return (byte)v;
+        return (byte) v;
     }
 
     /**
@@ -463,33 +455,27 @@ class HawkSigner{
     public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed) {
         byte[] state = new byte[200];
         int[] scratch = new int[120];
-        for (byte j = 0; j < 4; j++)
-        {
+        for (byte j = 0; j < 4; j++) {
             SHAKE256JC shake = new SHAKE256JC(state, scratch);
-            shake.absorbXor(seed, (short)0, (short)24);
+            shake.absorbXor(seed, (short) 0, (short) 24);
 
             byte[] singleByte = new byte[1];
             singleByte[0] = j;
-            shake.absorbXor(singleByte, (short)0, (short)1);
+            shake.absorbXor(singleByte, (short) 0, (short) 1);
 
             shake.finalizeSqueeze();
 
-            for (short u = 0; u < 1024; u += 32)
-            {
+            for (short u = 0; u < 1024; u += 32) {
                 byte[] qb = new byte[8];
-                shake.squeezeBytes(qb, (short)0, (short)8);
+                shake.squeezeBytes(qb, (short) 0, (short) 8);
 
-                for (short i = 0; i < 8; i++)
-                {
-                    byte coeff = (byte)(popcount8(qb[i]) - 4);
+                for (short i = 0; i < 8; i++) {
+                    byte coeff = (byte) (popcount8(qb[i]) - 4);
 
-                    if (u < 512)
-                    {
-                        f[(short)(fOff + u + (j << 3) + i)] = coeff;
-                    }
-                    else
-                    {
-                        g[(short)(gOff + (u - 512) + (j << 3) + i)] = coeff;
+                    if (u < 512) {
+                        f[(short) (fOff + u + (j << 3) + i)] = coeff;
+                    } else {
+                        g[(short) (gOff + (u - 512) + (j << 3) + i)] = coeff;
                     }
                 }
             }
@@ -497,45 +483,38 @@ class HawkSigner{
     }
 
     // Encode 32-bit integer as little-endian bytes
-    public static void enc32le(byte[] dst, int dstOffset, int x)
-    {
-        dst[dstOffset] = (byte)(x & 0xFF);
-        dst[dstOffset + 1] = (byte)((x >>> 8) & 0xFF);
-        dst[dstOffset + 2] = (byte)((x >>> 16) & 0xFF);
-        dst[dstOffset + 3] = (byte)((x >>> 24) & 0xFF);
+    public static void enc32le(byte[] dst, int dstOffset, int x) {
+        dst[dstOffset] = (byte) (x & 0xFF);
+        dst[dstOffset + 1] = (byte) ((x >>> 8) & 0xFF);
+        dst[dstOffset + 2] = (byte) ((x >>> 16) & 0xFF);
+        dst[dstOffset + 3] = (byte) ((x >>> 24) & 0xFF);
     }
 
-    private static int dec32le(byte[] src, int off)
-    {
+    private static int dec32le(byte[] src, int off) {
         return (src[off] & 0xFF)
-            | ((src[off + 1] & 0xFF) << 8)
-            | ((src[off + 2] & 0xFF) << 16)
-            | ((src[off + 3] & 0xFF) << 24);
+                | ((src[off + 1] & 0xFF) << 8)
+                | ((src[off + 2] & 0xFF) << 16)
+                | ((src[off + 3] & 0xFF) << 24);
     }
 
-    private static int dec16le(byte[] src, int off)
-    {
+    private static int dec16le(byte[] src, int off) {
         return (src[off] & 0xFF)
-            | ((src[off + 1] & 0xFF) << 8);
+                | ((src[off + 1] & 0xFF) << 8);
     }
 
     /*
-    * Returns 1 iff a < b when interpreted as unsigned ints.
-    */
-    private static int uLessThan(int a, int b)
-    {
+     * Returns 1 iff a < b when interpreted as unsigned ints.
+     */
+    private static int uLessThan(int a, int b) {
         return ((a ^ 0x80000000) < (b ^ 0x80000000)) ? 1 : 0;
     }
 
     // Extract the lowest bit of each coefficient
-    private static void extract_lowbit(int logn, byte[] dst, byte[] src)
-    {
+    private static void extract_lowbit(int logn, byte[] dst, byte[] src) {
         int n = 1 << logn;
-        for (int i = 0; i < n; i += 8)
-        {
+        for (int i = 0; i < n; i += 8) {
             byte val = 0;
-            for (int j = 0; j < 8; j++)
-            {
+            for (int j = 0; j < 8; j++) {
                 val |= ((src[i + j] & 1) << j);
             }
             dst[i >> 3] = val;
@@ -543,39 +522,359 @@ class HawkSigner{
     }
 
     static short tbmask(short x) {
-        return (short)(x >> 15);
+        return (short) (x >> 15);
     }
-    
+
     static int tbmaskInt(int x) {
         return x >> 31;
     }
 
-    private static void bpXor512(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset)
-    {
-        for (int u = 0; u < 64; u++)
-        {
-            d[dOffset + u] = (byte)(a[aOffset + u] ^ b[bOffset + u]);
+    // Constants for sizes
+    public static final int SIZE_64 = 64;
+    public static final int SIZE_128 = 128;
+    public static final int SIZE_256 = 256;
+    public static final int SIZE_512 = 512;
+
+    // Precomputed byte lengths
+    private static final int BYTES_64 = SIZE_64 / 8;
+    private static final int BYTES_128 = SIZE_128 / 8;
+
+    private static void mul64(int a, int b, int[] out, int off) {
+        int a0 = a & 0xFFFF;
+        int a1 = a >>> 16;
+
+        int b0 = b & 0xFFFF;
+        int b1 = b >>> 16;
+
+        int p00 = a0 * b0;
+        int p01 = a0 * b1;
+        int p10 = a1 * b0;
+        int p11 = a1 * b1;
+
+        int middle = (p00 >>> 16)
+                + (p01 & 0xFFFF)
+                + (p10 & 0xFFFF);
+
+        int lo = (p00 & 0xFFFF)
+                | ((middle & 0xFFFF) << 16);
+
+        int hi = p11
+                + (p01 >>> 16)
+                + (p10 >>> 16)
+                + (middle >>> 16);
+
+        out[off] = hi;
+        out[off + 1] = lo;
+    }
+
+    public static void bpXor64(byte[] d, int dOffset,
+            byte[] a, int aOffset,
+            byte[] b, int bOffset) {
+        int lo = dec32le(a, aOffset)
+                ^ dec32le(b, bOffset);
+
+        int hi = dec32le(a, aOffset + 4)
+                ^ dec32le(b, bOffset + 4);
+
+        enc32le(d, dOffset, lo);
+        enc32le(d, dOffset + 4, hi);
+    }
+
+    public static void bpMul32(
+            int x,
+            int y,
+            int[] out,
+            int off) {
+        int x0 = x & 0x11111111;
+        int x1 = x & 0x22222222;
+        int x2 = x & 0x44444444;
+        int x3 = x & 0x88888888;
+
+        int y0 = y & 0x11111111;
+        int y1 = y & 0x22222222;
+        int y2 = y & 0x44444444;
+        int y3 = y & 0x88888888;
+
+        int[] t = new int[2];
+
+        int z0hi = 0;
+        int z0lo = 0;
+
+        mul64(x0, y0, t, 0);
+        z0hi ^= t[0];
+        z0lo ^= t[1];
+
+        mul64(x1, y3, t, 0);
+        z0hi ^= t[0];
+        z0lo ^= t[1];
+
+        mul64(x2, y2, t, 0);
+        z0hi ^= t[0];
+        z0lo ^= t[1];
+
+        mul64(x3, y1, t, 0);
+        z0hi ^= t[0];
+        z0lo ^= t[1];
+
+        int z1hi = 0;
+        int z1lo = 0;
+
+        mul64(x0, y1, t, 0);
+        z1hi ^= t[0];
+        z1lo ^= t[1];
+
+        mul64(x1, y0, t, 0);
+        z1hi ^= t[0];
+        z1lo ^= t[1];
+
+        mul64(x2, y3, t, 0);
+        z1hi ^= t[0];
+        z1lo ^= t[1];
+
+        mul64(x3, y2, t, 0);
+        z1hi ^= t[0];
+        z1lo ^= t[1];
+
+        int z2hi = 0;
+        int z2lo = 0;
+
+        mul64(x0, y2, t, 0);
+        z2hi ^= t[0];
+        z2lo ^= t[1];
+
+        mul64(x1, y1, t, 0);
+        z2hi ^= t[0];
+        z2lo ^= t[1];
+
+        mul64(x2, y0, t, 0);
+        z2hi ^= t[0];
+        z2lo ^= t[1];
+
+        mul64(x3, y3, t, 0);
+        z2hi ^= t[0];
+        z2lo ^= t[1];
+
+        int z3hi = 0;
+        int z3lo = 0;
+
+        mul64(x0, y3, t, 0);
+        z3hi ^= t[0];
+        z3lo ^= t[1];
+
+        mul64(x1, y2, t, 0);
+        z3hi ^= t[0];
+        z3lo ^= t[1];
+
+        mul64(x2, y1, t, 0);
+        z3hi ^= t[0];
+        z3lo ^= t[1];
+
+        mul64(x3, y0, t, 0);
+        z3hi ^= t[0];
+        z3lo ^= t[1];
+
+        z0hi &= 0x11111111;
+        z0lo &= 0x11111111;
+
+        z1hi &= 0x22222222;
+        z1lo &= 0x22222222;
+
+        z2hi &= 0x44444444;
+        z2lo &= 0x44444444;
+
+        z3hi &= 0x88888888;
+        z3lo &= 0x88888888;
+
+        out[off] = z0hi | z1hi | z2hi | z3hi;
+
+        out[off + 1] = z0lo | z1lo | z2lo | z3lo;
+    }
+
+    public static void bpMuladd64(
+            byte[] d, int dOffset,
+            byte[] a, int aOffset,
+            byte[] b, int bOffset,
+            byte[] tmp, int tmpOffset) {
+        int a0 = dec32le(a, aOffset);
+        int a1 = dec32le(a, aOffset + 4);
+
+        int b0 = dec32le(b, bOffset);
+        int b1 = dec32le(b, bOffset + 4);
+
+        int[] c = new int[6];
+
+        bpMul32(a0, b0, c, 0);
+        bpMul32(a1, b1, c, 2);
+        bpMul32(a0 ^ a1, b0 ^ b1, c, 4);
+
+        c[4] ^= c[0];
+        c[5] ^= c[1];
+
+        c[4] ^= c[2];
+        c[5] ^= c[3];
+
+        int d0lo = dec32le(d, dOffset);
+        int d0hi = dec32le(d, dOffset + 4);
+
+        int d1lo = dec32le(d, dOffset + 8);
+        int d1hi = dec32le(d, dOffset + 12);
+
+        d0hi ^= c[0] ^ c[5];
+        d0lo ^= c[1];
+
+        d1hi ^= c[2];
+        d1lo ^= c[3] ^ c[4];
+
+        enc32le(d, dOffset, d0lo);
+        enc32le(d, dOffset + 4, d0hi);
+
+        enc32le(d, dOffset + 8, d1lo);
+        enc32le(d, dOffset + 12, d1hi);
+    }
+
+    private static void bpXor512(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
+        for (int u = 0; u < 64; u++) {
+            d[dOffset + u] = (byte) (a[aOffset + u] ^ b[bOffset + u]);
         }
+    }
+
+    public static void bpXor128(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
+        // Process as two 64-bit chunks
+        bpXor64(d, dOffset, a, aOffset, b, bOffset);
+        bpXor64(d, dOffset + 8, a, aOffset + 8, b, bOffset + 8);
+    }
+
+    // Specialized implementations for better performance
+    public static void bpMuladd128(byte[] d, int dOffset,
+            byte[] a, int aOffset,
+            byte[] b, int bOffset,
+            byte[] tmp, int tmpOffset) {
+        // Use optimized implementation for 128-bit polynomials
+        int t1Offset = tmpOffset;
+        int t2Offset = t1Offset + BYTES_128;
+
+        // Karatsuba algorithm for 128-bit polynomials (split into 64-bit halves)
+        bpXor64(tmp, t2Offset, a, aOffset, a, aOffset + BYTES_64); // a0 + a1
+        bpXor64(tmp, t2Offset + BYTES_64, b, bOffset, b, bOffset + BYTES_64); // b0 + b1
+
+        // t1 = (a0+a1)*(b0+b1) + d0 + d1
+        bpXor128(tmp, t1Offset, d, dOffset, d, dOffset + BYTES_128);
+        bpMuladd64(tmp, t1Offset, tmp, t2Offset, tmp, t2Offset + BYTES_64, tmp, t2Offset + BYTES_128);
+
+        // d0 += a0*b0
+        bpMuladd64(d, dOffset, a, aOffset, b, bOffset, tmp, t2Offset);
+
+        // d1 += a1*b1
+        bpMuladd64(d, dOffset + BYTES_128, a, aOffset + BYTES_64, b, bOffset + BYTES_64, tmp, t2Offset);
+
+        // t1 = t1 + d0 + d1 = a0*b1 + a1*b0
+        bpXor128(tmp, t1Offset, tmp, t1Offset, d, dOffset);
+        bpXor128(tmp, t1Offset, tmp, t1Offset, d, dOffset + BYTES_128);
+
+        // d += (x^64)*t1: d[8:24] ⊕= t1[0:16]
+        bpXor128(d, dOffset + BYTES_64, d, dOffset + BYTES_64, tmp, t1Offset);
+    }
+
+    private static void bpXor256(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
+        for (int u = 0; u < 32; u++) {
+            d[dOffset + u] = (byte) (a[aOffset + u] ^ b[bOffset + u]);
+        }
+    }
+
+    /**
+     * Binary polynomial multiplication and accumulation for 256-bit polynomials
+     * Uses Karatsuba algorithm with 128-bit halves
+     */
+    public static void bpMuladd256(byte[] d, int dOffset,
+            byte[] a, int aOffset,
+            byte[] b, int bOffset,
+            byte[] tmp, int tmpOffset) {
+        final int n = 256;
+        final int hn = 128;
+        final int byteLen = n / 8;
+        final int halfByteLen = hn / 8;
+
+        // Temporary buffers within the provided tmp array
+        int t1Offset = tmpOffset;
+        int t2Offset = t1Offset + byteLen;
+        int t3Offset = t2Offset + byteLen;
+
+        // t1 <- (a0 + a1)*(b0 + b1) + d0 + d1
+        bpXor128(tmp, t2Offset, a, aOffset, a, aOffset + halfByteLen); // a0 + a1
+        bpXor128(tmp, t2Offset + halfByteLen, b, bOffset, b, bOffset + halfByteLen); // b0 + b1
+        bpXor256(tmp, t1Offset, d, dOffset, d, dOffset + byteLen); // d0 + d1
+        bpMuladd128(tmp, t1Offset, tmp, t2Offset, tmp, t2Offset + halfByteLen, tmp, t3Offset);
+
+        // d0 <- d0 + a0*b0
+        bpMuladd128(d, dOffset, a, aOffset, b, bOffset, tmp, t3Offset);
+
+        // d1 <- d1 + a1*b1
+        bpMuladd128(d, dOffset + byteLen, a, aOffset + halfByteLen, b, bOffset + halfByteLen, tmp, t3Offset);
+
+        // t1 <- t1 + d0 + d1 = a0*b1 + a1*b0
+        bpXor256(tmp, t1Offset, tmp, t1Offset, d, dOffset);
+        bpXor256(tmp, t1Offset, tmp, t1Offset, d, dOffset + byteLen);
+
+        // d <- d + (x^{n/2})*t1: d[16:48] ⊕= t1[0:32]
+        bpXor256(d, dOffset + halfByteLen, d, dOffset + halfByteLen, tmp, t1Offset);
+    }
+
+    // Generic XOR for any size
+    private static void bpXor(int bitSize, byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
+        int byteSize = bitSize / 8;
+        for (int u = 0; u < byteSize; u++) {
+            d[dOffset + u] = (byte) (a[aOffset + u] ^ b[bOffset + u]);
+        }
+    }
+
+    // Generic binary polynomial multiplication using Karatsuba algorithm
+    private static void bpMulmod(int n, int hn, byte[] d, int dOffset,
+            byte[] a, int aOffset, byte[] b, int bOffset,
+            byte[] tmp, int tmpOffset) {
+        int byteLen = n / 8;
+        int halfByteLen = hn / 8;
+
+        int t1Offset = tmpOffset;
+        int t2Offset = t1Offset + byteLen;
+
+        // t1 <- (a0 + a1)*(b0 + b1)
+        bpXor(hn, d, dOffset, a, aOffset, a, aOffset + halfByteLen);
+        bpXor(hn, d, dOffset + halfByteLen, b, bOffset, b, bOffset + halfByteLen);
+        bpXor(n, tmp, t1Offset, d, dOffset, d, dOffset + halfByteLen);
+        Arrays.fill(tmp, t1Offset, t1Offset + byteLen, (byte) 0);
+        bpMuladd256(tmp, t1Offset, d, dOffset, d, dOffset + halfByteLen, tmp, t2Offset);
+
+        // d <- a0*b0 + a1*b1
+        Arrays.fill(d, dOffset, dOffset + byteLen, (byte) 0);
+        bpMuladd256(d, dOffset, a, aOffset, b, bOffset, tmp, t2Offset);
+        bpMuladd256(d, dOffset, a, aOffset + halfByteLen, b, bOffset + halfByteLen, tmp, t2Offset);
+
+        // t1 <- t1 + d = a0*b1 + a1*b0
+        bpXor(n, tmp, t1Offset, tmp, t1Offset, d, dOffset);
+
+        // d <- d + rotate_{n/2}(t1)
+        bpXor(hn, d, dOffset, d, dOffset, tmp, t1Offset + halfByteLen);
+        bpXor(hn, d, dOffset + halfByteLen, d, dOffset + halfByteLen, tmp, t1Offset);
     }
 
     // Basis multiplication modulo 2
     public static void basisM2Mul(int logn, byte[] t0, int t0Offset, byte[] t1, int t1Offset,
-        byte[] h0, int h0Offset, byte[] h1, int h1Offset,
-        byte[] f2, int f2Offset, byte[] g2, int g2Offset,
-        byte[] F2, int F2Offset, byte[] G2, int G2Offset,
-        byte[] tmp, int tmpOffset) {
-        
+            byte[] h0, int h0Offset, byte[] h1, int h1Offset,
+            byte[] f2, int f2Offset, byte[] g2, int g2Offset,
+            byte[] F2, int F2Offset, byte[] G2, int G2Offset,
+            byte[] tmp, int tmpOffset) {
+
         int n = 1 << logn;
         int byteLen = n >> 3;
 
         int w1Offset = tmpOffset;
         int w2Offset = w1Offset + byteLen;
 
-        bpMulmod512(logn, t0, t0Offset, h0, h0Offset, f2, f2Offset, tmp, w2Offset); // still need to resolve
-        bpMulmod512(logn, tmp, w1Offset, h1, h1Offset, F2, F2Offset, tmp, w2Offset);
+        bpMulmod(512, 256, t0, t0Offset, h0, h0Offset, f2, f2Offset, tmp, w2Offset); // still need to resolve
+        bpMulmod(512, 256, tmp, w1Offset, h1, h1Offset, F2, F2Offset, tmp, w2Offset);
         bpXor512(t0, t0Offset, t0, t0Offset, tmp, w1Offset);
-        bpMulmod512(logn, t1, t1Offset, h0, h0Offset, g2, g2Offset, tmp, w2Offset);
-        bpMulmod512(logn, tmp, w1Offset, h1, h1Offset, G2, G2Offset, tmp, w2Offset);
+        bpMulmod(512, 256, t1, t1Offset, h0, h0Offset, g2, g2Offset, tmp, w2Offset);
+        bpMulmod(512, 256, tmp, w1Offset, h1, h1Offset, G2, G2Offset, tmp, w2Offset);
         bpXor512(t1, t1Offset, t1, t1Offset, tmp, w1Offset);
     }
 
@@ -583,35 +882,33 @@ class HawkSigner{
      * Convert a signed byte to a mod q value in the range [0, q-1]
      * This is the equivalent of Zq(set_small)
      */
-    public short mq18433SetSmall(byte x)
-    {
+    public short mq18433SetSmall(byte x) {
         // C formula: uint32_t y = (uint32_t)-x; y += Q & (y >> 16); return Q - y;
         // This returns values in [1..Q] where Q represents 0 mod Q.
-        int xInt = (int)x;   // sign-extend byte to int
-        int y = -xInt;       // same bit pattern as C's (uint32_t)-x
+        int xInt = (int) x; // sign-extend byte to int
+        int y = -xInt; // same bit pattern as C's (uint32_t)-x
         y += Q & (y >>> 16); // unsigned right shift to detect negative (large unsigned) values
-        return (short)(Q - y);
+        return (short) (Q - y);
     }
 
     /**
-     * Convert a small polynomial (signed 8-bit coefficients) to mod q representation.
+     * Convert a small polynomial (signed 8-bit coefficients) to mod q
+     * representation.
      * This is the equivalent of Zq(poly_set_small)
      */
-    public void mq18433PolySetSmall(int logn, short[] d, int dOffset, byte[] a, int aOffset)
-    {
+    public void mq18433PolySetSmall(int logn, short[] d, int dOffset, byte[] a, int aOffset) {
         int n = 1 << logn;
-        for (int u = 0; u < n; u++)
-        {
+        for (int u = 0; u < n; u++) {
             d[dOffset + u] = mq18433SetSmall(a[aOffset + u]);
         }
     }
 
     /**
-     * Modular subtraction: (x - y) mod Q, result in [1..Q] where Q represents 0 mod Q.
+     * Modular subtraction: (x - y) mod Q, result in [1..Q] where Q represents 0 mod
+     * Q.
      * Matches the C formula: {@code d = y-x; d += Q & (d>>16); return Q-d;}
      */
-    public int mq18433Sub(int x, int y)
-    {
+    public int mq18433Sub(int x, int y) {
         int d = y - x;
         d += Q & (d >> 16);
         return Q - d;
@@ -621,8 +918,7 @@ class HawkSigner{
      * Modular addition: (x + y) mod Q, result in [1..Q] where Q represents 0 mod Q.
      * Matches the C formula: {@code d = Q-(x+y); d += Q & (d>>16); return Q-d;}
      */
-    public int mq18433Add(int x, int y)
-    {
+    public int mq18433Add(int x, int y) {
         int d = Q - (x + y);
         d += Q & (d >> 16);
         return Q - d;
@@ -635,8 +931,7 @@ class HawkSigner{
      * branch on a secret-derived intermediate — replaced with a branchless mask
      * to preserve byte-identity while removing the L1 timing channel.
      */
-    public int mq18433MontyRed(int x)
-    {
+    public int mq18433MontyRed(int x) {
         int xLo = x & 0xFFFF;
         int xHi = x >>> 16;
 
@@ -655,43 +950,36 @@ class HawkSigner{
     /**
      * Montgomery multiplication: returns (x * y) mod Q in Montgomery form
      */
-    public int mq18433MontyMul(int x, int y)
-    {
+    public int mq18433MontyMul(int x, int y) {
         return mq18433MontyRed(x * y);
     }
 
-     /**
+    /**
      * Convert a number to Montgomery form
      */
-    public int mq18433ToMonty(int x)
-    {
+    public int mq18433ToMonty(int x) {
         return mq18433MontyRed(x * R2);
     }
 
     /**
      * Number Theoretic Transform (NTT) for modulus 18433
      */
-    public void mq18433NTT(int logn, short[] a, int aOffset)
-    {
-        if (logn == 0)
-        {
+    public void mq18433NTT(int logn, short[] a, int aOffset) {
+        if (logn == 0) {
             return;
         }
 
         int t = 1 << logn;
 
-        for (int lm = 0; lm < logn; lm++)
-        {
+        for (int lm = 0; lm < logn; lm++) {
             int m = 1 << lm;
             int ht = t >> 1;
             int v0 = 0;
 
-            for (int u = 0; u < m; u++)
-            {
+            for (int u = 0; u < m; u++) {
                 int s = GM[u + m] & 0xFFFF; // NTT root
 
-                for (int v = 0; v < ht; v++)
-                {
+                for (int v = 0; v < ht; v++) {
                     int k1 = aOffset + v0 + v;
                     int k2 = k1 + ht;
 
@@ -702,8 +990,8 @@ class HawkSigner{
                     int x2_monty = mq18433MontyMul(x2, s);
 
                     // Butterfly operation
-                    a[k1] = (short)mq18433Add(x1, x2_monty);
-                    a[k2] = (short)mq18433Sub(x1, x2_monty);
+                    a[k1] = (short) mq18433Add(x1, x2_monty);
+                    a[k2] = (short) mq18433Sub(x1, x2_monty);
                 }
                 v0 += t;
             }
@@ -711,46 +999,41 @@ class HawkSigner{
         }
     }
 
-    public static int mq18433Snorm(int x)
-    {
-        int mask = ((Q >> 1) - x) >> 31;  // -1 if x > Q/2, 0 otherwise
+    public static int mq18433Snorm(int x) {
+        int mask = ((Q >> 1) - x) >> 31; // -1 if x > Q/2, 0 otherwise
         return x - (Q & mask);
     }
 
     /**
      * Apply signed normalization to polynomial coefficients
      */
-    public static void mq18433PolySnorm(int logn, short[] d, int dOffset)
-    {
+    public static void mq18433PolySnorm(int logn, short[] d, int dOffset) {
         int n = 1 << logn;
-        for (int u = 0; u < n; u++)
-        {
-            d[dOffset + u] = (short)mq18433Snorm(d[dOffset + u] & 0xFFFF);
+        for (int u = 0; u < n; u++) {
+            d[dOffset + u] = (short) mq18433Snorm(d[dOffset + u] & 0xFFFF);
         }
     }
 
-        /**
+    /**
      * Returned value:
-     * 1   first non-zero coefficient of s is positive
-     * -1   first non-zero coefficient of s is negative
-     * 0   s is entirely zero
+     * 1 first non-zero coefficient of s is positive
+     * -1 first non-zero coefficient of s is negative
+     * 0 s is entirely zero
      */
-    public static int polySymBreak(int logn, short[] s, int sOffset)
-    {
+    public static int polySymBreak(int logn, short[] s, int sOffset) {
         // Matches C's poly_symbreak exactly:
-        //   returns 0 if polynomial is all-zero
-        //   returns 1 if first non-zero coefficient is positive
-        //   returns -1 (= 0xFFFFFFFF as uint32) if first non-zero coefficient is negative
+        // returns 0 if polynomial is all-zero
+        // returns 1 if first non-zero coefficient is positive
+        // returns -1 (= 0xFFFFFFFF as uint32) if first non-zero coefficient is negative
         // The caller uses ~tbmask(r-1) to decide negation:
-        //   r=0:  tbmask(-1)= -1, ~(-1)=0   -> no negation
-        //   r=1:  tbmask(0) =  0, ~0  =-1   -> negate (positive first coeff -> negate)
-        //   r=-1: tbmask(-2)= -1, ~(-1)=0   -> no negation (negative first coeff)
+        // r=0: tbmask(-1)= -1, ~(-1)=0 -> no negation
+        // r=1: tbmask(0) = 0, ~0 =-1 -> negate (positive first coeff -> negate)
+        // r=-1: tbmask(-2)= -1, ~(-1)=0 -> no negation (negative first coeff)
         int n = 1 << logn;
         int r = 0;
         int c = 0xFFFFFFFF; // Mask for tracking first non-zero
 
-        for (int u = 0; u < n; u++)
-        {
+        for (int u = 0; u < n; u++) {
             int x = s[sOffset + u];
             int nz = c & tbmaskInt(x | -x); // Non-zero mask
             c &= ~nz; // Clear the bit for this coefficient
@@ -758,7 +1041,8 @@ class HawkSigner{
         }
 
         // Return raw r (same bit pattern as C's uint32_t return value):
-        //   0 = all-zero, 1 = positive first coeff, -1 (=0xFFFFFFFF) = negative first coeff
+        // 0 = all-zero, 1 = positive first coeff, -1 (=0xFFFFFFFF) = negative first
+        // coeff
         return r;
     }
 
@@ -945,14 +1229,14 @@ class HawkSigner{
     }
 
     public static boolean encodeSig(int logn, byte[] sig, short sigOffset, short sigLen, byte[] salt, short saltOffset,
-        short saltLen, short[] s1, short s1Offset) {
-        short n = (short)(1 << logn);
-        byte low = (byte)((logn == 10) ? 6 : 5);
+            short saltLen, short[] s1, short s1Offset) {
+        short n = (short) (1 << logn);
+        byte low = (byte) ((logn == 10) ? 6 : 5);
 
         short bufOffset = sigOffset;
-        short remainingLen = (short)sigLen;
+        short remainingLen = (short) sigLen;
 
-        short minSize = (short)(saltLen + (((short)(low + 2)) << (logn - 3)));
+        short minSize = (short) (saltLen + (((short) (low + 2)) << (logn - 3)));
 
         if (remainingLen < minSize) {
             return false;
@@ -973,29 +1257,29 @@ class HawkSigner{
             byte x = 0;
 
             for (v = 0; v < 8; v++) {
-                short coeff = s1[(short)(s1Offset + u + v)];
-                byte signBit = (byte)((coeff >> 15) & 1);
-                x |= (byte)(signBit << v);
+                short coeff = s1[(short) (s1Offset + u + v)];
+                byte signBit = (byte) ((coeff >> 15) & 1);
+                x |= (byte) (signBit << v);
             }
 
-            sig[(short)(bufOffset + (u >> 3))] = x;
+            sig[(short) (bufOffset + (u >> 3))] = x;
         }
 
-        bufOffset += (short)(n >> 3);
-        remainingLen -= (short)(n >> 3);
+        bufOffset += (short) (n >> 3);
+        remainingLen -= (short) (n >> 3);
 
         // 3. Fixed-size low bits; reimplemented without long.
-        short lowMask = (short)((1 << low) - 1);
+        short lowMask = (short) ((1 << low) - 1);
 
         int acc8 = 0; // using int for accumulation to avoid long arithmetic
         short accBits = 0;
 
         for (u = 0; u < n; u++) {
 
-            short w = s1[(short)(s1Offset + u)];
+            short w = s1[(short) (s1Offset + u)];
             short mask = tbmask(w);
 
-            w ^= mask;                 // abs(w)
+            w ^= mask; // abs(w)
 
             acc8 |= (w & lowMask) << accBits;
             accBits += low;
@@ -1006,7 +1290,7 @@ class HawkSigner{
                     return false;
                 }
 
-                sig[bufOffset++] = (byte)(acc8 & 0xFF);
+                sig[bufOffset++] = (byte) (acc8 & 0xFF);
 
                 acc8 >>>= 8;
                 accBits -= 8;
@@ -1020,15 +1304,15 @@ class HawkSigner{
 
         for (u = 0; u < n; u++) {
 
-            short w = s1[(short)(s1Offset + u)];
+            short w = s1[(short) (s1Offset + u)];
             short mask = tbmask(w);
 
             w ^= mask;
 
-            short k = (short)((w & 0xFFFF) >>> low);
+            short k = (short) ((w & 0xFFFF) >>> low);
 
             acc |= (1 << (accLen + k));
-            accLen += (short)(1 + k);
+            accLen += (short) (1 + k);
 
             while (accLen >= 8) {
 
@@ -1036,7 +1320,7 @@ class HawkSigner{
                     return false;
                 }
 
-                sig[bufOffset++] = (byte)acc;
+                sig[bufOffset++] = (byte) acc;
                 remainingLen--;
 
                 acc >>>= 8;
@@ -1045,20 +1329,20 @@ class HawkSigner{
         }
 
         /*
-        * Flush remaining bits
-        */
+         * Flush remaining bits
+         */
         if (accLen > 0) {
 
             if (remainingLen <= 0) {
                 return false;
             }
 
-            sig[bufOffset++] = (byte)acc;
+            sig[bufOffset++] = (byte) acc;
             remainingLen--;
         }
 
         // 5. Zero padding
-        Util.arrayFillNonAtomic(sig, bufOffset, remainingLen, (byte)0);
+        Util.arrayFillNonAtomic(sig, bufOffset, remainingLen, (byte) 0);
 
         return true;
     }
@@ -1074,24 +1358,22 @@ class HawkSigner{
     }
 
     // Sign method
-    public int sign(int logn, int useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, int privLen, byte[] tmp, int tmpLen) {
+    public int sign(int logn, int useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, int privLen, byte[] tmp,
+            int tmpLen) {
         // Ensure proper alignment for 64-bit access
-        if (tmpLen < 7)
-        {
+        if (tmpLen < 7) {
             return 0;
         }
-        if (logn < 8 || logn > 10)
-        {
+        if (logn < 8 || logn > 10) {
             return 0;
         }
 
         // Align temporary buffer for 64-bit access
         int utmp1 = 0;
         int utmp2 = (utmp1 + 7) & ~7;
-        tmpLen -= (int)(utmp2 - utmp1);
+        tmpLen -= (int) (utmp2 - utmp1);
 
-        if (tmpLen < (6 << logn))
-        {
+        if (tmpLen < (6 << logn)) {
             return 0;
         }
 
@@ -1125,7 +1407,7 @@ class HawkSigner{
         shake256jc.squeezeBytes(hm, 0, 64);
 
         // Main signing loop
-        for (int attempt = 0; ; attempt += 2) {
+        for (int attempt = 0;; attempt += 2) {
             int t0Offset = 0;
             int t1Offset = t0Offset + (n >> 3);
             int h0Offset = t1Offset + (n >> 3);
@@ -1171,11 +1453,11 @@ class HawkSigner{
             extract_lowbit(logn, g2, g);
 
             basisM2Mul(logn,
-                ww, t0Offset, ww, t1Offset,  // t0, t1
-                ww, h0Offset, ww, h1Offset,  // h0, h1
-                f2, 0, g2, 0,                // f2, g2
-                F2, 0, G2, 0,                // F2, G2
-                tmp, xxOffset);              // tmp space
+                    ww, t0Offset, ww, t1Offset, // t0, t1
+                    ww, h0Offset, ww, h1Offset, // h0, h1
+                    f2, 0, g2, 0, // f2, g2
+                    F2, 0, G2, 0, // F2, G2
+                    tmp, xxOffset); // tmp space
 
             // Sample x using Gaussian distribution
             int xsn;
@@ -1209,18 +1491,18 @@ class HawkSigner{
             mq18433NTT(logn, w1, 0);
             mq18433NTT(logn, w2, 0);
             for (int u = 0; u < n; u++) {
-                w1[u] = (short)mq18433MontyMul(w1[u] & 0xFFFF, w2[u] & 0xFFFF);
+                w1[u] = (short) mq18433MontyMul(w1[u] & 0xFFFF, w2[u] & 0xFFFF);
             }
 
             // w3 <- f*x1 - g*x0, then INTT to get polynomial
-            mq18433PolySetSmall(logn, w2, 0, x0, n);  // x1 = x0[n..2n-1]
+            mq18433PolySetSmall(logn, w2, 0, x0, n); // x1 = x0[n..2n-1]
             mq18433PolySetSmall(logn, w3, 0, f, 0);
             mq18433NTT(logn, w2, 0);
             mq18433NTT(logn, w3, 0);
             for (int u = 0; u < n; u++) {
-                w3[u] = (short)mq18433ToMonty(mq18433Sub(
-                    mq18433MontyMul(w2[u] & 0xFFFF, w3[u] & 0xFFFF),
-                    w1[u] & 0xFFFF));
+                w3[u] = (short) mq18433ToMonty(mq18433Sub(
+                        mq18433MontyMul(w2[u] & 0xFFFF, w3[u] & 0xFFFF),
+                        w1[u] & 0xFFFF));
             }
             mq18433NTT(logn, w3, 0);
             mq18433PolySnorm(logn, w3, 0);
@@ -1229,7 +1511,7 @@ class HawkSigner{
 
             int ps = polySymBreak(logn, s1, 0);
             int lim = 1 << ((logn == 10) ? 10 : 9);
-            short nm = (short) ~tbmask((short)(ps - 1));
+            short nm = (short) ~tbmask((short) (ps - 1));
 
             byte[] h1buf = new byte[n >> 3];
             Util.arrayCopy(ww, h1Offset, h1buf, 0, n >> 3);
@@ -1244,7 +1526,7 @@ class HawkSigner{
                 // -1 if y < -lim or y >= lim, 0 otherwise
                 int outOfRange = ((y + lim) >> 31) | ((lim - 1 - y) >> 31);
                 reject |= outOfRange;
-                s1[u] = (short)y;
+                s1[u] = (short) y;
             }
 
             if (reject != 0) {
@@ -1253,7 +1535,7 @@ class HawkSigner{
 
             // Encode signature
             short sigLen = HAWK_SIG_SIZE(logn);
-            if (encodeSig(logn, tmp, (short)0, sigLen, salt, (short)0, saltLen, s1, (short)0)) {
+            if (encodeSig(logn, tmp, (short) 0, sigLen, salt, (short) 0, saltLen, s1, (short) 0)) {
                 if (sig != null) {
                     Util.arrayCopy(tmp, 0, sig, 0, sigLen);
                 }
@@ -1263,20 +1545,18 @@ class HawkSigner{
     }
 
     public int signMessage(
-        int logn,
-        byte[] sig,
-        byte[] message,
-        short messageLen,
-        byte[] priv,
-        int privLen,
-        byte[] tmp,
-        int tmpLen)
-    {
+            int logn,
+            byte[] sig,
+            byte[] message,
+            short messageLen,
+            byte[] priv,
+            int privLen,
+            byte[] tmp,
+            int tmpLen) {
         byte[] state = new byte[200];
         int[] scratch = new int[120];
 
-        SHAKE256JC sc =
-            new SHAKE256JC(state, scratch);
+        SHAKE256JC sc = new SHAKE256JC(state, scratch);
 
         // Equivalent of hawkSignStart(sc)
         sc.reset();
@@ -1286,13 +1566,13 @@ class HawkSigner{
 
         // Equivalent of hawkSignFinish(...)
         return sign(
-            logn,
-            1,
-            sig,
-            sc,
-            priv,
-            privLen,
-            tmp,
-            tmpLen);
+                logn,
+                1,
+                sig,
+                sc,
+                priv,
+                privLen,
+                tmp,
+                tmpLen);
     }
 }
