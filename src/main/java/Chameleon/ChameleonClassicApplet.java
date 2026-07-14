@@ -2,7 +2,6 @@ package Chameleon;
 
 import javacard.framework.*; // Applet class
 import javacard.security.*; // Cryptographic operations
-import javacardx.crypto.*; // Extended cryptographic operations
 
 public class ChameleonClassicApplet extends Applet {
 
@@ -23,7 +22,6 @@ public class ChameleonClassicApplet extends Applet {
 
     private byte[] dataToSign; // data to be signed
     private short dataToSignLen;
-    private static final short TOTAL_LEN = 255; // total length of data to be signed (including padding)
 
     // ECDSA values 
     private ECPrivateKey classicalPrivateKey; // on card
@@ -37,9 +35,6 @@ public class ChameleonClassicApplet extends Applet {
     private byte[] certificate; // stored on card
     private short certLen;
 
-    // Temporary APDU buffer - communication
-    private byte[] buffer;
-
     private byte[] rsaModulusBuffer = new byte[256];
     private short rsaModulusLen = 0;
 
@@ -51,22 +46,19 @@ public class ChameleonClassicApplet extends Applet {
     private short signatureLen;
 
     private boolean personalized;
-    private RandomData random;
-    private byte[] iccDynamicData = new byte[8];
 
     protected ChameleonClassicApplet() {
         dataToSign = new byte[255];
         certificate = new byte[2048];
         signatureBuffer = new byte[256];
 
-        classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_256, false);
-        classicalSignature = Signature.getInstance( Signature.ALG_ECDSA_SHA_256, false);
+        classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_F2M_193, false);
+        classicalSignature = Signature.getInstance( Signature.ALG_ECDSA_SHA, false);
 
         rsaPrivateKey = (RSAPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_RSA_PRIVATE, KeyBuilder.LENGTH_RSA_1024, false);
         rsaSignature = Signature.getInstance(Signature.ALG_RSA_SHA_PKCS1, false);
 
         personalized = false;
-        random = RandomData.getInstance(RandomData.ALG_SECURE_RANDOM);
         register(); // makes the applet selectable 
     }
 

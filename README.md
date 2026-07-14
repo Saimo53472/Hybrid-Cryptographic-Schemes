@@ -1,5 +1,24 @@
 # Hybrid-Cryptographic-Schemes
 
+## Install
+```
+mvn install:install-file `
+  "-Dfile=C:\Users\culachisi\Hybrid-Cryptographic-Schemes\jcardsim.jar" `
+  "-DgroupId=com.licel" `
+  "-DartifactId=jcardsim" `
+  "-Dversion=3.0.5" `
+  "-Dpackaging=jar"
+```
+
+```
+mvn install:install-file `
+>>   "-Dfile=C:\Users\culachisi\Hybrid-Cryptographic-Schemes\api_classic-3.0.5.jar" `
+>>   "-DgroupId=org.javacard" `
+>>   "-DartifactId=javacard-api" `
+>>   "-Dversion=3.0.5" `
+>>   "-Dpackaging=jar"
+```
+
 ## Commands
 To use jdk17:
 WSL
@@ -26,11 +45,30 @@ Pwsh
 $env:JC_HOME = "$env:USERPROFILE\Downloads\java_card_devkit_tools-bin-v25.1-b_611-26-OCT-2025"
 $env:PATH = "$env:JC_HOME\bin;$env:PATH"
 ```
+```
+$env:JC_HOME = "$env:USERPROFILE\Downloads\java_card_kit-2_2_2"
+$env:PATH = "$env:JC_HOME\bin;$env:PATH"
+```
+
+Mvn
+```
+$env:MAVEN_HOME="C:\Tools\apache-maven-3.9.16"
+$env:PATH="$env:MAVEN_HOME\bin;$env:PATH"
+
+mvn -version
+```
 
 ## Test - Simulator
 Pwsh
 ```
 javac -source 8 -target 8 -d out -cp "out;.;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" src/main/java/Chameleon/ChameleonApplet.java
+```
+```
+javac -source 8 -target 8 -d out -cp "out;.;jcardsim-2.2.2-all.jar;gp.jar" src/main/java/Chameleon/ChameleonApplet.java
+```
+
+```
+javac -d out -cp "out;.;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" src/main/java/Chameleon/ChameleonApplet.java
 ```
 
 To convert to cap:

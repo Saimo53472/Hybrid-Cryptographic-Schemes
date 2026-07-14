@@ -3,15 +3,14 @@ package Chameleon;
 import SHAKE.SHAKE256JC;
 import javacard.framework.*;
 import javacard.security.*;
-import javacardx.crypto.*;
 
-public class Hawk {
+public class Hawk extends Applet {
     private static final byte INS_INIT = (byte) 0x10;
-    private static final byte INS_GET_CERT = (byte) 0x20;
+    // private static final byte INS_GET_CERT = (byte) 0x20;
     private static final byte INS_SIGN_DELTA = (byte) 0x40;
     private static final byte INS_GET_SIG_DELTA = (byte) 0x60;
     private static final byte INS_LOAD_PRIVKEY_DELTA = (byte) 0x71;
-    private static final byte INS_LOAD_CERT = (byte) 0x72;
+    // private static final byte INS_LOAD_CERT = (byte) 0x72;
     private static final byte INS_LOCK_CARD = (byte) 0x73;
     private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88;
 
@@ -19,22 +18,28 @@ public class Hawk {
     private short dataToSignLen;
 
     private byte[] pqPrivateKey;
-    private byte[] pqSignature;
 
-    private byte[] certificate;
-    private short certLen;
+    // private byte[] certificate;
+    // private short certLen;
 
     private byte[] signatureBuffer;
     private short signatureLen;
 
     private boolean personalized;
-    private RandomData random;
 
     private short pqKeyOffset = 0;
     private short pqKeyLen = 0;
 
     protected Hawk() {
-        this.register();
+        dataToSign = new byte[255];
+        // certificate = new byte[2048];
+        signatureBuffer = new byte[128];
+
+        pqPrivateKey = new byte[2048];
+
+        personalized = false;
+
+        register();
     }
 
     public static void install(byte[] var0, short var1, byte var2) {
@@ -55,9 +60,9 @@ public class Hawk {
                 initSession(apdu);
                 return;
 
-            case INS_GET_CERT:
-                sendCertificate(apdu);
-                return;
+            // case INS_GET_CERT:
+            //     sendCertificate(apdu);
+            //     return;
 
             case INS_SIGN_DELTA:
                 createSignatureDelta(apdu);
@@ -71,9 +76,9 @@ public class Hawk {
                 loadPrivateKeyDelta(apdu);
                 return;
 
-            case INS_LOAD_CERT:
-                loadCertificate(apdu);
-                return;
+            // case INS_LOAD_CERT:
+            //     loadCertificate(apdu);
+            //     return;
 
             case INS_LOCK_CARD:
                 lockCard();
@@ -103,43 +108,43 @@ public class Hawk {
         pqKeyOffset += len;
     }
 
-    private short certOffset = 0;
+    // private short certOffset = 0;
 
-    private void loadCertificate(APDU apdu) {
-        if (personalized)
-            ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
+    // private void loadCertificate(APDU apdu) {
+    //     if (personalized)
+    //         ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
-        byte[] buf = apdu.getBuffer();
-        short len = apdu.setIncomingAndReceive();
+    //     byte[] buf = apdu.getBuffer();
+    //     short len = apdu.setIncomingAndReceive();
 
-        if (buf[ISO7816.OFFSET_P1] == 0x00) {
-            certOffset = 0;
-        }
+    //     if (buf[ISO7816.OFFSET_P1] == 0x00) {
+    //         certOffset = 0;
+    //     }
 
-        Util.arrayCopy(buf, ISO7816.OFFSET_CDATA, certificate, certOffset, len);
-        certOffset += len;
-        certLen = certOffset;
-    }
+    //     Util.arrayCopy(buf, ISO7816.OFFSET_CDATA, certificate, certOffset, len);
+    //     certOffset += len;
+    //     certLen = certOffset;
+    // }
 
-    private void sendCertificate(APDU apdu) {
-        if (certLen == 0)
-            ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
+    // private void sendCertificate(APDU apdu) {
+    //     if (certLen == 0)
+    //         ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
 
-        byte[] buf = apdu.getBuffer();
+    //     byte[] buf = apdu.getBuffer();
 
-        short offset = (short) (((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
-                (buf[ISO7816.OFFSET_P2] & 0xFF));
+    //     short offset = (short) (((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
+    //             (buf[ISO7816.OFFSET_P2] & 0xFF));
 
-        if (offset >= certLen)
-            ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
+    //     if (offset >= certLen)
+    //         ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
 
-        short remaining = (short) (certLen - offset);
-        short chunk = remaining > 200 ? 200 : remaining;
+    //     short remaining = (short) (certLen - offset);
+    //     short chunk = remaining > 200 ? 200 : remaining;
 
-        apdu.setOutgoing();
-        apdu.setOutgoingLength(chunk);
-        apdu.sendBytesLong(certificate, offset, chunk);
-    }
+    //     apdu.setOutgoing();
+    //     apdu.setOutgoingLength(chunk);
+    //     apdu.sendBytesLong(certificate, offset, chunk);
+    // }
 
     private void lockCard() {
         personalized = true;
@@ -184,10 +189,6 @@ public class Hawk {
             ISOException.throwIt(
                     ISO7816.SW_CONDITIONS_NOT_SATISFIED);
 
-        byte[] state = new byte[200];
-        int[] scratch = new int[120];
-
-        SHAKE256JC shake = new SHAKE256JC(state, scratch);
         HawkSigner signer = new HawkSigner();
 
         byte[] tmp = new byte[6 * 1024]; // whatever size sign() requires
@@ -211,12 +212,10 @@ public class Hawk {
 
 class HawkSigner {
     // Parameters
-    private int q;
     private int logn;
     private int n;
-    private static final int Q;
-    private static final int R2;
-    private int maxLogn;
+    private static final int Q = 18433;
+    private static final int R2 = 806;
     private short saltLen;
     private int maxXnorm;
     private RandomData random;
@@ -414,24 +413,13 @@ class HawkSigner {
 
     // Constructor
     public HawkSigner() {
-        q = 1;
         logn = 9;
         n = 1 << logn; // 2^logn = 512
-        Q = 18433;
-        R2 = 806;
-        maxLogn = 9;
         saltLen = 24;
         maxXnorm = 8317;
-        random = RandomData.getInstance(RandomData.ALG_SECURE_RANDOM);
     }
 
     // Methods
-    // Size calculations for private key and signature
-    private static short HAWK_PRIVKEY_SIZE(int logn) {
-        int n = 1 << logn;
-        return (short) (8 + (1 << (logn - 5)) + 2 * (n >> 3) + (n >> 4));
-    }
-
     public static short HAWK_SIG_SIZE(int logn) {
         return (short) (249 + 306 * (2 >> (10 - logn)) + 360 * (1 >> (10 - logn)));
     }
@@ -841,11 +829,11 @@ class HawkSigner {
         bpXor(hn, d, dOffset, a, aOffset, a, aOffset + halfByteLen);
         bpXor(hn, d, dOffset + halfByteLen, b, bOffset, b, bOffset + halfByteLen);
         bpXor(n, tmp, t1Offset, d, dOffset, d, dOffset + halfByteLen);
-        Arrays.fill(tmp, t1Offset, t1Offset + byteLen, (byte) 0);
+        Util.arrayFillNonAtomic(tmp, (short) t1Offset, (short) byteLen, (byte) 0);
         bpMuladd256(tmp, t1Offset, d, dOffset, d, dOffset + halfByteLen, tmp, t2Offset);
 
         // d <- a0*b0 + a1*b1
-        Arrays.fill(d, dOffset, dOffset + byteLen, (byte) 0);
+        Util.arrayFillNonAtomic(d, (short) dOffset, (short) byteLen, (byte) 0);
         bpMuladd256(d, dOffset, a, aOffset, b, bOffset, tmp, t2Offset);
         bpMuladd256(d, dOffset, a, aOffset + halfByteLen, b, bOffset + halfByteLen, tmp, t2Offset);
 
@@ -1053,13 +1041,12 @@ class HawkSigner {
      * Returned value is the squared norm of x.
      */
     public int sigGauss(
-        int logn,
-        SHAKE256JC shake,
-        byte[] x,
-        int xOffset,
-        byte[] t,
-        int tOffset)
-    {
+            int logn,
+            SHAKE256JC shake,
+            byte[] x,
+            int xOffset,
+            byte[] t,
+            int tOffset) {
         int[] tabLoHi;
         int[] tabLoLo;
         short[] tabHi;
@@ -1067,158 +1054,135 @@ class HawkSigner {
         int hiLen;
         int loLen;
 
-        switch (logn)
-        {
-        case 9:
-            tabHi = SIG_GAUSS_HI_HAWK_512;
-            tabLoHi = SIG_GAUSS_LO_HI_HAWK_512;
-            tabLoLo = SIG_GAUSS_LO_LO_HAWK_512;
-            hiLen = SG_MAX_HI_HAWK_512;
-            loLen = SG_MAX_LO_HAWK_512;
-            break;
+        switch (logn) {
+            case 9:
+                tabHi = SIG_GAUSS_HI_HAWK_512;
+                tabLoHi = SIG_GAUSS_LO_HI_HAWK_512;
+                tabLoLo = SIG_GAUSS_LO_LO_HAWK_512;
+                hiLen = SG_MAX_HI_HAWK_512;
+                loLen = SG_MAX_LO_HAWK_512;
+                break;
 
-        default:
-            throw new IllegalArgumentException(
-                "Unsupported logn: " + logn);
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported logn: " + logn);
         }
 
         int n = 1 << logn;
 
         /*
-        * Generate the 40-byte seed exactly like
-        * the original Hawk implementation.
-        */
+         * Generate the 40-byte seed exactly like
+         * the original Hawk implementation.
+         */
         byte[] seed = new byte[41];
         byte[] tmp = new byte[40];
-        random.nextBytes(seed, 0, 40);
+        random.nextBytes(seed, (short) 0, (short) 40);
 
         int sn = 0;
 
-        for (int j = 0; j < 4; j++)
-        {
-            seed[40] = (byte)j;
+        for (int j = 0; j < 4; j++) {
+            seed[40] = (byte) j;
 
             shake.reset();
             shake.absorbXor(seed, 0, 41);
             shake.finalizeSqueeze();
 
-            for (int u = 0; u < (n << 1); u += 16)
-            {
+            for (int u = 0; u < (n << 1); u += 16) {
                 shake.squeezeBytes(tmp, 0, 40);
 
-                for (int k = 0; k < 4; k++)
-                {
+                for (int k = 0; k < 4; k++) {
                     int v = u + (j << 2) + k;
 
-                    int loLo =
-                        dec32le(tmp, k * 8);
+                    int loLo = dec32le(tmp, k * 8);
 
-                    int loHi =
-                        dec32le(tmp, (k * 8) + 4);
+                    int loHi = dec32le(tmp, (k * 8) + 4);
 
-                    int hi =
-                        dec16le(tmp, 32 + (k << 1));
+                    int hi = dec16le(tmp, 32 + (k << 1));
 
                     /*
-                    * Extract sign bit.
-                    */
+                     * Extract sign bit.
+                     */
                     int neg = -(loHi >>> 31);
 
                     loHi &= 0x7FFFFFFF;
                     hi &= 0x7FFF;
 
-                    int pbit =
-                        (t[tOffset + (v >>> 3)]
-                            >>> (v & 7)) & 1;
+                    int pbit = (t[tOffset + (v >>> 3)] >>> (v & 7)) & 1;
 
                     int pOddw = -pbit;
 
                     int r = 0;
 
                     /*
-                    * Main comparison loop.
-                    */
-                    for (int i = 0; i < hiLen; i += 2)
-                    {
+                     * Main comparison loop.
+                     */
+                    for (int i = 0; i < hiLen; i += 2) {
                         int mask = pOddw;
 
-                        int thi =
-                            (tabHi[i] & 0xFFFF)
-                            ^ (mask
-                            & ((tabHi[i] & 0xFFFF)
-                            ^ (tabHi[i + 1] & 0xFFFF));
+                        int thi = (tabHi[i] & 0xFFFF)
+                                ^ (mask
+                                        & ((tabHi[i] & 0xFFFF)
+                                                ^ (tabHi[i + 1] & 0xFFFF)));
 
-                        int tloHi =
-                            tabLoHi[i]
-                            ^ (mask
-                            & (tabLoHi[i]
-                            ^ tabLoHi[i + 1]));
+                        int tloHi = tabLoHi[i]
+                                ^ (mask
+                                        & (tabLoHi[i]
+                                                ^ tabLoHi[i + 1]));
 
-                        int tloLo =
-                            tabLoLo[i]
-                            ^ (mask
-                            & (tabLoLo[i]
-                            ^ tabLoLo[i + 1]));
+                        int tloLo = tabLoLo[i]
+                                ^ (mask
+                                        & (tabLoLo[i]
+                                                ^ tabLoLo[i + 1]));
 
-                        int borrow =
-                            uLessThan(loLo, tloLo);
+                        int borrow = uLessThan(loLo, tloLo);
 
-                        int diffHi =
-                            loHi - tloHi - borrow;
+                        int diffHi = loHi - tloHi - borrow;
 
-                        int cc =
-                            diffHi >>> 31;
+                        int cc = diffHi >>> 31;
 
-                        int diffHi16 =
-                            hi - thi - cc;
+                        int diffHi16 = hi - thi - cc;
 
                         r += diffHi16 >>> 31;
                     }
 
                     /*
-                    * Remaining entries.
-                    */
+                     * Remaining entries.
+                     */
                     int hinz = (hi - 1) >>> 31;
 
-                    for (int i = hiLen; i < loLen; i += 2)
-                    {
+                    for (int i = hiLen; i < loLen; i += 2) {
                         int mask = pOddw;
 
-                        int tloHi =
-                            tabLoHi[i]
-                            ^ (mask
-                            & (tabLoHi[i]
-                            ^ tabLoHi[i + 1]));
+                        int tloHi = tabLoHi[i]
+                                ^ (mask
+                                        & (tabLoHi[i]
+                                                ^ tabLoHi[i + 1]));
 
-                        int tloLo =
-                            tabLoLo[i]
-                            ^ (mask
-                            & (tabLoLo[i]
-                            ^ tabLoLo[i + 1]));
+                        int tloLo = tabLoLo[i]
+                                ^ (mask
+                                        & (tabLoLo[i]
+                                                ^ tabLoLo[i + 1]));
 
-                        int borrow =
-                            uLessThan(loLo, tloLo);
+                        int borrow = uLessThan(loLo, tloLo);
 
-                        int diffHi =
-                            loHi - tloHi - borrow;
+                        int diffHi = loHi - tloHi - borrow;
 
-                        int cc =
-                            diffHi >>> 31;
+                        int cc = diffHi >>> 31;
 
                         r += hinz & cc;
                     }
 
                     /*
-                    * Enforce parity.
-                    */
+                     * Enforce parity.
+                     */
                     r = (r << 1) - pOddw;
 
                     /*
-                    * Apply sign.
-                    */
+                     * Apply sign.
+                     */
                     r = (r ^ neg) - neg;
 
-                    x[xOffset + v] = (byte)r;
+                    x[xOffset + v] = (byte) r;
 
                     sn += r * r;
                 }
@@ -1381,11 +1345,9 @@ class HawkSigner {
         int hpubLen = 1 << (logn - 4);
 
         // Memory layout in tmp buffer
-        int offset = 0;
         byte[] g = new byte[n];
         byte[] ww = new byte[2 * n];
         byte[] x0 = new byte[2 * n];
-        byte[] x1 = new byte[n];
         byte[] f = new byte[n];
 
         // Re-expand the private key
@@ -1394,17 +1356,21 @@ class HawkSigner {
 
         // Regenerate f and g from seed // DecodePrivate(priv) & Regeneratefg(kgseed)
         byte[] seed = new byte[seedLen];
-        Util.arrayCopy(priv, 0, seed, 0, seedLen);
+        Util.arrayCopy(priv, (short) 0, seed, (short) 0, (short) seedLen);
         regen_fg(f, (short) 0, g, (short) 0, seed);
-        Util.arrayCopy(priv, seedLen, F2, 0, n >> 3);
-        Util.arrayCopy(priv, seedLen + (n >> 3), G2, 0, n >> 3);
-        Util.arrayCopy(priv, seedLen + 2 * (n >> 3), hpub, 0, hpubLen);
+        Util.arrayCopy(seed, (short) 0, tmp, (short) 0, (short) seedLen);
+        F2 = new byte[n >> 3];
+        G2 = new byte[n >> 3];
+        hpub = new byte[hpubLen];
+        Util.arrayCopy(priv, (short) seedLen, F2, (short) 0, (short) (n >> 3));
+        Util.arrayCopy(priv, (short) (seedLen + (n >> 3)), G2, (short) 0, (short) (n >> 3));
+        Util.arrayCopy(priv, (short) (seedLen + 2 * (n >> 3)), hpub, (short) 0, (short) hpubLen);
 
         // Compute hm = SHAKE256(message || hpub)
         byte[] hm = new byte[64];
-        shake256jc.absorbXor(hpub, 0, hpubLen);
+        shake256jc.absorbXor(hpub, (short) 0, (short) hpubLen);
         shake256jc.finalizeSqueeze();
-        shake256jc.squeezeBytes(hm, 0, 64);
+        shake256jc.squeezeBytes(hm, (short) 0, (short) 64);
 
         // Main signing loop
         for (int attempt = 0;; attempt += 2) {
@@ -1418,7 +1384,7 @@ class HawkSigner {
 
             // Generate salt
             byte[] salt = new byte[saltLen];
-            random.nextBytes(salt);
+            random.nextBytes(salt, (short) 0, (short) saltLen);
 
             byte[] state = new byte[200];
             int[] scratch = new int[120];
@@ -1514,7 +1480,7 @@ class HawkSigner {
             short nm = (short) ~tbmask((short) (ps - 1));
 
             byte[] h1buf = new byte[n >> 3];
-            Util.arrayCopy(ww, h1Offset, h1buf, 0, n >> 3);
+            Util.arrayCopy(ww, (short) h1Offset, h1buf, (short) 0, (short) (n >> 3));
 
             // Per-coefficient bounds check
             int reject = 0;
@@ -1537,7 +1503,7 @@ class HawkSigner {
             short sigLen = HAWK_SIG_SIZE(logn);
             if (encodeSig(logn, tmp, (short) 0, sigLen, salt, (short) 0, saltLen, s1, (short) 0)) {
                 if (sig != null) {
-                    Util.arrayCopy(tmp, 0, sig, 0, sigLen);
+                    Util.arrayCopy(tmp, (short) 0, sig, (short) 0, sigLen);
                 }
                 return 1;
             }

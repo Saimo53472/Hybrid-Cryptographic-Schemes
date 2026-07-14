@@ -1,5 +1,5 @@
 // converted by version  [v25.1]
-// on Thu Jul 09 16:24:42 CEST 2026
+// on Mon Jul 13 19:37:40 CEST 2026
 
 .package Chameleon {
 	.aid 0xA0:0x0:0x0:0x0:0x0:0x0;
@@ -12,90 +12,112 @@
 	}
 
 	.applet {
-		0xA0:0x0:0x0:0x0:0x0:0x0:0x1 ChameleonClassicApplet;
+		0xA0:0x0:0x0:0x0:0x0:0x0:0x1 Hello;
 	}
 
 	.constantPool {
 		// 0
-		instanceFieldRef byte[] ChameleonApplet/iccDynamicData;
-		// 1
-		instanceFieldRef short ChameleonApplet/pqKeyOffset;
-		// 2
-		instanceFieldRef short ChameleonApplet/pqKeyLen;
-		// 3
-		instanceFieldRef short ChameleonApplet/certOffset;
-		// 4
-		instanceFieldRef byte[] ChameleonApplet/dataToSign;
-		// 5
-		instanceFieldRef byte[] ChameleonApplet/certificate;
-		// 6
-		instanceFieldRef byte[] ChameleonApplet/signatureBuffer;
-		// 7
-		instanceFieldRef 1.18 ChameleonApplet/classicalPrivateKey;
-		// 8
-		instanceFieldRef 1.15 ChameleonApplet/classicalSignature;
-		// 9
-		instanceFieldRef byte[] ChameleonApplet/pqPrivateKey;
-		// 10
-		instanceFieldRef byte[] ChameleonApplet/pqSignature;
-		// 11
-		instanceFieldRef boolean ChameleonApplet/personalized;
-		// 12
-		instanceFieldRef 1.14 ChameleonApplet/random;
-		// 13
-		instanceFieldRef short ChameleonApplet/certLen;
-		// 14
-		instanceFieldRef short ChameleonApplet/signatureLen;
-		// 15
-		instanceFieldRef short ChameleonApplet/dataToSignLen;
-		// 16
 		instanceFieldRef byte[] ChameleonClassicApplet/rsaModulusBuffer;
-		// 17
+		// 1
 		instanceFieldRef short ChameleonClassicApplet/rsaModulusLen;
-		// 18
+		// 2
 		instanceFieldRef byte[] ChameleonClassicApplet/rsaExponentBuffer;
-		// 19
+		// 3
 		instanceFieldRef short ChameleonClassicApplet/rsaExponentLen;
-		// 20
-		instanceFieldRef byte[] ChameleonClassicApplet/iccDynamicData;
-		// 21
+		// 4
 		instanceFieldRef short ChameleonClassicApplet/certOffset;
-		// 22
+		// 5
 		instanceFieldRef byte[] ChameleonClassicApplet/dataToSign;
-		// 23
+		// 6
 		instanceFieldRef byte[] ChameleonClassicApplet/certificate;
-		// 24
+		// 7
 		instanceFieldRef byte[] ChameleonClassicApplet/signatureBuffer;
-		// 25
+		// 8
 		instanceFieldRef 1.18 ChameleonClassicApplet/classicalPrivateKey;
-		// 26
+		// 9
 		instanceFieldRef 1.15 ChameleonClassicApplet/classicalSignature;
-		// 27
+		// 10
 		instanceFieldRef 1.8 ChameleonClassicApplet/rsaPrivateKey;
-		// 28
+		// 11
 		instanceFieldRef 1.15 ChameleonClassicApplet/rsaSignature;
-		// 29
+		// 12
 		instanceFieldRef boolean ChameleonClassicApplet/personalized;
-		// 30
-		instanceFieldRef 1.14 ChameleonClassicApplet/random;
-		// 31
+		// 13
 		instanceFieldRef short ChameleonClassicApplet/certLen;
-		// 32
+		// 14
 		instanceFieldRef short ChameleonClassicApplet/signatureLen;
-		// 33
+		// 15
 		instanceFieldRef short ChameleonClassicApplet/dataToSignLen;
+		// 16
+		staticMethodRef 0.3.0()V;		// javacard/framework/Applet.<init>()V
+		// 17
+		staticMethodRef 1.15.0(BZ)Ljavacard/security/Signature;;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
+			.descriptor	Ljavacard/security/Signature;	1.15;
+
+		// 18
+		virtualMethodRef 0.3.1()V;		// register()V
+		// 19
+		.classRef ChameleonClassicApplet;
+		// 20
+		staticMethodRef ChameleonClassicApplet/<init>()V;
+		// 21
+		virtualMethodRef 0.10.1()[B;		// getBuffer()[B
+		// 22
+		staticMethodRef ChameleonClassicApplet/initSession(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 23
+		staticMethodRef ChameleonClassicApplet/sendCertificate(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 24
+		staticMethodRef ChameleonClassicApplet/createSignatureBase(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 25
+		staticMethodRef ChameleonClassicApplet/createSignatureRSA(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 26
+		staticMethodRef ChameleonClassicApplet/sendSignatureBase(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 27
+		staticMethodRef ChameleonClassicApplet/sendSignatureRSA(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 28
+		staticMethodRef ChameleonClassicApplet/loadPrivateKeyBase(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 29
+		staticMethodRef ChameleonClassicApplet/loadPrivateKeyRSA(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 30
+		staticMethodRef ChameleonClassicApplet/loadCertificate(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 31
+		staticMethodRef ChameleonClassicApplet/lockCard()V;
+		// 32
+		staticMethodRef ChameleonClassicApplet/internalAuthenticate(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 33
+		staticMethodRef 0.7.1(S)V;		// javacard/framework/ISOException.throwIt(S)V
 		// 34
 		virtualMethodRef 0.10.6()S;		// setIncomingAndReceive()S
 		// 35
 		staticMethodRef 0.16.1([BS[BSS)S;		// javacard/framework/Util.arrayCopy([BS[BSS)S
 		// 36
-		.classRef 1.18;		// javacard/security/ECPrivateKey
-		// 37
-		staticMethodRef 0.3.0()V;		// javacard/framework/Applet.<init>()V
-		// 38
-		staticMethodRef 1.15.0(BZ)Ljavacard/security/Signature;;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
-			.descriptor	Ljavacard/security/Signature;	1.15;
+		staticMethodRef 1.13.0(BSZ)Ljavacard/security/Key;;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
+			.descriptor	Ljavacard/security/Key;	1.0;
 
+		// 37
+		.classRef 1.8;		// javacard/security/RSAPrivateKey
+		// 38
+		.classRef 1.18;		// javacard/security/ECPrivateKey
 		// 39
 		virtualMethodRef 1.15.3(Ljavacard/security/Key;B)V;		// init(Ljavacard/security/Key;B)V
 			.descriptor	Ljavacard/security/Key;	1.0;
@@ -103,683 +125,24 @@
 		// 40
 		virtualMethodRef 1.15.5([BSS[BS)S;		// sign([BSS[BS)S
 		// 41
-		virtualMethodRef 0.10.7()S;		// setOutgoing()S
-		// 42
-		virtualMethodRef 0.10.9(S)V;		// setOutgoingLength(S)V
-		// 43
-		virtualMethodRef 0.10.5([BSS)V;		// sendBytesLong([BSS)V
-		// 44
-		staticMethodRef 1.14.0(B)Ljavacard/security/RandomData;;		// javacard/security/RandomData.getInstance(B)Ljavacard/security/RandomData;
-			.descriptor	Ljavacard/security/RandomData;	1.14;
-
-		// 45
-		staticMethodRef 1.13.0(BSZ)Ljavacard/security/Key;;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
-			.descriptor	Ljavacard/security/Key;	1.0;
-
-		// 46
-		virtualMethodRef 0.3.1()V;		// register()V
-		// 47
-		.classRef ChameleonApplet;
-		// 48
-		staticMethodRef ChameleonApplet/<init>()V;
-		// 49
-		virtualMethodRef 0.10.1()[B;		// getBuffer()[B
-		// 50
-		staticMethodRef ChameleonApplet/initSession(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 51
-		staticMethodRef ChameleonApplet/sendCertificate(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 52
-		staticMethodRef ChameleonApplet/createSignatureBase(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 53
-		staticMethodRef ChameleonApplet/createSignatureDelta(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 54
-		staticMethodRef ChameleonApplet/sendSignatureBase(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 55
-		.classRef 1.8;		// javacard/security/RSAPrivateKey
-		// 56
-		staticMethodRef ChameleonApplet/sendSignatureDelta(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 57
-		staticMethodRef ChameleonApplet/loadPrivateKeyBase(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 58
-		staticMethodRef ChameleonApplet/loadPrivateKeyDelta(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 59
-		staticMethodRef ChameleonApplet/loadCertificate(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 60
-		virtualMethodRef 0.3.1()V;		// register()V
-		// 61
-		.classRef ChameleonClassicApplet;
-		// 62
-		staticMethodRef ChameleonClassicApplet/<init>()V;
-		// 63
-		staticMethodRef ChameleonClassicApplet/initSession(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 64
-		staticMethodRef ChameleonClassicApplet/sendCertificate(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 65
-		staticMethodRef ChameleonClassicApplet/createSignatureBase(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 66
-		staticMethodRef ChameleonClassicApplet/createSignatureRSA(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 67
-		staticMethodRef ChameleonClassicApplet/sendSignatureBase(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 68
-		staticMethodRef ChameleonClassicApplet/sendSignatureRSA(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 69
-		staticMethodRef ChameleonClassicApplet/loadPrivateKeyBase(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 70
-		staticMethodRef ChameleonClassicApplet/loadPrivateKeyRSA(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 71
-		staticMethodRef ChameleonClassicApplet/loadCertificate(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 72
-		staticMethodRef ChameleonClassicApplet/lockCard()V;
-		// 73
-		staticMethodRef ChameleonClassicApplet/internalAuthenticate(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 74
-		staticMethodRef ChameleonApplet/lockCard()V;
-		// 75
-		staticMethodRef ChameleonApplet/internalAuthenticate(Ljavacard/framework/APDU;)V;
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-		// 76
-		staticMethodRef 0.7.1(S)V;		// javacard/framework/ISOException.throwIt(S)V
-		// 77
 		.classRef 1.12;		// javacard/security/CryptoException
-		// 78
+		// 42
 		virtualMethodRef 1.12.1()S;		// getReason()S
+		// 43
+		virtualMethodRef 0.10.7()S;		// setOutgoing()S
+		// 44
+		virtualMethodRef 0.10.9(S)V;		// setOutgoingLength(S)V
+		// 45
+		virtualMethodRef 0.10.5([BSS)V;		// sendBytesLong([BSS)V
+		// 46
+		.classRef Hello;
+		// 47
+		staticMethodRef Hello/<init>()V;
+		// 48
+		virtualMethodRef 0.3.1()V;		// register()V
 	}
 
-	.class public ChameleonApplet 0 extends 0.3 {		// extends javacard/framework/Applet
-
-		.fields {
-			private byte[] dataToSign 0;		// [B
-			private 1.18 classicalPrivateKey 1;		// Ljavacard/security/ECPrivateKey;
-			private 1.15 classicalSignature 2;		// Ljavacard/security/Signature;
-			private byte[] pqPrivateKey 3;		// [B
-			private byte[] pqSignature 4;		// [B
-			private byte[] certificate 5;		// [B
-			private byte[] buffer 6;		// [B
-			private byte[] signatureBuffer 7;		// [B
-			private 1.14 random 8;		// Ljavacard/security/RandomData;
-			private byte[] iccDynamicData 9;		// [B
-			private short dataToSignLen 10;		// S
-			private short certLen 11;		// S
-			private short signatureLen 12;		// S
-			private boolean personalized 13;		// Z
-			private short pqKeyOffset 14;		// S
-			private short pqKeyLen 15;		// S
-			private short certOffset 16;		// S
-			private static final byte INS_INIT = 16;		// B
-			private static final byte INS_GET_CERT = 32;		// B
-			private static final byte INS_SIGN_BASE = 48;		// B
-			private static final byte INS_SIGN_DELTA = 64;		// B
-			private static final byte INS_GET_SIG_BASE = 80;		// B
-			private static final byte INS_GET_SIG_DELTA = 96;		// B
-			private static final byte INS_LOAD_PRIVKEY_BASE = 112;		// B
-			private static final byte INS_LOAD_PRIVKEY_DELTA = 113;		// B
-			private static final byte INS_LOAD_CERT = 114;		// B
-			private static final byte INS_LOCK_CARD = 115;		// B
-			private static final byte INS_INTERNAL_AUTHENTICATE = -120;		// B
-			private static final short TOTAL_LEN = 255;		// S
-		}
-
-		.publicMethodTable 7 8 {
-			equals(Ljava/lang/Object;)Z 0;
-			register()V 1;
-			register([BSB)V 2;
-			selectingApplet()Z 3;
-			deselect()V 4;
-			getShareableInterfaceObject(Ljavacard/framework/AID;B)Ljavacard/framework/Shareable; 5;
-			select()Z 6;
-			process(Ljavacard/framework/APDU;)V 7;
-		}
-
-		.packageMethodTable 0 {
-		}
-
-		.method protected <init>()V 0 {
-			.stack 4;
-			.locals 0;
-
-				L0:	aload_0;
-					invokespecial 37;		// javacard/framework/Applet.<init>()V
-					aload_0;
-					bspush 8;
-					newarray 11;
-					putfield_a 0;		// reference Chameleon/ChameleonApplet.iccDynamicData
-					sconst_0;
-					putfield_s_this 1;		// short Chameleon/ChameleonApplet.pqKeyOffset
-					sconst_0;
-					putfield_s_this 2;		// short Chameleon/ChameleonApplet.pqKeyLen
-					sconst_0;
-					putfield_s_this 3;		// short Chameleon/ChameleonApplet.certOffset
-					aload_0;
-					sspush 255;
-					newarray 11;
-					putfield_a 4;		// reference Chameleon/ChameleonApplet.dataToSign
-					aload_0;
-					sspush 2048;
-					newarray 11;
-					putfield_a 5;		// reference Chameleon/ChameleonApplet.certificate
-					aload_0;
-					sspush 128;
-					newarray 11;
-					putfield_a 6;		// reference Chameleon/ChameleonApplet.signatureBuffer
-					aload_0;
-					bspush 12;
-					sspush 256;
-					sconst_0;
-					invokestatic 45;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
-					checkcast 0 36;		// T_CLASSORINTERFACE javacard/security/ECPrivateKey
-					putfield_a 7;		// reference Chameleon/ChameleonApplet.classicalPrivateKey
-					aload_0;
-					bspush 33;
-					sconst_0;
-					invokestatic 38;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
-					putfield_a 8;		// reference Chameleon/ChameleonApplet.classicalSignature
-					aload_0;
-					sspush 2048;
-					newarray 11;
-					putfield_a 9;		// reference Chameleon/ChameleonApplet.pqPrivateKey
-					aload_0;
-					sspush 512;
-					newarray 11;
-					putfield_a 10;		// reference Chameleon/ChameleonApplet.pqSignature
-					sconst_0;
-					putfield_b_this 11;		// boolean Chameleon/ChameleonApplet.personalized
-					aload_0;
-					sconst_2;
-					invokestatic 44;		// javacard/security/RandomData.getInstance(B)Ljavacard/security/RandomData;
-					putfield_a 12;		// reference Chameleon/ChameleonApplet.random
-					aload_0;
-					invokevirtual 46;		// register()V
-					return;
-		}
-
-		.method public static install([BSB)V 1 {
-			.stack 2;
-			.locals 0;
-
-				L0:	new 47;		// Chameleon/ChameleonApplet
-					dup;
-					invokespecial 48;		// Chameleon/ChameleonApplet.<init>()V
-					pop;
-					return;
-		}
-
-		.method public process(Ljavacard/framework/APDU;)V 7 {
-			.stack 2;
-			.locals 1;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
-					astore_2;
-					aload_2;
-					sconst_0;
-					baload;
-					ifne L3;
-				L1:	aload_2;
-					sconst_1;
-					baload;
-					bspush -92;
-					if_scmpne L3;
-				L2:	return;
-				L3:	aload_2;
-					sconst_1;
-					baload;
-					slookupswitch L15 11 -120 L14 16 L4 32 L5 48 L6 64 L7 80 L8 96 L9 112 L10 113 L11 114 L12 115 L13;
-				L4:	aload_0;
-					aload_1;
-					invokespecial 50;		// Chameleon/ChameleonApplet.initSession(Ljavacard/framework/APDU;)V
-					return;
-				L5:	aload_0;
-					aload_1;
-					invokespecial 51;		// Chameleon/ChameleonApplet.sendCertificate(Ljavacard/framework/APDU;)V
-					return;
-				L6:	aload_0;
-					aload_1;
-					invokespecial 52;		// Chameleon/ChameleonApplet.createSignatureBase(Ljavacard/framework/APDU;)V
-					return;
-				L7:	aload_0;
-					aload_1;
-					invokespecial 53;		// Chameleon/ChameleonApplet.createSignatureDelta(Ljavacard/framework/APDU;)V
-					return;
-				L8:	aload_0;
-					aload_1;
-					invokespecial 54;		// Chameleon/ChameleonApplet.sendSignatureBase(Ljavacard/framework/APDU;)V
-					return;
-				L9:	aload_0;
-					aload_1;
-					invokespecial 56;		// Chameleon/ChameleonApplet.sendSignatureDelta(Ljavacard/framework/APDU;)V
-					return;
-				L10:	aload_0;
-					aload_1;
-					invokespecial 57;		// Chameleon/ChameleonApplet.loadPrivateKeyBase(Ljavacard/framework/APDU;)V
-					return;
-				L11:	aload_0;
-					aload_1;
-					invokespecial 58;		// Chameleon/ChameleonApplet.loadPrivateKeyDelta(Ljavacard/framework/APDU;)V
-					return;
-				L12:	aload_0;
-					aload_1;
-					invokespecial 59;		// Chameleon/ChameleonApplet.loadCertificate(Ljavacard/framework/APDU;)V
-					return;
-				L13:	aload_0;
-					invokespecial 74;		// Chameleon/ChameleonApplet.lockCard()V
-					return;
-				L14:	aload_0;
-					aload_1;
-					invokespecial 75;		// Chameleon/ChameleonApplet.internalAuthenticate(Ljavacard/framework/APDU;)V
-					return;
-				L15:	sspush 27904;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
-					return;
-		}
-
-		.method private loadPrivateKeyBase(Ljavacard/framework/APDU;)V {
-			.stack 4;
-			.locals 2;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	getfield_b_this 11;		// boolean Chameleon/ChameleonApplet.personalized
-					ifeq L2;
-				L1:	sspush 27010;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
-				L2:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
-					astore_2;
-					aload_1;
-					invokevirtual 34;		// setIncomingAndReceive()S
-					sstore_3;
-					getfield_a_this 7;		// reference Chameleon/ChameleonApplet.classicalPrivateKey
-					aload_2;
-					sconst_5;
-					sload_3;
-					invokeinterface 4 36 18;		// javacard/security/ECPrivateKey
-					return;
-		}
-
-		.method private loadPrivateKeyDelta(Ljavacard/framework/APDU;)V {
-			.stack 5;
-			.locals 2;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	getfield_b_this 11;		// boolean Chameleon/ChameleonApplet.personalized
-					ifeq L2;
-				L1:	sspush 27010;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
-				L2:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
-					astore_2;
-					aload_1;
-					invokevirtual 34;		// setIncomingAndReceive()S
-					sstore_3;
-					aload_2;
-					sconst_2;
-					baload;
-					ifne L4;
-				L3:	sconst_0;
-					putfield_s_this 1;		// short Chameleon/ChameleonApplet.pqKeyOffset
-				L4:	aload_2;
-					sconst_5;
-					getfield_a_this 9;		// reference Chameleon/ChameleonApplet.pqPrivateKey
-					getfield_s_this 1;		// short Chameleon/ChameleonApplet.pqKeyOffset
-					sload_3;
-					invokestatic 35;		// javacard/framework/Util.arrayCopy([BS[BSS)S
-					pop;
-					aload_0;
-					dup;
-					getfield_s 1;		// short Chameleon/ChameleonApplet.pqKeyOffset
-					sload_3;
-					sadd;
-					putfield_s 1;		// short Chameleon/ChameleonApplet.pqKeyOffset
-					return;
-		}
-
-		.method private loadCertificate(Ljavacard/framework/APDU;)V {
-			.stack 5;
-			.locals 2;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	getfield_b_this 11;		// boolean Chameleon/ChameleonApplet.personalized
-					ifeq L2;
-				L1:	sspush 27010;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
-				L2:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
-					astore_2;
-					aload_1;
-					invokevirtual 34;		// setIncomingAndReceive()S
-					sstore_3;
-					aload_2;
-					sconst_2;
-					baload;
-					ifne L4;
-				L3:	sconst_0;
-					putfield_s_this 3;		// short Chameleon/ChameleonApplet.certOffset
-				L4:	aload_2;
-					sconst_5;
-					getfield_a_this 5;		// reference Chameleon/ChameleonApplet.certificate
-					getfield_s_this 3;		// short Chameleon/ChameleonApplet.certOffset
-					sload_3;
-					invokestatic 35;		// javacard/framework/Util.arrayCopy([BS[BSS)S
-					pop;
-					aload_0;
-					dup;
-					getfield_s 3;		// short Chameleon/ChameleonApplet.certOffset
-					sload_3;
-					sadd;
-					putfield_s 3;		// short Chameleon/ChameleonApplet.certOffset
-					aload_0;
-					getfield_s_this 3;		// short Chameleon/ChameleonApplet.certOffset
-					putfield_s 13;		// short Chameleon/ChameleonApplet.certLen
-					return;
-		}
-
-		.method private lockCard()V {
-			.stack 2;
-			.locals 0;
-
-				L0:	sconst_1;
-					putfield_b_this 11;		// boolean Chameleon/ChameleonApplet.personalized
-					return;
-		}
-
-		.method private initSession(Ljavacard/framework/APDU;)V {
-			.stack 2;
-			.locals 0;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	sconst_0;
-					putfield_s_this 14;		// short Chameleon/ChameleonApplet.signatureLen
-					sconst_0;
-					putfield_s_this 15;		// short Chameleon/ChameleonApplet.dataToSignLen
-					return;
-		}
-
-		.method private internalAuthenticate(Ljavacard/framework/APDU;)V {
-			.stack 5;
-			.locals 5;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	getfield_a_this 4;		// reference Chameleon/ChameleonApplet.dataToSign
-					astore_2;
-					sconst_0;
-					sstore_3;
-					aload_2;
-					sload_3;
-					sinc 3 1;
-					sconst_5;
-					bastore;
-					aload_2;
-					sload_3;
-					sinc 3 1;
-					sconst_1;
-					bastore;
-					aload_2;
-					sload_3;
-					sinc 3 1;
-					bspush 8;
-					bastore;
-					bspush 8;
-					newarray 11;
-					dup;
-					sconst_0;
-					bspush 108;
-					bastore;
-					dup;
-					sconst_1;
-					bspush 85;
-					bastore;
-					dup;
-					sconst_2;
-					bspush 68;
-					bastore;
-					dup;
-					sconst_3;
-					bspush 121;
-					bastore;
-					dup;
-					sconst_4;
-					bspush 122;
-					bastore;
-					dup;
-					sconst_5;
-					bspush -111;
-					bastore;
-					dup;
-					bspush 6;
-					bspush 17;
-					bastore;
-					dup;
-					bspush 7;
-					bspush 93;
-					bastore;
-					astore 4;
-					aload 4;
-					sconst_0;
-					aload_2;
-					sload_3;
-					bspush 8;
-					invokestatic 35;		// javacard/framework/Util.arrayCopy([BS[BSS)S
-					pop;
-					sinc 3 8;
-					sspush 255;
-					sload_3;
-					ssub;
-					sconst_4;
-					ssub;
-					sstore 5;
-					sconst_0;
-					sstore 6;
-				L1:	sload 6;
-					sload 5;
-					if_scmpge L3;
-				L2:	aload_2;
-					sload_3;
-					sinc 3 1;
-					bspush -69;
-					bastore;
-					sinc 6 1;
-					goto L1;
-				L3:	aload_2;
-					sload_3;
-					sinc 3 1;
-					sconst_1;
-					bastore;
-					aload_2;
-					sload_3;
-					sinc 3 1;
-					sconst_2;
-					bastore;
-					aload_2;
-					sload_3;
-					sinc 3 1;
-					sconst_3;
-					bastore;
-					aload_2;
-					sload_3;
-					sinc 3 1;
-					sconst_4;
-					bastore;
-					sload_3;
-					putfield_s_this 15;		// short Chameleon/ChameleonApplet.dataToSignLen
-					return;
-		}
-
-		.method private createSignatureBase(Ljavacard/framework/APDU;)V {
-			.stack 7;
-			.locals 0;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	getfield_a_this 8;		// reference Chameleon/ChameleonApplet.classicalSignature
-					getfield_a_this 7;		// reference Chameleon/ChameleonApplet.classicalPrivateKey
-					sconst_1;
-					invokevirtual 39;		// init(Ljavacard/security/Key;B)V
-					aload_0;
-					getfield_a_this 8;		// reference Chameleon/ChameleonApplet.classicalSignature
-					getfield_a_this 4;		// reference Chameleon/ChameleonApplet.dataToSign
-					sconst_0;
-					getfield_s_this 15;		// short Chameleon/ChameleonApplet.dataToSignLen
-					getfield_a_this 6;		// reference Chameleon/ChameleonApplet.signatureBuffer
-					sconst_0;
-					invokevirtual 40;		// sign([BSS[BS)S
-					putfield_s 14;		// short Chameleon/ChameleonApplet.signatureLen
-					return;
-		}
-
-		.method private createSignatureDelta(Ljavacard/framework/APDU;)V {
-			.stack 0;
-			.locals 0;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	return;
-		}
-
-		.method private sendCertificate(Ljavacard/framework/APDU;)V {
-			.stack 4;
-			.locals 4;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	getfield_s_this 13;		// short Chameleon/ChameleonApplet.certLen
-					ifne L2;
-				L1:	sspush 27013;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
-				L2:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
-					astore_2;
-					aload_2;
-					sconst_2;
-					baload;
-					sspush 255;
-					sand;
-					bspush 8;
-					sshl;
-					aload_2;
-					sconst_3;
-					baload;
-					sspush 255;
-					sand;
-					sor;
-					sstore_3;
-					sload_3;
-					getfield_s_this 13;		// short Chameleon/ChameleonApplet.certLen
-					if_scmplt L4;
-				L3:	sspush 27392;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
-				L4:	getfield_s_this 13;		// short Chameleon/ChameleonApplet.certLen
-					sload_3;
-					ssub;
-					sstore 4;
-					sload 4;
-					sspush 200;
-					if_scmple L6;
-				L5:	sspush 200;
-					goto L7;
-				L6:	sload 4;
-				L7:	sstore 5;
-					aload_1;
-					invokevirtual 41;		// setOutgoing()S
-					pop;
-					aload_1;
-					sload 5;
-					invokevirtual 42;		// setOutgoingLength(S)V
-					aload_1;
-					getfield_a_this 5;		// reference Chameleon/ChameleonApplet.certificate
-					sload_3;
-					sload 5;
-					invokevirtual 43;		// sendBytesLong([BSS)V
-					return;
-		}
-
-		.method private sendSignatureBase(Ljavacard/framework/APDU;)V {
-			.stack 4;
-			.locals 0;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	aload_1;
-					invokevirtual 41;		// setOutgoing()S
-					pop;
-					aload_1;
-					getfield_s_this 14;		// short Chameleon/ChameleonApplet.signatureLen
-					invokevirtual 42;		// setOutgoingLength(S)V
-					aload_1;
-					getfield_a_this 6;		// reference Chameleon/ChameleonApplet.signatureBuffer
-					sconst_0;
-					getfield_s_this 14;		// short Chameleon/ChameleonApplet.signatureLen
-					invokevirtual 43;		// sendBytesLong([BSS)V
-					return;
-		}
-
-		.method private sendSignatureDelta(Ljavacard/framework/APDU;)V {
-			.stack 4;
-			.locals 0;
-
-			.descriptor	Ljavacard/framework/APDU;	0.10;
-
-				L0:	aload_1;
-					invokevirtual 41;		// setOutgoing()S
-					pop;
-					aload_1;
-					getfield_s_this 14;		// short Chameleon/ChameleonApplet.signatureLen
-					invokevirtual 42;		// setOutgoingLength(S)V
-					aload_1;
-					getfield_a_this 6;		// reference Chameleon/ChameleonApplet.signatureBuffer
-					sconst_0;
-					getfield_s_this 14;		// short Chameleon/ChameleonApplet.signatureLen
-					invokevirtual 43;		// sendBytesLong([BSS)V
-					return;
-		}
-
-	}
-
-	.class public ChameleonClassicApplet 1 extends 0.3 {		// extends javacard/framework/Applet
+	.class public ChameleonClassicApplet 0 extends 0.3 {		// extends javacard/framework/Applet
 
 		.fields {
 			private byte[] dataToSign 0;		// [B
@@ -788,19 +151,16 @@
 			private 1.8 rsaPrivateKey 3;		// Ljavacard/security/RSAPrivateKey;
 			private 1.15 rsaSignature 4;		// Ljavacard/security/Signature;
 			private byte[] certificate 5;		// [B
-			private byte[] buffer 6;		// [B
-			private byte[] rsaModulusBuffer 7;		// [B
-			private byte[] rsaExponentBuffer 8;		// [B
-			private byte[] signatureBuffer 9;		// [B
-			private 1.14 random 10;		// Ljavacard/security/RandomData;
-			private byte[] iccDynamicData 11;		// [B
-			private short dataToSignLen 12;		// S
-			private short certLen 13;		// S
-			private short rsaModulusLen 14;		// S
-			private short rsaExponentLen 15;		// S
-			private short signatureLen 16;		// S
-			private boolean personalized 17;		// Z
-			private short certOffset 18;		// S
+			private byte[] rsaModulusBuffer 6;		// [B
+			private byte[] rsaExponentBuffer 7;		// [B
+			private byte[] signatureBuffer 8;		// [B
+			private short dataToSignLen 9;		// S
+			private short certLen 10;		// S
+			private short rsaModulusLen 11;		// S
+			private short rsaExponentLen 12;		// S
+			private short signatureLen 13;		// S
+			private boolean personalized 14;		// Z
+			private short certOffset 15;		// S
 			private static final byte INS_INIT = 16;		// B
 			private static final byte INS_GET_CERT = 32;		// B
 			private static final byte INS_SIGN_BASE = 48;		// B
@@ -812,7 +172,6 @@
 			private static final byte INS_LOAD_CERT = 114;		// B
 			private static final byte INS_LOCK_CARD = 115;		// B
 			private static final byte INS_INTERNAL_AUTHENTICATE = -120;		// B
-			private static final short TOTAL_LEN = 255;		// S
 		}
 
 		.publicMethodTable 7 8 {
@@ -834,69 +193,61 @@
 			.locals 0;
 
 				L0:	aload_0;
-					invokespecial 37;		// javacard/framework/Applet.<init>()V
+					invokespecial 16;		// javacard/framework/Applet.<init>()V
 					aload_0;
 					sspush 256;
 					newarray 11;
-					putfield_a 16;		// reference Chameleon/ChameleonClassicApplet.rsaModulusBuffer
+					putfield_a 0;		// reference Chameleon/ChameleonClassicApplet.rsaModulusBuffer
 					sconst_0;
-					putfield_s_this 17;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
+					putfield_s_this 1;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
 					aload_0;
 					sspush 256;
 					newarray 11;
-					putfield_a 18;		// reference Chameleon/ChameleonClassicApplet.rsaExponentBuffer
+					putfield_a 2;		// reference Chameleon/ChameleonClassicApplet.rsaExponentBuffer
 					sconst_0;
-					putfield_s_this 19;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
-					aload_0;
-					bspush 8;
-					newarray 11;
-					putfield_a 20;		// reference Chameleon/ChameleonClassicApplet.iccDynamicData
+					putfield_s_this 3;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
 					sconst_0;
-					putfield_s_this 21;		// short Chameleon/ChameleonClassicApplet.certOffset
+					putfield_s_this 4;		// short Chameleon/ChameleonClassicApplet.certOffset
 					aload_0;
 					sspush 255;
 					newarray 11;
-					putfield_a 22;		// reference Chameleon/ChameleonClassicApplet.dataToSign
+					putfield_a 5;		// reference Chameleon/ChameleonClassicApplet.dataToSign
 					aload_0;
 					sspush 2048;
 					newarray 11;
-					putfield_a 23;		// reference Chameleon/ChameleonClassicApplet.certificate
+					putfield_a 6;		// reference Chameleon/ChameleonClassicApplet.certificate
 					aload_0;
 					sspush 256;
 					newarray 11;
-					putfield_a 24;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
+					putfield_a 7;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
 					aload_0;
 					bspush 12;
-					sspush 256;
+					sspush 193;
 					sconst_0;
-					invokestatic 45;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
-					checkcast 0 36;		// T_CLASSORINTERFACE javacard/security/ECPrivateKey
-					putfield_a 25;		// reference Chameleon/ChameleonClassicApplet.classicalPrivateKey
+					invokestatic 36;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
+					checkcast 0 38;		// T_CLASSORINTERFACE javacard/security/ECPrivateKey
+					putfield_a 8;		// reference Chameleon/ChameleonClassicApplet.classicalPrivateKey
 					aload_0;
-					bspush 33;
+					bspush 17;
 					sconst_0;
-					invokestatic 38;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
-					putfield_a 26;		// reference Chameleon/ChameleonClassicApplet.classicalSignature
+					invokestatic 17;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
+					putfield_a 9;		// reference Chameleon/ChameleonClassicApplet.classicalSignature
 					aload_0;
 					sconst_5;
-					sspush 1984;
+					sspush 1024;
 					sconst_0;
-					invokestatic 45;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
-					checkcast 0 55;		// T_CLASSORINTERFACE javacard/security/RSAPrivateKey
-					putfield_a 27;		// reference Chameleon/ChameleonClassicApplet.rsaPrivateKey
+					invokestatic 36;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
+					checkcast 0 37;		// T_CLASSORINTERFACE javacard/security/RSAPrivateKey
+					putfield_a 10;		// reference Chameleon/ChameleonClassicApplet.rsaPrivateKey
 					aload_0;
 					bspush 10;
 					sconst_0;
-					invokestatic 38;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
-					putfield_a 28;		// reference Chameleon/ChameleonClassicApplet.rsaSignature
+					invokestatic 17;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
+					putfield_a 11;		// reference Chameleon/ChameleonClassicApplet.rsaSignature
 					sconst_0;
-					putfield_b_this 29;		// boolean Chameleon/ChameleonClassicApplet.personalized
+					putfield_b_this 12;		// boolean Chameleon/ChameleonClassicApplet.personalized
 					aload_0;
-					sconst_2;
-					invokestatic 44;		// javacard/security/RandomData.getInstance(B)Ljavacard/security/RandomData;
-					putfield_a 30;		// reference Chameleon/ChameleonClassicApplet.random
-					aload_0;
-					invokevirtual 60;		// register()V
+					invokevirtual 18;		// register()V
 					return;
 		}
 
@@ -904,9 +255,9 @@
 			.stack 2;
 			.locals 0;
 
-				L0:	new 61;		// Chameleon/ChameleonClassicApplet
+				L0:	new 19;		// Chameleon/ChameleonClassicApplet
 					dup;
-					invokespecial 62;		// Chameleon/ChameleonClassicApplet.<init>()V
+					invokespecial 20;		// Chameleon/ChameleonClassicApplet.<init>()V
 					pop;
 					return;
 		}
@@ -918,7 +269,7 @@
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
 				L0:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
+					invokevirtual 21;		// getBuffer()[B
 					astore_2;
 					aload_2;
 					sconst_0;
@@ -936,49 +287,49 @@
 					slookupswitch L15 11 -120 L14 16 L4 32 L5 48 L6 64 L7 80 L8 96 L9 112 L10 113 L11 114 L12 115 L13;
 				L4:	aload_0;
 					aload_1;
-					invokespecial 63;		// Chameleon/ChameleonClassicApplet.initSession(Ljavacard/framework/APDU;)V
+					invokespecial 22;		// Chameleon/ChameleonClassicApplet.initSession(Ljavacard/framework/APDU;)V
 					return;
 				L5:	aload_0;
 					aload_1;
-					invokespecial 64;		// Chameleon/ChameleonClassicApplet.sendCertificate(Ljavacard/framework/APDU;)V
+					invokespecial 23;		// Chameleon/ChameleonClassicApplet.sendCertificate(Ljavacard/framework/APDU;)V
 					return;
 				L6:	aload_0;
 					aload_1;
-					invokespecial 65;		// Chameleon/ChameleonClassicApplet.createSignatureBase(Ljavacard/framework/APDU;)V
+					invokespecial 24;		// Chameleon/ChameleonClassicApplet.createSignatureBase(Ljavacard/framework/APDU;)V
 					return;
 				L7:	aload_0;
 					aload_1;
-					invokespecial 66;		// Chameleon/ChameleonClassicApplet.createSignatureRSA(Ljavacard/framework/APDU;)V
+					invokespecial 25;		// Chameleon/ChameleonClassicApplet.createSignatureRSA(Ljavacard/framework/APDU;)V
 					return;
 				L8:	aload_0;
 					aload_1;
-					invokespecial 67;		// Chameleon/ChameleonClassicApplet.sendSignatureBase(Ljavacard/framework/APDU;)V
+					invokespecial 26;		// Chameleon/ChameleonClassicApplet.sendSignatureBase(Ljavacard/framework/APDU;)V
 					return;
 				L9:	aload_0;
 					aload_1;
-					invokespecial 68;		// Chameleon/ChameleonClassicApplet.sendSignatureRSA(Ljavacard/framework/APDU;)V
+					invokespecial 27;		// Chameleon/ChameleonClassicApplet.sendSignatureRSA(Ljavacard/framework/APDU;)V
 					return;
 				L10:	aload_0;
 					aload_1;
-					invokespecial 69;		// Chameleon/ChameleonClassicApplet.loadPrivateKeyBase(Ljavacard/framework/APDU;)V
+					invokespecial 28;		// Chameleon/ChameleonClassicApplet.loadPrivateKeyBase(Ljavacard/framework/APDU;)V
 					return;
 				L11:	aload_0;
 					aload_1;
-					invokespecial 70;		// Chameleon/ChameleonClassicApplet.loadPrivateKeyRSA(Ljavacard/framework/APDU;)V
+					invokespecial 29;		// Chameleon/ChameleonClassicApplet.loadPrivateKeyRSA(Ljavacard/framework/APDU;)V
 					return;
 				L12:	aload_0;
 					aload_1;
-					invokespecial 71;		// Chameleon/ChameleonClassicApplet.loadCertificate(Ljavacard/framework/APDU;)V
+					invokespecial 30;		// Chameleon/ChameleonClassicApplet.loadCertificate(Ljavacard/framework/APDU;)V
 					return;
 				L13:	aload_0;
-					invokespecial 72;		// Chameleon/ChameleonClassicApplet.lockCard()V
+					invokespecial 31;		// Chameleon/ChameleonClassicApplet.lockCard()V
 					return;
 				L14:	aload_0;
 					aload_1;
-					invokespecial 73;		// Chameleon/ChameleonClassicApplet.internalAuthenticate(Ljavacard/framework/APDU;)V
+					invokespecial 32;		// Chameleon/ChameleonClassicApplet.internalAuthenticate(Ljavacard/framework/APDU;)V
 					return;
 				L15:	sspush 27904;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 33;		// javacard/framework/ISOException.throwIt(S)V
 					return;
 		}
 
@@ -988,21 +339,21 @@
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-				L0:	getfield_b_this 29;		// boolean Chameleon/ChameleonClassicApplet.personalized
+				L0:	getfield_b_this 12;		// boolean Chameleon/ChameleonClassicApplet.personalized
 					ifeq L2;
 				L1:	sspush 27010;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 33;		// javacard/framework/ISOException.throwIt(S)V
 				L2:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
+					invokevirtual 21;		// getBuffer()[B
 					astore_2;
 					aload_1;
 					invokevirtual 34;		// setIncomingAndReceive()S
 					sstore_3;
-					getfield_a_this 25;		// reference Chameleon/ChameleonClassicApplet.classicalPrivateKey
+					getfield_a_this 8;		// reference Chameleon/ChameleonClassicApplet.classicalPrivateKey
 					aload_2;
 					sconst_5;
 					sload_3;
-					invokeinterface 4 36 18;		// javacard/security/ECPrivateKey
+					invokeinterface 4 38 18;		// javacard/security/ECPrivateKey
 					return;
 		}
 
@@ -1012,12 +363,12 @@
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-				L0:	getfield_b_this 29;		// boolean Chameleon/ChameleonClassicApplet.personalized
+				L0:	getfield_b_this 12;		// boolean Chameleon/ChameleonClassicApplet.personalized
 					ifeq L2;
 				L1:	sspush 27010;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 33;		// javacard/framework/ISOException.throwIt(S)V
 				L2:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
+					invokevirtual 21;		// getBuffer()[B
 					astore_2;
 					aload_1;
 					invokevirtual 34;		// setIncomingAndReceive()S
@@ -1030,52 +381,52 @@
 					ifne L4;
 				L3:	aload_2;
 					sconst_5;
-					getfield_a_this 16;		// reference Chameleon/ChameleonClassicApplet.rsaModulusBuffer
-					getfield_s_this 17;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
+					getfield_a_this 0;		// reference Chameleon/ChameleonClassicApplet.rsaModulusBuffer
+					getfield_s_this 1;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
 					sload_3;
 					invokestatic 35;		// javacard/framework/Util.arrayCopy([BS[BSS)S
 					pop;
 					aload_0;
 					dup;
-					getfield_s 17;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
+					getfield_s 1;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
 					sload_3;
 					sadd;
-					putfield_s 17;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
+					putfield_s 1;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
 					goto L8;
 				L4:	sload 4;
 					sconst_1;
 					if_scmpne L6;
 				L5:	aload_2;
 					sconst_5;
-					getfield_a_this 18;		// reference Chameleon/ChameleonClassicApplet.rsaExponentBuffer
-					getfield_s_this 19;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
+					getfield_a_this 2;		// reference Chameleon/ChameleonClassicApplet.rsaExponentBuffer
+					getfield_s_this 3;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
 					sload_3;
 					invokestatic 35;		// javacard/framework/Util.arrayCopy([BS[BSS)S
 					pop;
 					aload_0;
 					dup;
-					getfield_s 19;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
+					getfield_s 3;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
 					sload_3;
 					sadd;
-					putfield_s 19;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
+					putfield_s 3;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
 					goto L8;
 				L6:	sload 4;
 					sconst_2;
 					if_scmpne L8;
-				L7:	getfield_a_this 27;		// reference Chameleon/ChameleonClassicApplet.rsaPrivateKey
-					getfield_a_this 16;		// reference Chameleon/ChameleonClassicApplet.rsaModulusBuffer
+				L7:	getfield_a_this 10;		// reference Chameleon/ChameleonClassicApplet.rsaPrivateKey
+					getfield_a_this 0;		// reference Chameleon/ChameleonClassicApplet.rsaModulusBuffer
 					sconst_0;
-					getfield_s_this 17;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
-					invokeinterface 4 55 7;		// javacard/security/RSAPrivateKey
-					getfield_a_this 27;		// reference Chameleon/ChameleonClassicApplet.rsaPrivateKey
-					getfield_a_this 18;		// reference Chameleon/ChameleonClassicApplet.rsaExponentBuffer
+					getfield_s_this 1;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
+					invokeinterface 4 37 7;		// javacard/security/RSAPrivateKey
+					getfield_a_this 10;		// reference Chameleon/ChameleonClassicApplet.rsaPrivateKey
+					getfield_a_this 2;		// reference Chameleon/ChameleonClassicApplet.rsaExponentBuffer
 					sconst_0;
-					getfield_s_this 19;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
-					invokeinterface 4 55 6;		// javacard/security/RSAPrivateKey
+					getfield_s_this 3;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
+					invokeinterface 4 37 6;		// javacard/security/RSAPrivateKey
 					sconst_0;
-					putfield_s_this 17;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
+					putfield_s_this 1;		// short Chameleon/ChameleonClassicApplet.rsaModulusLen
 					sconst_0;
-					putfield_s_this 19;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
+					putfield_s_this 3;		// short Chameleon/ChameleonClassicApplet.rsaExponentLen
 				L8:	return;
 		}
 
@@ -1085,12 +436,12 @@
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-				L0:	getfield_b_this 29;		// boolean Chameleon/ChameleonClassicApplet.personalized
+				L0:	getfield_b_this 12;		// boolean Chameleon/ChameleonClassicApplet.personalized
 					ifeq L2;
 				L1:	sspush 27010;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 33;		// javacard/framework/ISOException.throwIt(S)V
 				L2:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
+					invokevirtual 21;		// getBuffer()[B
 					astore_2;
 					aload_1;
 					invokevirtual 34;		// setIncomingAndReceive()S
@@ -1104,23 +455,23 @@
 					sload 5;
 					ifne L4;
 				L3:	sconst_0;
-					putfield_s_this 21;		// short Chameleon/ChameleonClassicApplet.certOffset
+					putfield_s_this 4;		// short Chameleon/ChameleonClassicApplet.certOffset
 				L4:	aload_2;
 					sload 4;
-					getfield_a_this 23;		// reference Chameleon/ChameleonClassicApplet.certificate
-					getfield_s_this 21;		// short Chameleon/ChameleonClassicApplet.certOffset
+					getfield_a_this 6;		// reference Chameleon/ChameleonClassicApplet.certificate
+					getfield_s_this 4;		// short Chameleon/ChameleonClassicApplet.certOffset
 					sload_3;
 					invokestatic 35;		// javacard/framework/Util.arrayCopy([BS[BSS)S
 					pop;
 					aload_0;
 					dup;
-					getfield_s 21;		// short Chameleon/ChameleonClassicApplet.certOffset
+					getfield_s 4;		// short Chameleon/ChameleonClassicApplet.certOffset
 					sload_3;
 					sadd;
-					putfield_s 21;		// short Chameleon/ChameleonClassicApplet.certOffset
+					putfield_s 4;		// short Chameleon/ChameleonClassicApplet.certOffset
 					aload_0;
-					getfield_s_this 21;		// short Chameleon/ChameleonClassicApplet.certOffset
-					putfield_s 31;		// short Chameleon/ChameleonClassicApplet.certLen
+					getfield_s_this 4;		// short Chameleon/ChameleonClassicApplet.certOffset
+					putfield_s 13;		// short Chameleon/ChameleonClassicApplet.certLen
 					return;
 		}
 
@@ -1129,7 +480,7 @@
 			.locals 0;
 
 				L0:	sconst_1;
-					putfield_b_this 29;		// boolean Chameleon/ChameleonClassicApplet.personalized
+					putfield_b_this 12;		// boolean Chameleon/ChameleonClassicApplet.personalized
 					return;
 		}
 
@@ -1140,9 +491,9 @@
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
 				L0:	sconst_0;
-					putfield_s_this 32;		// short Chameleon/ChameleonClassicApplet.signatureLen
+					putfield_s_this 14;		// short Chameleon/ChameleonClassicApplet.signatureLen
 					sconst_0;
-					putfield_s_this 33;		// short Chameleon/ChameleonClassicApplet.dataToSignLen
+					putfield_s_this 15;		// short Chameleon/ChameleonClassicApplet.dataToSignLen
 					return;
 		}
 
@@ -1152,7 +503,7 @@
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-				L0:	getfield_a_this 22;		// reference Chameleon/ChameleonClassicApplet.dataToSign
+				L0:	getfield_a_this 5;		// reference Chameleon/ChameleonClassicApplet.dataToSign
 					astore_2;
 					sconst_0;
 					sstore_3;
@@ -1253,7 +604,7 @@
 					sconst_4;
 					bastore;
 					sload_3;
-					putfield_s_this 33;		// short Chameleon/ChameleonClassicApplet.dataToSignLen
+					putfield_s_this 15;		// short Chameleon/ChameleonClassicApplet.dataToSignLen
 					return;
 		}
 
@@ -1263,19 +614,19 @@
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-				L0:	getfield_a_this 26;		// reference Chameleon/ChameleonClassicApplet.classicalSignature
-					getfield_a_this 25;		// reference Chameleon/ChameleonClassicApplet.classicalPrivateKey
+				L0:	getfield_a_this 9;		// reference Chameleon/ChameleonClassicApplet.classicalSignature
+					getfield_a_this 8;		// reference Chameleon/ChameleonClassicApplet.classicalPrivateKey
 					sconst_1;
 					invokevirtual 39;		// init(Ljavacard/security/Key;B)V
 					aload_0;
-					getfield_a_this 26;		// reference Chameleon/ChameleonClassicApplet.classicalSignature
-					getfield_a_this 22;		// reference Chameleon/ChameleonClassicApplet.dataToSign
+					getfield_a_this 9;		// reference Chameleon/ChameleonClassicApplet.classicalSignature
+					getfield_a_this 5;		// reference Chameleon/ChameleonClassicApplet.dataToSign
 					sconst_0;
-					getfield_s_this 33;		// short Chameleon/ChameleonClassicApplet.dataToSignLen
-					getfield_a_this 24;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
+					getfield_s_this 15;		// short Chameleon/ChameleonClassicApplet.dataToSignLen
+					getfield_a_this 7;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
 					sconst_0;
 					invokevirtual 40;		// sign([BSS[BS)S
-					putfield_s 32;		// short Chameleon/ChameleonClassicApplet.signatureLen
+					putfield_s 14;		// short Chameleon/ChameleonClassicApplet.signatureLen
 					return;
 		}
 
@@ -1285,30 +636,30 @@
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-				L0:	getfield_a_this 28;		// reference Chameleon/ChameleonClassicApplet.rsaSignature
-					getfield_a_this 27;		// reference Chameleon/ChameleonClassicApplet.rsaPrivateKey
+				L0:	getfield_a_this 11;		// reference Chameleon/ChameleonClassicApplet.rsaSignature
+					getfield_a_this 10;		// reference Chameleon/ChameleonClassicApplet.rsaPrivateKey
 					sconst_1;
 					invokevirtual 39;		// init(Ljavacard/security/Key;B)V
 					aload_0;
-					getfield_a_this 28;		// reference Chameleon/ChameleonClassicApplet.rsaSignature
-					getfield_a_this 22;		// reference Chameleon/ChameleonClassicApplet.dataToSign
+					getfield_a_this 11;		// reference Chameleon/ChameleonClassicApplet.rsaSignature
+					getfield_a_this 5;		// reference Chameleon/ChameleonClassicApplet.dataToSign
 					sconst_0;
-					getfield_s_this 33;		// short Chameleon/ChameleonClassicApplet.dataToSignLen
-					getfield_a_this 24;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
+					getfield_s_this 15;		// short Chameleon/ChameleonClassicApplet.dataToSignLen
+					getfield_a_this 7;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
 					sconst_0;
 					invokevirtual 40;		// sign([BSS[BS)S
-					putfield_s 32;		// short Chameleon/ChameleonClassicApplet.signatureLen
+					putfield_s 14;		// short Chameleon/ChameleonClassicApplet.signatureLen
 				L1:	goto L3;
 				L2:	astore_2;
 					sspush 28416;
 					aload_2;
-					invokevirtual 78;		// getReason()S
+					invokevirtual 42;		// getReason()S
 					sor;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 33;		// javacard/framework/ISOException.throwIt(S)V
 				L3:	return;
 			.exceptionTable {
 				// start_block end_block handler_block catch_type_index
-				L0 L1 L2 77;
+				L0 L1 L2 41;
 			}
 		}
 
@@ -1318,12 +669,12 @@
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-				L0:	getfield_s_this 31;		// short Chameleon/ChameleonClassicApplet.certLen
+				L0:	getfield_s_this 13;		// short Chameleon/ChameleonClassicApplet.certLen
 					ifne L2;
 				L1:	sspush 27013;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 33;		// javacard/framework/ISOException.throwIt(S)V
 				L2:	aload_1;
-					invokevirtual 49;		// getBuffer()[B
+					invokevirtual 21;		// getBuffer()[B
 					astore_2;
 					aload_2;
 					sconst_2;
@@ -1340,11 +691,11 @@
 					sor;
 					sstore_3;
 					sload_3;
-					getfield_s_this 31;		// short Chameleon/ChameleonClassicApplet.certLen
+					getfield_s_this 13;		// short Chameleon/ChameleonClassicApplet.certLen
 					if_scmplt L4;
 				L3:	sspush 27392;
-					invokestatic 76;		// javacard/framework/ISOException.throwIt(S)V
-				L4:	getfield_s_this 31;		// short Chameleon/ChameleonClassicApplet.certLen
+					invokestatic 33;		// javacard/framework/ISOException.throwIt(S)V
+				L4:	getfield_s_this 13;		// short Chameleon/ChameleonClassicApplet.certLen
 					sload_3;
 					ssub;
 					sstore 4;
@@ -1356,16 +707,16 @@
 				L6:	sload 4;
 				L7:	sstore 5;
 					aload_1;
-					invokevirtual 41;		// setOutgoing()S
+					invokevirtual 43;		// setOutgoing()S
 					pop;
 					aload_1;
 					sload 5;
-					invokevirtual 42;		// setOutgoingLength(S)V
+					invokevirtual 44;		// setOutgoingLength(S)V
 					aload_1;
-					getfield_a_this 23;		// reference Chameleon/ChameleonClassicApplet.certificate
+					getfield_a_this 6;		// reference Chameleon/ChameleonClassicApplet.certificate
 					sload_3;
 					sload 5;
-					invokevirtual 43;		// sendBytesLong([BSS)V
+					invokevirtual 45;		// sendBytesLong([BSS)V
 					return;
 		}
 
@@ -1376,16 +727,16 @@
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
 				L0:	aload_1;
-					invokevirtual 41;		// setOutgoing()S
+					invokevirtual 43;		// setOutgoing()S
 					pop;
 					aload_1;
-					getfield_s_this 32;		// short Chameleon/ChameleonClassicApplet.signatureLen
-					invokevirtual 42;		// setOutgoingLength(S)V
+					getfield_s_this 14;		// short Chameleon/ChameleonClassicApplet.signatureLen
+					invokevirtual 44;		// setOutgoingLength(S)V
 					aload_1;
-					getfield_a_this 24;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
+					getfield_a_this 7;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
 					sconst_0;
-					getfield_s_this 32;		// short Chameleon/ChameleonClassicApplet.signatureLen
-					invokevirtual 43;		// sendBytesLong([BSS)V
+					getfield_s_this 14;		// short Chameleon/ChameleonClassicApplet.signatureLen
+					invokevirtual 45;		// sendBytesLong([BSS)V
 					return;
 		}
 
@@ -1396,17 +747,64 @@
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
 				L0:	aload_1;
-					invokevirtual 41;		// setOutgoing()S
+					invokevirtual 43;		// setOutgoing()S
 					pop;
 					aload_1;
-					getfield_s_this 32;		// short Chameleon/ChameleonClassicApplet.signatureLen
-					invokevirtual 42;		// setOutgoingLength(S)V
+					getfield_s_this 14;		// short Chameleon/ChameleonClassicApplet.signatureLen
+					invokevirtual 44;		// setOutgoingLength(S)V
 					aload_1;
-					getfield_a_this 24;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
+					getfield_a_this 7;		// reference Chameleon/ChameleonClassicApplet.signatureBuffer
 					sconst_0;
-					getfield_s_this 32;		// short Chameleon/ChameleonClassicApplet.signatureLen
-					invokevirtual 43;		// sendBytesLong([BSS)V
+					getfield_s_this 14;		// short Chameleon/ChameleonClassicApplet.signatureLen
+					invokevirtual 45;		// sendBytesLong([BSS)V
 					return;
+		}
+
+	}
+
+	.class public Hello 1 extends 0.3 {		// extends javacard/framework/Applet
+
+		.publicMethodTable 7 8 {
+			equals(Ljava/lang/Object;)Z 0;
+			register()V 1;
+			register([BSB)V 2;
+			selectingApplet()Z 3;
+			deselect()V 4;
+			getShareableInterfaceObject(Ljavacard/framework/AID;B)Ljavacard/framework/Shareable; 5;
+			select()Z 6;
+			process(Ljavacard/framework/APDU;)V 7;
+		}
+
+		.packageMethodTable 0 {
+		}
+
+		.method public static install([BSB)V 0 {
+			.stack 2;
+			.locals 0;
+
+				L0:	new 46;		// Chameleon/Hello
+					dup;
+					invokespecial 47;		// Chameleon/Hello.<init>()V
+					invokevirtual 48;		// register()V
+					return;
+		}
+
+		.method protected <init>()V 1 {
+			.stack 1;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 16;		// javacard/framework/Applet.<init>()V
+					return;
+		}
+
+		.method public process(Ljavacard/framework/APDU;)V 7 {
+			.stack 0;
+			.locals 0;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	return;
 		}
 
 	}
