@@ -32,8 +32,7 @@ public class Hawk extends Applet {
 
     protected Hawk() {
         dataToSign = new byte[255];
-        // certificate = new byte[2048];
-        signatureBuffer = new byte[128];
+        signatureBuffer = new byte[600]; // 555 bytes is the size of a Hawk signature for logn=9
 
         pqPrivateKey = new byte[2048];
 
@@ -108,45 +107,8 @@ public class Hawk extends Applet {
         pqKeyOffset += len;
     }
 
-    // private short certOffset = 0;
-
-    // private void loadCertificate(APDU apdu) {
-    //     if (personalized)
-    //         ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
-
-    //     byte[] buf = apdu.getBuffer();
-    //     short len = apdu.setIncomingAndReceive();
-
-    //     if (buf[ISO7816.OFFSET_P1] == 0x00) {
-    //         certOffset = 0;
-    //     }
-
-    //     Util.arrayCopy(buf, ISO7816.OFFSET_CDATA, certificate, certOffset, len);
-    //     certOffset += len;
-    //     certLen = certOffset;
-    // }
-
-    // private void sendCertificate(APDU apdu) {
-    //     if (certLen == 0)
-    //         ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
-
-    //     byte[] buf = apdu.getBuffer();
-
-    //     short offset = (short) (((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
-    //             (buf[ISO7816.OFFSET_P2] & 0xFF));
-
-    //     if (offset >= certLen)
-    //         ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
-
-    //     short remaining = (short) (certLen - offset);
-    //     short chunk = remaining > 200 ? 200 : remaining;
-
-    //     apdu.setOutgoing();
-    //     apdu.setOutgoingLength(chunk);
-    //     apdu.sendBytesLong(certificate, offset, chunk);
-    // }
-
     private void lockCard() {
+        pqKeyLen = pqKeyOffset;
         personalized = true;
     }
 
@@ -184,6 +146,14 @@ public class Hawk extends Applet {
         dataToSignLen = pos;
     }
 
+    private static String toHex(byte[] data, int len) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append(String.format("%02X ", data[i]));
+        }
+        return sb.toString();
+    }
+
     private void createSignatureDelta(APDU apdu) {
         if (dataToSignLen == 0)
             ISOException.throwIt(
@@ -192,6 +162,8 @@ public class Hawk extends Applet {
         HawkSigner signer = new HawkSigner();
 
         byte[] tmp = new byte[6 * 1024]; // whatever size sign() requires
+
+        System.out.println("MSG=" + toHex(dataToSign, dataToSignLen));
 
         int ret = signer.signMessage(9, signatureBuffer, dataToSign, dataToSignLen, pqPrivateKey, pqKeyLen, tmp,
                 tmp.length);
@@ -204,9 +176,22 @@ public class Hawk extends Applet {
     }
 
     private void sendSignatureDelta(APDU apdu) {
+        byte[] buf = apdu.getBuffer();
+
+        short offset = (short)(
+                ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8)
+            |  (buf[ISO7816.OFFSET_P2] & 0xFF));
+
+        if (offset >= signatureLen) {
+            ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
+        }
+
+        short remaining = (short)(signatureLen - offset);
+        short chunk = remaining > 200 ? 200 : remaining;
+
         apdu.setOutgoing();
-        apdu.setOutgoingLength(signatureLen);
-        apdu.sendBytesLong(signatureBuffer, (short) 0, signatureLen);
+        apdu.setOutgoingLength(chunk);
+        apdu.sendBytesLong(signatureBuffer, offset, chunk);
     }
 }
 
@@ -350,6 +335,137 @@ class HawkSigner {
             5414, 14093, 14734, 10939, 12282, 6674, 3811, 13342
     };
 
+    static final short[] iGM = new short[]{
+        2282, 9878, 10329, 12352, 15894, 7491, 4364, 3866,
+        15622, 627, 16687, 6901, 2651, 5094, 13332, 12233,
+        576, 1524, 17276, 1163, 15175, 12117, 1360, 15887,
+        8822, 13357, 11401, 9044, 13464, 7974, 7517, 6448,
+        9386, 10241, 8348, 14407, 12578, 9470, 14993, 3187,
+        1540, 11755, 3691, 13990, 2810, 11275, 1588, 11882,
+        2773, 9257, 14175, 6399, 17149, 1211, 18324, 7008,
+        2085, 13581, 16069, 7570, 11824, 6707, 6459, 9025,
+        3184, 2280, 5381, 10013, 9640, 10145, 11614, 17672,
+        10876, 8807, 4139, 9031, 694, 16429, 17487, 15162,
+        13647, 5002, 17998, 16130, 12094, 509, 12253, 6690,
+        4910, 12223, 1594, 14202, 12550, 10932, 10569, 12987,
+        5600, 2528, 16, 12331, 5191, 4134, 9126, 8017,
+        3845, 5949, 17654, 18292, 1869, 3793, 374, 9438,
+        12609, 9168, 1458, 10770, 14509, 12659, 6730, 9358,
+        7061, 14458, 9658, 17105, 11328, 11539, 1823, 16728,
+        15234, 10353, 10682, 13670, 11758, 18053, 14464, 13692,
+        2527, 6302, 12173, 334, 10476, 13893, 14671, 1567,
+        1115, 1030, 10273, 15276, 6942, 11455, 9289, 3456,
+        11381, 7455, 10197, 16611, 5326, 1035, 12023, 16066,
+        16697, 16912, 2207, 17744, 5211, 5723, 12286, 1017,
+        1573, 6082, 8905, 2440, 14720, 8225, 3202, 9240,
+        7704, 11167, 654, 13251, 7115, 16905, 18190, 16638,
+        2788, 15057, 16545, 1149, 14184, 9879, 10679, 12510,
+        15892, 12862, 4048, 4566, 4580, 13654, 4753, 671,
+        14269, 12024, 5676, 1193, 12032, 1113, 2457, 9957,
+        1168, 15379, 214, 15159, 2610, 13818, 6854, 8150,
+        16865, 8140, 10318, 14243, 8869, 6953, 394, 11027,
+        5720, 12062, 543, 7197, 18337, 18179, 3265, 15167,
+        7219, 14108, 16189, 17104, 4674, 846, 1172, 4637,
+        5111, 16211, 14919, 17584, 9685, 9112, 291, 1922,
+        5764, 4498, 7495, 10230, 15784, 7968, 5417, 5500,
+        6440, 13967, 3705, 13259, 5048, 10284, 4965, 2768,
+        9030, 7763, 7399, 9976, 3071, 1597, 5960, 12697,
+        15422, 3170, 3520, 3169, 17607, 6263, 16956, 12605,
+        16415, 37, 12950, 5846, 5654, 4975, 8548, 11864,
+        26, 3909, 4108, 9333, 1005, 1507, 11326, 16910,
+        14863, 2075, 7363, 14489, 5216, 1512, 13076, 17700,
+        16194, 12893, 14898, 9464, 6328, 1382, 4442, 15593,
+        11086, 16275, 453, 9263, 14483, 8750, 2622, 25,
+        4349, 16499, 5121, 7789, 12843, 7483, 1564, 2602,
+        8302, 8909, 2973, 6714, 11797, 14700, 2193, 42,
+        16122, 3486, 3522, 16231, 2127, 11388, 4272, 11303,
+        5375, 7693, 1332, 17349, 12800, 3145, 13203, 17652,
+        424, 4194, 11693, 17497, 2210, 471, 17386, 686,
+        7006, 5480, 968, 17922, 9911, 10478, 17566, 14987,
+        1771, 8910, 3323, 6872, 12448, 8358, 12886, 11821,
+        16308, 1674, 14477, 6430, 2227, 900, 1639, 13169,
+        6578, 12028, 7076, 1825, 14636, 12611, 8363, 1774,
+        7, 8851, 1106, 15983, 10905, 13876, 8721, 17314,
+        4956, 17721, 8862, 16535, 15746, 17852, 17846, 367,
+        2942, 7016, 4011, 2548, 14465, 1790, 18211, 6325,
+        12403, 9391, 5776, 9138, 12218, 17734, 13412, 156,
+        5570, 9361, 13709, 4398, 11121, 5231, 5983, 15446,
+        17331, 10141, 10214, 17040, 2777, 16948, 14807, 4999,
+        5267, 2799, 2701, 18283, 15715, 18154, 12948, 11217,
+        15107, 10401, 9049, 2821, 6140, 8565, 11604, 7661,
+        2950, 3965, 5275, 18181, 595, 15015, 1845, 12946,
+        5671, 5404, 11234, 5914, 15734, 13212, 15950, 4567,
+        15365, 17996, 12947, 4686, 10441, 6504, 9141, 13817,
+        5173, 15607, 6282, 14317, 3574, 5616, 11702, 2544,
+        14266, 10864, 5202, 2243, 12625, 3066, 3986, 5170,
+        17477, 5151, 14849, 2806, 16928, 14067, 1839, 10626,
+        5071, 13033, 8599, 13151, 5303, 16719, 8389, 5683,
+        11762, 7311, 15096, 12292, 3747, 11066, 2170, 15726,
+        5673, 33, 11550, 5214, 3050, 11910, 2642, 1614,
+        16523, 4931, 11581, 4912, 2739, 8399, 8803, 18299,
+        16957, 703, 6421, 476, 15261, 2360, 14948, 4220,
+        494, 539, 4320, 11430, 662, 10200, 12431, 7929,
+        5902, 2559, 10866, 17229, 6939, 10295, 8815, 4506,
+        12758, 5338, 6567, 13919, 9634, 7825, 10666, 1339,
+        7871, 14297, 8607, 10100, 17115, 353, 12952, 475,
+        8899, 120, 5134, 527, 4388, 13146, 11283, 12572,
+        10274, 3374, 1188, 16968, 2947, 2805, 4801, 798,
+        11390, 10935, 11619, 13461, 3547, 13609, 7436, 11994,
+        9960, 17136, 6875, 16270, 3571, 4456, 11228, 3594,
+        8056, 5954, 971, 649, 5124, 8949, 16973, 13034,
+        4083, 11955, 18392, 8724, 3979, 14752, 1960, 8258,
+        15216, 3393, 7838, 1537, 15316, 11338, 5205, 3403,
+        14924, 13373, 17001, 11572, 5447, 17100, 12708, 10582,
+        14384, 7336, 5413, 16242, 1589, 18413, 11433, 15273,
+        133, 2272, 2581, 8749, 4432, 5582, 18235, 15605,
+        1999, 4905, 2481, 804, 4246, 7394, 7280, 6973,
+        599, 4273, 2477, 11546, 16773, 15577, 14215, 9577,
+        14461, 12532, 17579, 7725, 10946, 5152, 15199, 2964,
+        13665, 11962, 2409, 9830, 8536, 7224, 3079, 16979,
+        15928, 8349, 9736, 10399, 15897, 8651, 4838, 2816,
+        7908, 16315, 14453, 15583, 3657, 13132, 6383, 10360,
+        10538, 13289, 6034, 16733, 6062, 15271, 17713, 16528,
+        751, 1603, 8060, 13645, 11305, 8790, 16622, 6345,
+        15584, 10511, 10683, 1768, 4018, 11399, 8122, 13041,
+        15440, 10130, 6364, 15302, 14049, 12978, 7782, 4461,
+        6122, 1605, 8760, 13961, 12607, 14539, 1142, 11470,
+        12992, 3653, 6673, 5751, 246, 2955, 2002, 6065,
+        269, 5704, 5636, 16448, 8271, 9211, 16508, 17564,
+        4184, 7998, 15917, 10240, 8592, 4300, 11927, 15812,
+        12951, 12377, 195, 1668, 2206, 11213, 16754, 2086,
+        11147, 9140, 10091, 6346, 14714, 5905, 2254, 11340,
+        2752, 1137, 10857, 13749, 2867, 14882, 10594, 10365,
+        13476, 12614, 9413, 2248, 9029, 1232, 7241, 10326,
+        3882, 7967, 5067, 5342, 6844, 16572, 12238, 890,
+        11454, 4960, 3298, 9494, 3185, 8811, 5539, 9663,
+        17345, 9410, 12426, 12140, 6154, 7834, 13816, 2761,
+        16106, 9588, 994, 3398, 11434, 3371, 138, 16494,
+        7020, 4749, 3180, 13022, 13288, 1364, 16575, 12749,
+        13049, 7260, 15679, 4234, 7412, 2714, 9817, 4853,
+        3759, 15706, 4066, 11526, 12724, 4480, 1195, 7386,
+        7074, 7196, 11712, 12555, 2614, 3076, 7486, 6750,
+        16515, 7982, 10317, 7712, 16609, 13607, 6736, 11678,
+        8130, 9990, 12663, 11615, 15074, 16074, 3835, 14371,
+        4944, 13081, 6966, 2302, 18118, 7231, 5529, 18085,
+        17351, 11730, 13374, 10040, 4968, 3928, 10758, 12335,
+        5197, 6454, 10074, 5917, 17263, 8425, 17903, 3974,
+        3881, 1436, 4909, 5692, 13186, 17223, 459, 11583,
+        1231, 2873, 10168, 11542, 8590, 9671, 11611, 16512,
+        1125, 11041, 11853, 11776, 17254, 4945, 16481, 7124,
+        14235, 11166, 304, 13093, 6464, 4814, 7497, 4859,
+        17756, 2433, 3632, 15754, 17078, 16768, 7106, 13425,
+        18375, 8295, 9269, 1867, 17609, 892, 17272, 11905,
+        5128, 16640, 17605, 11634, 12469, 16478, 16204, 4471,
+        12437, 10249, 11148, 15671, 17786, 14033, 8372, 5254,
+        10827, 2149, 14830, 7748, 16524, 11462, 11739, 4562,
+        15821, 9986, 11263, 10983, 12470, 4576, 16362, 4121,
+        2749, 18410, 10383, 14799, 3460, 16835, 12123, 5578,
+        10944, 10523, 14883, 3664, 11830, 9027, 7407, 6925,
+        1721, 14154, 13856, 5939, 16187, 4042, 13792, 11914,
+        1890, 11913, 3692, 2088, 13503, 4621, 13679, 11231,
+        7058, 13298, 9184, 18155, 11921, 13492, 3352, 11941
+    };
+
     // Hawk-512 (logn = 9, n = 512)
     public static final short[] SIG_GAUSS_HI_HAWK_512 = {
             (short) 0x580B, (short) 0x35F9,
@@ -417,6 +533,7 @@ class HawkSigner {
         n = 1 << logn; // 2^logn = 512
         saltLen = 24;
         maxXnorm = 8317;
+        random = RandomData.getInstance(RandomData.ALG_SECURE_RANDOM);
     }
 
     // Methods
@@ -949,6 +1066,18 @@ class HawkSigner {
         return mq18433MontyRed(x * R2);
     }
 
+     /**
+     * Compute half: x/2 mod Q. Constant-time: x is a secret-derived INTT
+     * butterfly intermediate (each butterfly calls this O(n log n) per signing
+     * INTT), so the "is x odd" branch must not be data-dependent. Same pattern
+     * as HawkEngine.mpHalf — fold the conditional `+ Q` (only applied when x is
+     * odd, to keep the result an integer) into a branchless mask.
+     */
+    public int mq18433Half(int x)
+    {
+        return (x + (Q & -(x & 1))) >> 1;
+    }
+
     /**
      * Number Theoretic Transform (NTT) for modulus 18433
      */
@@ -984,6 +1113,45 @@ class HawkSigner {
                 v0 += t;
             }
             t = ht;
+        }
+    }
+
+        /**
+     * Inverse NTT matching C mq18433_iNTT exactly.
+     * 1/n normalization is embedded in the iGM twiddle factors.
+     */
+    public void mq18433INTT(int logn, short[] a, int aOffset)
+    {
+        if (logn == 0)
+        {
+            return;
+        }
+
+        int t = 1;
+        for (int lm = 0; lm < logn; lm++)
+        {
+            int hm = 1 << (logn - 1 - lm);
+            int dt = t << 1;
+            int v0 = 0;
+
+            for (int u = 0; u < hm; u++)
+            {
+                int s = iGM[u + hm] & 0xFFFF;
+
+                for (int v = 0; v < t; v++)
+                {
+                    int k1 = aOffset + v0 + v;
+                    int k2 = k1 + t;
+
+                    int x1 = a[k1] & 0xFFFF;
+                    int x2 = a[k2] & 0xFFFF;
+
+                    a[k1] = (short)mq18433Half(mq18433Add(x1, x2));
+                    a[k2] = (short)mq18433MontyMul(s, mq18433Sub(x1, x2));
+                }
+                v0 += dt;
+            }
+            t = dt;
         }
     }
 
@@ -1322,8 +1490,7 @@ class HawkSigner {
     }
 
     // Sign method
-    public int sign(int logn, int useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, int privLen, byte[] tmp,
-            int tmpLen) {
+    public int sign(int logn, int useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, int privLen, byte[] tmp, int tmpLen) {
         // Ensure proper alignment for 64-bit access
         if (tmpLen < 7) {
             return 0;
@@ -1372,8 +1539,12 @@ class HawkSigner {
         shake256jc.finalizeSqueeze();
         shake256jc.squeezeBytes(hm, (short) 0, (short) 64);
 
+        int rejectNorm = 0;
+        int rejectBounds = 0;
+        int rejectEncode = 0;
+
         // Main signing loop
-        for (int attempt = 0;; attempt += 2) {
+        for (int attempt = 0; attempt < 1000; attempt += 2) {
             int t0Offset = 0;
             int t1Offset = t0Offset + (n >> 3);
             int h0Offset = t1Offset + (n >> 3);
@@ -1443,6 +1614,7 @@ class HawkSigner {
 
             // Reject if squared norm is too large
             if (xsn > maxXnorm) {
+                rejectNorm++;
                 continue;
             }
 
@@ -1470,7 +1642,7 @@ class HawkSigner {
                         mq18433MontyMul(w2[u] & 0xFFFF, w3[u] & 0xFFFF),
                         w1[u] & 0xFFFF));
             }
-            mq18433NTT(logn, w3, 0);
+            mq18433INTT(logn, w3, 0);
             mq18433PolySnorm(logn, w3, 0);
 
             short[] s1 = w3;
@@ -1496,11 +1668,17 @@ class HawkSigner {
             }
 
             if (reject != 0) {
+                rejectBounds++;
                 continue;
             }
 
             // Encode signature
             short sigLen = HAWK_SIG_SIZE(logn);
+            if (!encodeSig(logn, tmp, (short) 0, sigLen, salt, (short) 0, saltLen, s1, (short) 0)) {
+                rejectEncode++;
+                continue;
+            }
+
             if (encodeSig(logn, tmp, (short) 0, sigLen, salt, (short) 0, saltLen, s1, (short) 0)) {
                 if (sig != null) {
                     Util.arrayCopy(tmp, (short) 0, sig, (short) 0, sigLen);
@@ -1508,7 +1686,220 @@ class HawkSigner {
                 return 1;
             }
         }
+        if (rejectNorm > 0)
+            ISOException.throwIt((short)0x6301);
+
+        if (rejectBounds > 0)
+            ISOException.throwIt((short)0x6302);
+
+        if (rejectEncode > 0)
+            ISOException.throwIt((short)0x6303);
+
+        // ISOException.throwIt((short)0x63FF);
+
+        return 0;
     }
+
+    // public int sign(
+    //         int logn,
+    //         int useShake,
+    //         byte[] sig,
+    //         SHAKE256JC shake256jc,
+    //         byte[] priv,
+    //         int privLen,
+    //         byte[] tmp,
+    //         int tmpLen) {
+
+    //     try {
+
+    //         // ISOException.throwIt((short)0x6100);
+
+    //         // if (tmpLen < 7) {
+    //         //     ISOException.throwIt((short)0x6101);
+    //         // }
+
+    //         // if (logn < 8 || logn > 10) {
+    //         //     ISOException.throwIt((short)0x6102);
+    //         // }
+
+    //         int utmp1 = 0;
+    //         int utmp2 = (utmp1 + 7) & ~7;
+    //         tmpLen -= (utmp2 - utmp1);
+
+    //         // if (tmpLen < (6 << logn)) {
+    //         //     ISOException.throwIt((short)0x6103);
+    //         // }
+
+    //         int seedLen = 8 + (1 << (logn - 5));
+    //         int hpubLen = 1 << (logn - 4);
+
+    //         byte[] g = new byte[n];
+    //         byte[] ww = new byte[2 * n];
+    //         byte[] x0 = new byte[2 * n];
+    //         byte[] f = new byte[n];
+
+    //         // ISOException.throwIt((short)0x6104);
+
+    //         byte[] seed = new byte[seedLen];
+
+    //         Util.arrayCopy(priv, (short)0, seed, (short)0, (short)seedLen);
+
+    //         // ISOException.throwIt((short)0x6105);
+
+    //         regen_fg(f, (short)0, g, (short)0, seed);
+
+    //         // ISOException.throwIt((short)0x6106);
+
+    //         byte[] F2 = new byte[n >> 3];
+    //         byte[] G2 = new byte[n >> 3];
+    //         byte[] hpub = new byte[hpubLen];
+
+    //         Util.arrayCopy(priv,
+    //                 (short)seedLen,
+    //                 F2,
+    //                 (short)0,
+    //                 (short)(n >> 3));
+
+    //         Util.arrayCopy(priv,
+    //                 (short)(seedLen + (n >> 3)),
+    //                 G2,
+    //                 (short)0,
+    //                 (short)(n >> 3));
+
+    //         Util.arrayCopy(priv,
+    //                 (short)(seedLen + 2 * (n >> 3)),
+    //                 hpub,
+    //                 (short)0,
+    //                 (short)hpubLen);
+
+    //         // ISOException.throwIt((short)0x6107);
+
+    //         byte[] hm = new byte[64];
+
+    //         shake256jc.absorbXor(hpub, (short)0, (short)hpubLen);
+    //         shake256jc.finalizeSqueeze();
+    //         shake256jc.squeezeBytes(hm, (short)0, (short)64);
+
+    //         // ISOException.throwIt((short)0x6108);
+
+    //         for (int attempt = 0; attempt < 1000; attempt += 2) {
+    //             // if ((attempt & 0x3E) == 0) {
+    //             //     ISOException.throwIt((short)(0x6200 + (attempt >> 1)));
+    //             // }
+    //             // if (attempt == 100)
+    //                 // ISOException.throwIt((short)0x620A);
+    //             // ISOException.throwIt((short)0x6110);
+
+    //             int t0Offset = 0;
+    //             int t1Offset = t0Offset + (n >> 3);
+    //             int h0Offset = t1Offset + (n >> 3);
+    //             int h1Offset = h0Offset + (n >> 3);
+    //             int f2Offset = h1Offset + (n >> 3);
+    //             int g2Offset = f2Offset + (n >> 3);
+    //             int xxOffset = g2Offset + (n >> 3);
+
+    //             byte[] salt = new byte[saltLen];
+
+    //             random.nextBytes(salt,
+    //                     (short)0,
+    //                     (short)saltLen);
+
+    //             // ISOException.throwIt((short)0x6111);
+
+    //             byte[] state = new byte[200];
+    //             int[] scratch = new int[120];
+
+    //             if (useShake != 0) {
+
+    //                 byte[] tbuf = new byte[4];
+    //                 enc32le(tbuf, 0, attempt);
+
+    //                 SHAKE256JC saltShake =
+    //                         new SHAKE256JC(state, scratch);
+
+    //                 saltShake.absorbXor(hm, 0, hm.length);
+    //                 saltShake.absorbXor(priv, 0, seedLen);
+    //                 saltShake.absorbXor(tbuf, 0, tbuf.length);
+    //                 saltShake.absorbXor(salt, 0, saltLen);
+    //                 saltShake.finalizeSqueeze();
+    //                 saltShake.squeezeBytes(salt, 0, saltLen);
+    //             }
+
+    //             // ISOException.throwIt((short)0x6112);
+
+    //             reset(state, scratch);
+
+    //             SHAKE256JC hShake =
+    //                     new SHAKE256JC(state, scratch);
+
+    //             hShake.absorbXor(hm, 0, hm.length);
+    //             hShake.absorbXor(salt, 0, saltLen);
+    //             hShake.finalizeSqueeze();
+
+    //             hShake.squeezeBytes(
+    //                     ww,
+    //                     h0Offset,
+    //                     n >> 2);
+
+    //             // ISOException.throwIt((short)0x6113);
+
+    //             byte[] f2 = new byte[n >> 3];
+    //             byte[] g2 = new byte[n >> 3];
+
+    //             extract_lowbit(logn, f2, f);
+    //             extract_lowbit(logn, g2, g);
+
+    //             basisM2Mul(
+    //                     logn,
+    //                     ww, t0Offset,
+    //                     ww, t1Offset,
+    //                     ww, h0Offset,
+    //                     ww, h1Offset,
+    //                     f2, 0,
+    //                     g2, 0,
+    //                     F2, 0,
+    //                     G2, 0,
+    //                     tmp, xxOffset);
+
+    //             // ISOException.throwIt((short)0x6114);
+
+    //             byte[] tbuf = new byte[4];
+    //             enc32le(tbuf, 0, attempt + 1);
+
+    //             reset(state, scratch);
+
+    //             SHAKE256JC gaussShake =
+    //                     new SHAKE256JC(state, scratch);
+
+    //             gaussShake.reset();
+
+    //             gaussShake.absorbXor(hm, 0, hm.length);
+    //             gaussShake.absorbXor(priv, 0, seedLen);
+    //             gaussShake.absorbXor(tbuf, 0, tbuf.length);
+    //             gaussShake.finalizeSqueeze();
+
+    //             // ISOException.throwIt((short)0x6115);
+
+    //             int xsn = sigGauss(
+    //                     logn,
+    //                     gaussShake,
+    //                     x0,
+    //                     0,
+    //                     ww,
+    //                     t0Offset);
+
+    //             // ISOException.throwIt((short)0x6116);
+    //         }
+    //         return 0;
+
+    //     } catch (ISOException e) {
+    //         throw e;
+    //     } catch (Throwable e) {
+    //         e.printStackTrace();
+    //         ISOException.throwIt((short)0x6F42);
+    //         return 0;
+    //     }
+    // }
 
     public int signMessage(
             int logn,

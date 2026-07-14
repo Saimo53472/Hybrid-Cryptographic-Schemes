@@ -1,0 +1,11 @@
+SHAKE\KeccakF1600.class
+Chameleon\ChameleonClassicApplet.class
+Chameleon\Hawk.class
+Chameleon\HawkSigner.class
+SHAKE\SHAKE256JC.class
+Chameleon\MayoSigner.class
+Chameleon\test.class
+SHAKE\TestSHAKE256.class
+Chameleon\ChameleonApplet.class
+Chameleon\Hello.class
+Chameleon\Mayo.class

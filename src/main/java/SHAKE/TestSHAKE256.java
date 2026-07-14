@@ -28,9 +28,44 @@ public class TestSHAKE256
         return sb.toString();
     }
 
+    private static byte[] buildExpectedMessage() {
+        byte[] msg = new byte[255];
+
+        int pos = 0;
+
+        msg[pos++] = 0x05;
+        msg[pos++] = 0x01;
+        msg[pos++] = 0x08;
+
+        byte[] dynamic = {
+                (byte)0x6c,
+                (byte)0x55,
+                (byte)0x44,
+                (byte)0x79,
+                (byte)0x7a,
+                (byte)0x91,
+                (byte)0x11,
+                (byte)0x5d
+        };
+
+        System.arraycopy(dynamic, 0, msg, pos, dynamic.length);
+        pos += dynamic.length;
+
+        while (pos < 251) {
+            msg[pos++] = (byte)0xBB;
+        }
+
+        msg[pos++] = 0x01;
+        msg[pos++] = 0x02;
+        msg[pos++] = 0x03;
+        msg[pos++] = 0x04;
+
+        return msg;
+    }
+
     public static void main(String[] args) throws Exception
     {
-        byte[] empty = new byte[0];
+        byte[] msg = buildExpectedMessage();
 
         // Caller-provided buffers (on Java Card make these transient)
         byte[] state = new byte[200];
@@ -45,7 +80,7 @@ public class TestSHAKE256
         int outBytes = 32;
         byte[] ourOut = new byte[outBytes];
         shake.reset();
-        shake.absorbXor(empty, 0, 0);
+        shake.absorbXor(msg, 0, msg.length);
         shake.finalizeSqueeze();
         shake.squeezeBytes(ourOut, 0, outBytes);
 
@@ -57,7 +92,7 @@ public class TestSHAKE256
         int[] hi = new int[words];
         int[] lo = new int[words];
         // Reuse the instance for words output: use the helper that resets/absorbs/etc.
-        shake.shake256wIntoIntPairs(empty, 0, 0, words, hi, lo, tmp8);
+        shake.shake256wIntoIntPairs(msg, 0, msg.length, words, hi, lo, tmp8);
 
         System.out.println("Our SHAKE256w(empty) first 4 words (hi/lo -> 64-bit LE):");
         for (int i = 0; i < words; i++)
