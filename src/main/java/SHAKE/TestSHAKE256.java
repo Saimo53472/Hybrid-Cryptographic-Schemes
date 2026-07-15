@@ -67,14 +67,8 @@ public class TestSHAKE256
     {
         byte[] msg = buildExpectedMessage();
 
-        // Caller-provided buffers (on Java Card make these transient)
-        byte[] state = new byte[200];
-        int[] scratch = new int[120];
-        byte[] tmp8 = new byte[8];
-        byte[] singleByte = new byte[1];
-
         // Create the Java Card–friendly SHAKE instance
-        SHAKE256JC shake = new SHAKE256JC(state, scratch);
+        SHAKE256JC shake = new SHAKE256JC();
 
         // Produce 32 bytes (4 words) from our implementation
         int outBytes = 32;
@@ -84,22 +78,7 @@ public class TestSHAKE256
         shake.finalizeSqueeze();
         shake.squeezeBytes(ourOut, 0, outBytes);
 
-        System.out.println("Our SHAKE256(empty) bytes (hex):");
         System.out.println(toHex(ourOut, 0, ourOut.length));
-
-        // Also demonstrate SHAKE256w (hi/lo int pairs) output
-        int words = 4;
-        int[] hi = new int[words];
-        int[] lo = new int[words];
-        // Reuse the instance for words output: use the helper that resets/absorbs/etc.
-        shake.shake256wIntoIntPairs(msg, 0, msg.length, words, hi, lo, tmp8);
-
-        System.out.println("Our SHAKE256w(empty) first 4 words (hi/lo -> 64-bit LE):");
-        for (int i = 0; i < words; i++)
-        {
-            long val = (((long)hi[i]) << 32) | ((long)lo[i] & 0xFFFFFFFFL);
-            System.out.printf("word[%d] = 0x%016X%n", i, val);
-        }
 
         // Compare to BouncyCastle (if available) using reflection so compilation doesn't require BC.
         try
@@ -107,8 +86,10 @@ public class TestSHAKE256
             Class<?> cl = Class.forName("org.bouncycastle.crypto.digests.SHAKEDigest");
             Object bc = cl.getConstructor(int.class).newInstance(256);
             java.lang.reflect.Method doOutput = cl.getMethod("doOutput", byte[].class, int.class, int.class);
+            java.lang.reflect.Method update = cl.getMethod("update", byte[].class, int.class, int.class);
 
             byte[] bcOut = new byte[outBytes];
+            update.invoke(bc, msg, 0, msg.length);
             doOutput.invoke(bc, bcOut, 0, bcOut.length);
 
             System.out.println("BouncyCastle SHAKE256(empty) bytes (hex):");

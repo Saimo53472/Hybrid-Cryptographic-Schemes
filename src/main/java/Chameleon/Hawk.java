@@ -558,17 +558,13 @@ class HawkSigner {
      * Regenerate f and g polynomials from seed using SHAKE256
      */
     public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed) {
-        byte[] state = new byte[200];
-        int[] scratch = new int[120];
         for (byte j = 0; j < 4; j++) {
-            SHAKE256JC shake = new SHAKE256JC(state, scratch);
-            shake.absorbXor(seed, (short) 0, (short) 24);
+            SHAKE256JC shake = new SHAKE256JC();
+            shake.update(seed, (short) 0, (short) 24);
 
             byte[] singleByte = new byte[1];
             singleByte[0] = j;
-            shake.absorbXor(singleByte, (short) 0, (short) 1);
-
-            shake.finalizeSqueeze();
+            shake.update(singleByte, (short) 0, (short) 1);
 
             for (short u = 0; u < 1024; u += 32) {
                 byte[] qb = new byte[8];
@@ -1237,26 +1233,22 @@ class HawkSigner {
         }
 
         int n = 1 << logn;
-
-        /*
-         * Generate the 40-byte seed exactly like
-         * the original Hawk implementation.
-         */
         byte[] seed = new byte[41];
         byte[] tmp = new byte[40];
-        random.nextBytes(seed, (short) 0, (short) 40);
+        random.nextBytes(tmp, (short) 0, (short) 40);
+        Util.arrayCopy(tmp, (short) 0, seed,(short) 0, (short) tmp.length);
 
         int sn = 0;
 
         for (int j = 0; j < 4; j++) {
-            seed[40] = (byte) j;
+            SHAKE256JC sc = new SHAKE256JC(shake);
 
-            shake.reset();
-            shake.absorbXor(seed, 0, 41);
-            shake.finalizeSqueeze();
+            seed[40] = (byte)j;
+            sc.update(seed, 0, 41);
+            byte[] buffer = new byte[40];
 
             for (int u = 0; u < (n << 1); u += 16) {
-                shake.squeezeBytes(tmp, 0, 40);
+                sc.squeezeBytes(buffer, 0, 40);
 
                 for (int k = 0; k < 4; k++) {
                     int v = u + (j << 2) + k;
@@ -1340,14 +1332,7 @@ class HawkSigner {
                         r += hinz & cc;
                     }
 
-                    /*
-                     * Enforce parity.
-                     */
                     r = (r << 1) - pOddw;
-
-                    /*
-                     * Apply sign.
-                     */
                     r = (r ^ neg) - neg;
 
                     x[xOffset + v] = (byte) r;
@@ -1535,9 +1520,8 @@ class HawkSigner {
 
         // Compute hm = SHAKE256(message || hpub)
         byte[] hm = new byte[64];
-        shake256jc.absorbXor(hpub, (short) 0, (short) hpubLen);
-        shake256jc.finalizeSqueeze();
-        shake256jc.squeezeBytes(hm, (short) 0, (short) 64);
+        shake256jc.update(hpub, 0, hpubLen);
+        shake256jc.doFinal(hm, 0, hm.length);
 
         int rejectNorm = 0;
         int rejectBounds = 0;
@@ -1557,31 +1541,25 @@ class HawkSigner {
             byte[] salt = new byte[saltLen];
             random.nextBytes(salt, (short) 0, (short) saltLen);
 
-            byte[] state = new byte[200];
-            int[] scratch = new int[120];
-
             if (useShake != 0) {
                 byte[] tbuf = new byte[4];
                 enc32le(tbuf, 0, attempt);
 
-                SHAKE256JC saltShake = new SHAKE256JC(state, scratch);
-                saltShake.absorbXor(hm, 0, hm.length);
-                saltShake.absorbXor(priv, 0, seedLen);
-                saltShake.absorbXor(tbuf, 0, tbuf.length);
-                saltShake.absorbXor(salt, 0, saltLen);
-                saltShake.finalizeSqueeze();
-                saltShake.squeezeBytes(salt, 0, saltLen);
+                SHAKE256JC saltShake = new SHAKE256JC();
+                saltShake.update(hm, 0, hm.length);
+                saltShake.update(priv, 0, seedLen); // problem?
+                saltShake.update(tbuf, 0, tbuf.length);
+                saltShake.update(salt, 0, saltLen);
+                saltShake.doFinal(salt, 0, saltLen);
             }
 
             // Compute h = SHAKE256(hm || salt)
-            reset(state, scratch);
-            SHAKE256JC hShake = new SHAKE256JC(state, scratch);
-            hShake.absorbXor(hm, 0, hm.length);
-            hShake.absorbXor(salt, 0, saltLen);
-            hShake.finalizeSqueeze();
+            SHAKE256JC hShake = new SHAKE256JC();
+            hShake.update(hm, 0, hm.length);
+            hShake.update(salt, 0, saltLen);
 
             // Squeeze h0 and h1 (total n >> 2 bytes)
-            hShake.squeezeBytes(ww, h0Offset, n >> 2);
+            hShake.doFinal(ww, h0Offset, n >> 2);
 
             // Extract low bits and compute t = B*h (mod 2)
             byte[] f2 = new byte[n >> 3];
@@ -1601,14 +1579,11 @@ class HawkSigner {
             byte[] tbuf = new byte[4];
             enc32le(tbuf, 0, attempt + 1);
 
-            reset(state, scratch);
-            SHAKE256JC gaussShake = new SHAKE256JC(state, scratch);
+            SHAKE256JC gaussShake = new SHAKE256JC();
 
-            gaussShake.reset();
-            gaussShake.absorbXor(hm, 0, hm.length);
-            gaussShake.absorbXor(priv, 0, seedLen);
-            gaussShake.absorbXor(tbuf, 0, tbuf.length);
-            gaussShake.finalizeSqueeze();
+            gaussShake.update(hm, 0, hm.length);
+            gaussShake.update(priv, 0, seedLen); // ?
+            gaussShake.update(tbuf, 0, tbuf.length);
 
             xsn = sigGauss(logn, gaussShake, x0, 0, ww, t0Offset);
 
@@ -1700,207 +1675,6 @@ class HawkSigner {
         return 0;
     }
 
-    // public int sign(
-    //         int logn,
-    //         int useShake,
-    //         byte[] sig,
-    //         SHAKE256JC shake256jc,
-    //         byte[] priv,
-    //         int privLen,
-    //         byte[] tmp,
-    //         int tmpLen) {
-
-    //     try {
-
-    //         // ISOException.throwIt((short)0x6100);
-
-    //         // if (tmpLen < 7) {
-    //         //     ISOException.throwIt((short)0x6101);
-    //         // }
-
-    //         // if (logn < 8 || logn > 10) {
-    //         //     ISOException.throwIt((short)0x6102);
-    //         // }
-
-    //         int utmp1 = 0;
-    //         int utmp2 = (utmp1 + 7) & ~7;
-    //         tmpLen -= (utmp2 - utmp1);
-
-    //         // if (tmpLen < (6 << logn)) {
-    //         //     ISOException.throwIt((short)0x6103);
-    //         // }
-
-    //         int seedLen = 8 + (1 << (logn - 5));
-    //         int hpubLen = 1 << (logn - 4);
-
-    //         byte[] g = new byte[n];
-    //         byte[] ww = new byte[2 * n];
-    //         byte[] x0 = new byte[2 * n];
-    //         byte[] f = new byte[n];
-
-    //         // ISOException.throwIt((short)0x6104);
-
-    //         byte[] seed = new byte[seedLen];
-
-    //         Util.arrayCopy(priv, (short)0, seed, (short)0, (short)seedLen);
-
-    //         // ISOException.throwIt((short)0x6105);
-
-    //         regen_fg(f, (short)0, g, (short)0, seed);
-
-    //         // ISOException.throwIt((short)0x6106);
-
-    //         byte[] F2 = new byte[n >> 3];
-    //         byte[] G2 = new byte[n >> 3];
-    //         byte[] hpub = new byte[hpubLen];
-
-    //         Util.arrayCopy(priv,
-    //                 (short)seedLen,
-    //                 F2,
-    //                 (short)0,
-    //                 (short)(n >> 3));
-
-    //         Util.arrayCopy(priv,
-    //                 (short)(seedLen + (n >> 3)),
-    //                 G2,
-    //                 (short)0,
-    //                 (short)(n >> 3));
-
-    //         Util.arrayCopy(priv,
-    //                 (short)(seedLen + 2 * (n >> 3)),
-    //                 hpub,
-    //                 (short)0,
-    //                 (short)hpubLen);
-
-    //         // ISOException.throwIt((short)0x6107);
-
-    //         byte[] hm = new byte[64];
-
-    //         shake256jc.absorbXor(hpub, (short)0, (short)hpubLen);
-    //         shake256jc.finalizeSqueeze();
-    //         shake256jc.squeezeBytes(hm, (short)0, (short)64);
-
-    //         // ISOException.throwIt((short)0x6108);
-
-    //         for (int attempt = 0; attempt < 1000; attempt += 2) {
-    //             // if ((attempt & 0x3E) == 0) {
-    //             //     ISOException.throwIt((short)(0x6200 + (attempt >> 1)));
-    //             // }
-    //             // if (attempt == 100)
-    //                 // ISOException.throwIt((short)0x620A);
-    //             // ISOException.throwIt((short)0x6110);
-
-    //             int t0Offset = 0;
-    //             int t1Offset = t0Offset + (n >> 3);
-    //             int h0Offset = t1Offset + (n >> 3);
-    //             int h1Offset = h0Offset + (n >> 3);
-    //             int f2Offset = h1Offset + (n >> 3);
-    //             int g2Offset = f2Offset + (n >> 3);
-    //             int xxOffset = g2Offset + (n >> 3);
-
-    //             byte[] salt = new byte[saltLen];
-
-    //             random.nextBytes(salt,
-    //                     (short)0,
-    //                     (short)saltLen);
-
-    //             // ISOException.throwIt((short)0x6111);
-
-    //             byte[] state = new byte[200];
-    //             int[] scratch = new int[120];
-
-    //             if (useShake != 0) {
-
-    //                 byte[] tbuf = new byte[4];
-    //                 enc32le(tbuf, 0, attempt);
-
-    //                 SHAKE256JC saltShake =
-    //                         new SHAKE256JC(state, scratch);
-
-    //                 saltShake.absorbXor(hm, 0, hm.length);
-    //                 saltShake.absorbXor(priv, 0, seedLen);
-    //                 saltShake.absorbXor(tbuf, 0, tbuf.length);
-    //                 saltShake.absorbXor(salt, 0, saltLen);
-    //                 saltShake.finalizeSqueeze();
-    //                 saltShake.squeezeBytes(salt, 0, saltLen);
-    //             }
-
-    //             // ISOException.throwIt((short)0x6112);
-
-    //             reset(state, scratch);
-
-    //             SHAKE256JC hShake =
-    //                     new SHAKE256JC(state, scratch);
-
-    //             hShake.absorbXor(hm, 0, hm.length);
-    //             hShake.absorbXor(salt, 0, saltLen);
-    //             hShake.finalizeSqueeze();
-
-    //             hShake.squeezeBytes(
-    //                     ww,
-    //                     h0Offset,
-    //                     n >> 2);
-
-    //             // ISOException.throwIt((short)0x6113);
-
-    //             byte[] f2 = new byte[n >> 3];
-    //             byte[] g2 = new byte[n >> 3];
-
-    //             extract_lowbit(logn, f2, f);
-    //             extract_lowbit(logn, g2, g);
-
-    //             basisM2Mul(
-    //                     logn,
-    //                     ww, t0Offset,
-    //                     ww, t1Offset,
-    //                     ww, h0Offset,
-    //                     ww, h1Offset,
-    //                     f2, 0,
-    //                     g2, 0,
-    //                     F2, 0,
-    //                     G2, 0,
-    //                     tmp, xxOffset);
-
-    //             // ISOException.throwIt((short)0x6114);
-
-    //             byte[] tbuf = new byte[4];
-    //             enc32le(tbuf, 0, attempt + 1);
-
-    //             reset(state, scratch);
-
-    //             SHAKE256JC gaussShake =
-    //                     new SHAKE256JC(state, scratch);
-
-    //             gaussShake.reset();
-
-    //             gaussShake.absorbXor(hm, 0, hm.length);
-    //             gaussShake.absorbXor(priv, 0, seedLen);
-    //             gaussShake.absorbXor(tbuf, 0, tbuf.length);
-    //             gaussShake.finalizeSqueeze();
-
-    //             // ISOException.throwIt((short)0x6115);
-
-    //             int xsn = sigGauss(
-    //                     logn,
-    //                     gaussShake,
-    //                     x0,
-    //                     0,
-    //                     ww,
-    //                     t0Offset);
-
-    //             // ISOException.throwIt((short)0x6116);
-    //         }
-    //         return 0;
-
-    //     } catch (ISOException e) {
-    //         throw e;
-    //     } catch (Throwable e) {
-    //         e.printStackTrace();
-    //         ISOException.throwIt((short)0x6F42);
-    //         return 0;
-    //     }
-    // }
-
     public int signMessage(
             int logn,
             byte[] sig,
@@ -1910,16 +1684,11 @@ class HawkSigner {
             int privLen,
             byte[] tmp,
             int tmpLen) {
-        byte[] state = new byte[200];
-        int[] scratch = new int[120];
 
-        SHAKE256JC sc = new SHAKE256JC(state, scratch);
-
-        // Equivalent of hawkSignStart(sc)
-        sc.reset();
+        SHAKE256JC sc = new SHAKE256JC();
 
         // Equivalent of sc.update(message, 0, mlen);
-        sc.absorbXor(message, 0, messageLen);
+        sc.update(message, 0, messageLen);
 
         // Equivalent of hawkSignFinish(...)
         return sign(
