@@ -2,7 +2,6 @@ package Chameleon;
 
 import javacard.framework.*; // Applet class
 import javacard.security.*; // Cryptographic operations
-import javacardx.crypto.*; // Extended cryptographic operations
 
 public class ChameleonApplet extends Applet {
 
@@ -23,54 +22,39 @@ public class ChameleonApplet extends Applet {
 
     private byte[] dataToSign; // data to be signed
     private short dataToSignLen;
-    private static final short TOTAL_LEN = 255; // total length of data to be signed (including padding)
 
     // Classical values 
     private ECPrivateKey classicalPrivateKey; // on card
     private Signature classicalSignature; 
+    private short classicalSigLen;
+    private byte[] classicalSigBuffer;
 
     // Post-Quantum values
     private byte[] pqPrivateKey; // on card 
     private byte[] pqSignature; 
+    private short pqSignatureLen;
+
+    private short pqKeyOffset = 0;
+    private short pqKeyLen = 0;
 
     // Certificate storage
     private byte[] certificate; // stored on card
     private short certLen;
 
-    // Temporary APDU buffer - communication
-    private byte[] buffer;
-
-    private byte[] signatureBuffer;
-    private short signatureLen;
-
     private boolean personalized;
-    private RandomData random;
-    private byte[] iccDynamicData = new byte[8];
-
-    private short pqKeyOffset = 0;
-    private short pqKeyLen = 0;
-
-    // RAM usage estimation
-    // dataToSign: 255 bytes
-    // certificate: 2048 bytes
-    // signatureBuffer: 128 bytes
-    // pqPrivateKey: 2048 bytes
-    // pqSignature: 512 bytes
-    // TOTAL ≈ 4991 bytes (excluding temporary APDU buffers)
 
     protected ChameleonApplet() {
         dataToSign = new byte[255];
         certificate = new byte[2048];
-        signatureBuffer = new byte[128];
 
         classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_256, false);
         classicalSignature = Signature.getInstance( Signature.ALG_ECDSA_SHA_256, false);
+        classicalSigBuffer = new byte[128];
 
         pqPrivateKey = new byte[2048];
-        pqSignature = new byte[512];
+        pqSignature = new byte[600];
 
         personalized = false;
-        random = RandomData.getInstance(RandomData.ALG_SECURE_RANDOM);
         register(); // makes the applet selectable 
     }
 
@@ -166,6 +150,7 @@ public class ChameleonApplet extends Applet {
 
         Util.arrayCopy(buf, ISO7816.OFFSET_CDATA, pqPrivateKey, pqKeyOffset, len);
         pqKeyOffset += len;
+        pqKeyLen = pqKeyOffset;
     }
 
     private short certOffset = 0;
@@ -191,7 +176,8 @@ public class ChameleonApplet extends Applet {
     }
 
     private void initSession(APDU apdu) {
-        signatureLen = 0;
+        classicalSigLen = 0;
+        pqSignatureLen = 0;
         dataToSignLen = 0;
     }
 
@@ -228,11 +214,26 @@ public class ChameleonApplet extends Applet {
 
     private void createSignatureBase(APDU apdu) {
         classicalSignature.init(classicalPrivateKey, Signature.MODE_SIGN);
-        signatureLen = classicalSignature.sign(dataToSign, (short) 0, dataToSignLen, signatureBuffer, (short) 0);
+        classicalSigLen = classicalSignature.sign(dataToSign, (short) 0, dataToSignLen, classicalSigBuffer, (short) 0);
     }
 
     private void createSignatureDelta(APDU apdu) {
-        //
+        if (dataToSignLen == 0)
+            ISOException.throwIt(
+                    ISO7816.SW_CONDITIONS_NOT_SATISFIED);
+
+        Hawk signer = new Hawk();
+
+        byte[] tmp = new byte[6 * 1024]; 
+
+        int ret = signer.signMessage(9, pqSignature, dataToSign, dataToSignLen, pqPrivateKey, pqKeyLen, tmp,
+                tmp.length);
+
+        if (ret == 0) {
+            ISOException.throwIt(ISO7816.SW_UNKNOWN);
+        }
+
+        pqSignatureLen = Hawk.HAWK_SIG_SIZE(9);
     }
 
     private void sendCertificate(APDU apdu) {
@@ -262,13 +263,26 @@ public class ChameleonApplet extends Applet {
 
     private void sendSignatureBase(APDU apdu) {
         apdu.setOutgoing();
-        apdu.setOutgoingLength(signatureLen);
-        apdu.sendBytesLong(signatureBuffer, (short) 0, signatureLen);
+        apdu.setOutgoingLength(classicalSigLen);
+        apdu.sendBytesLong(classicalSigBuffer, (short) 0, classicalSigLen);
     }
 
     private void sendSignatureDelta(APDU apdu) {
+        byte[] buf = apdu.getBuffer();
+
+        short offset = (short)(
+                ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8)
+            |  (buf[ISO7816.OFFSET_P2] & 0xFF));
+
+        if (offset >= pqSignatureLen) {
+            ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
+        }
+
+        short remaining = (short)(pqSignatureLen - offset);
+        short chunk = remaining > 200 ? 200 : remaining;
+
         apdu.setOutgoing();
-        apdu.setOutgoingLength(signatureLen);
-        apdu.sendBytesLong(signatureBuffer, (short) 0, signatureLen);
+        apdu.setOutgoingLength(chunk);
+        apdu.sendBytesLong(pqSignature, offset, chunk);
     }
 }

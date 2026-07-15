@@ -1,7 +1,10 @@
+package Chameleon;
+
 import com.licel.jcardsim.smartcardio.CardSimulator;
 import javacard.framework.AID;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
@@ -12,10 +15,9 @@ import java.io.*;
 
 import javax.smartcardio.*;
 
-import Chameleon.ChameleonApplet;
+import org.bouncycastle.pqc.crypto.hawk.HawkParameters;
+import org.bouncycastle.pqc.crypto.hawk.HawkPrivateKeyParameters;
 
-import java.math.BigInteger;
-import java.io.ByteArrayOutputStream;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.interfaces.ECPrivateKey;
 
@@ -55,9 +57,10 @@ public class ChameleonTest {
 
         // 2. Load EC private key and certificate
         try {
-            byte[] key = loadECPrivateKey("key_pkcs8.pem"); 
-            byte[] qkey = loadRawFile("qkey.pem"); 
-            byte[] cert = loadCertificate("chameleon_cert.pem"); 
+            byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem")); // maybe chnage this
+            byte[] qkey = Files.readAllBytes(Paths.get("src","test","resources", "keys", "hawk512_private.key"));
+            HawkPrivateKeyParameters sk = new HawkPrivateKeyParameters(HawkParameters.Hawk_512, qkey, 0, qkey.length);
+            byte[] cert = loadCertificate(Paths.get("src","test","resources", "certs", "chameleon_cert.pem")); 
 
             send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
 
@@ -66,20 +69,13 @@ public class ChameleonTest {
 
             while (offset < qkey.length) {
                 int len = Math.min(chunkSize, qkey.length - offset);
-
                 byte[] chunk = Arrays.copyOfRange(qkey, offset, offset + len);
-
-                send(simulator, new CommandAPDU(CLA, 0x71,
-                    offset == 0 ? 0x00 : 0x01,
-                    0x00,
-                    chunk));
-
+                send(simulator, new CommandAPDU(CLA, 0x71, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
 
             offset = 0;
             chunkSize = 200;
-
             int S_cert = cert.length;  // certificate size in bytes
             System.out.println("S_cert = " + S_cert);
 
@@ -134,13 +130,20 @@ public class ChameleonTest {
 
         // 8. Create post-quantum signature
         long startDelta = System.nanoTime();
-        // send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
         long endDelta = System.nanoTime();
         timeDeltaSign = endDelta - startDelta;
 
         // 9. Get post-quantum signature
-        // ResponseAPDU pqSigResponse = send(simulator, new CommandAPDU(CLA, 0x60, 0x00, 0x00));
-        // byte[] pqSigData = pqSigResponse.getData();
+        byte[] signature = new byte[555];
+        offset = 0;
+
+        while (offset < signature.length) {
+            ResponseAPDU rsp = send(simulator, new CommandAPDU( CLA, 0x60, (offset >> 8) & 0xFF, offset & 0xFF));
+            byte[] chunk = rsp.getData();
+            System.arraycopy( chunk, 0, signature, offset, chunk.length);
+            offset += chunk.length;
+        }
 
         // 10. Print metrics
         System.out.println("METRICS");
@@ -156,7 +159,7 @@ public class ChameleonTest {
 
         // Signature sizes
         System.out.println("S_sig_base = " + sigData.length);
-        // System.out.println("S_sig_delta = " + pqSigData.length);
+        System.out.println("S_sig_delta = " + signature.length);
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
@@ -187,8 +190,8 @@ public class ChameleonTest {
         return sb.toString();
     }
     
-    private static byte[] loadECPrivateKey(String path) throws Exception {
-        byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+    private static byte[] loadECPrivateKey(Path path) throws Exception {
+        byte[] keyBytes = Files.readAllBytes(path);
 
         String pem = new String(keyBytes);
 
@@ -208,7 +211,6 @@ public class ChameleonTest {
 
         byte[] d = ecKey.getS().toByteArray();
 
-        // Ensure 32 bytes for P-256
         if (d.length > 32) {
             d = Arrays.copyOfRange(d, d.length - 32, d.length);
         } else if (d.length < 32) {
@@ -220,27 +222,10 @@ public class ChameleonTest {
         return d;
     }
 
-    private static byte[] loadRawFile(String path) throws Exception {
-        byte[] data = Files.readAllBytes(Paths.get(path));
+    private static byte[] loadCertificate(Path pemPath)
+            throws Exception {
 
-        String pem = new String(data);
-
-        if (pem.contains("BEGIN")) {
-            pem = pem
-                .replaceAll("-----BEGIN (.*)-----", "")
-                .replaceAll("-----END (.*)-----", "")
-                .replaceAll("\\s", "");
-
-            data = Base64.getDecoder().decode(pem);
-        }
-
-        return data;
-    }
-
-    private static byte[] loadCertificate(String pemPath)
-        throws Exception {
-
-        String pem = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(pemPath)));
+        String pem = new String(Files.readAllBytes(pemPath));
 
         pem = pem
             .replace("-----BEGIN CERTIFICATE-----", "")
@@ -249,6 +234,7 @@ public class ChameleonTest {
 
         return Base64.getDecoder().decode(pem);
     }
+
 
     public static PublicKey loadPublicKeyFromCert(String certPath) throws Exception {
         FileInputStream fis = new FileInputStream(certPath);

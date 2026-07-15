@@ -1,3 +1,5 @@
+package Chameleon;
+
 import com.licel.jcardsim.smartcardio.CardSimulator;
 import javacard.framework.AID;
 
@@ -13,11 +15,9 @@ import java.io.*;
 import javax.smartcardio.*;
 
 import java.math.BigInteger;
-import java.io.ByteArrayOutputStream;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.interfaces.RSAPrivateKey;
 
 public class ChameleonTest2 {
 
