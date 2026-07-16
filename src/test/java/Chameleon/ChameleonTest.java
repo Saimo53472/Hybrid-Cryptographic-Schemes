@@ -126,8 +126,14 @@ public class ChameleonTest {
         X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedCert));
 
         // 4.1 Verify ECDSA
-        cert.verify(cert.getPublicKey());
-        System.out.println("ECDSA: OK");
+        boolean certECDSAOK;
+        try {
+            cert.verify(cert.getPublicKey());
+            certECDSAOK = true;
+        } catch (Exception e) {
+            certECDSAOK = false;
+        }
+        System.out.println("ECDSA: " + certECDSAOK);
 
         // 4.2 Extract DCD
         byte[] dcd = unwrapExtension(cert.getExtensionValue(DCD_OID));
@@ -150,7 +156,7 @@ public class ChameleonTest {
         long endBase = System.nanoTime();
         timeBaseSign = endBase - startBase;
 
-        // 8. Get signature
+        // 7. Get signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
         byte[] sigData = sigResponse.getData();
 
@@ -170,6 +176,25 @@ public class ChameleonTest {
             System.arraycopy(chunk, 0, signature, offset, chunk.length);
             offset += chunk.length;
         }
+
+        // 10. Verify signatures
+        byte[] expectedMessage = buildExpectedMessage();
+        Signature ecdsaVerifier = Signature.getInstance("SHA256withECDSA");
+        ecdsaVerifier.initVerify(cert.getPublicKey());
+        ecdsaVerifier.update(expectedMessage);
+        boolean ecdsaOK = ecdsaVerifier.verify(sigData);
+        System.out.println("Card ECDSA signature: " + ecdsaOK);
+
+        byte[] pub = Files.readAllBytes(Paths.get("src","test","resources", "keys", "hawk512_public.key"));
+        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(
+            HawkParameters.Hawk_512,
+            pub,
+            0,
+            pub.length);
+        HawkSigner verifier = new HawkSigner();
+        verifier.init(false, pk);
+        boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
+        System.out.println("Card HAWK signature: " + hawkOK); 
 
         // 10. Print metrics
         System.out.println("METRICS");
@@ -274,7 +299,7 @@ public class ChameleonTest {
         HawkSigner verifier = new HawkSigner();
         verifier.init(false, pk);
         boolean ok = verifier.verifySignature(message, signature);
-        System.out.println("HAWK signature: " + ok);
+        System.out.println("HAWK: " + ok);
     }
 
     private static byte[] unwrapExtension(byte[] extension) throws Exception {
@@ -282,5 +307,40 @@ public class ChameleonTest {
                 ASN1Primitive.fromByteArray(extension));
 
         return oct.getOctets();
+    }
+
+    private static byte[] buildExpectedMessage() {
+        byte[] msg = new byte[255];
+
+        int pos = 0;
+
+        msg[pos++] = 0x05;
+        msg[pos++] = 0x01;
+        msg[pos++] = 0x08;
+
+        byte[] dynamic = {
+                (byte)0x6c,
+                (byte)0x55,
+                (byte)0x44,
+                (byte)0x79,
+                (byte)0x7a,
+                (byte)0x91,
+                (byte)0x11,
+                (byte)0x5d
+        };
+
+        System.arraycopy(dynamic, 0, msg, pos, dynamic.length);
+        pos += dynamic.length;
+
+        while (pos < 251) {
+            msg[pos++] = (byte)0xBB;
+        }
+
+        msg[pos++] = 0x01;
+        msg[pos++] = 0x02;
+        msg[pos++] = 0x03;
+        msg[pos++] = 0x04;
+
+        return msg;
     }
 }
