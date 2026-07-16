@@ -1,185 +1,148 @@
 # X.509 Certificates
-> hybrid certificate is for ECDSA with RSA
 
-> chameleon certificate is for ECDSA with MAYO
-## P-256
-Create key pair
+Create ECDSA private key
 ```
-openssl ecparam -name prime256v1 -genkey -noout -out key.pem
+openssl ecparam -name prime256v1 -genkey -noout -out src/test/resources/keys/ecdsa.key
 ```
 
-Create self-sgined certificate 
+Create ECDSA self-signed certificate
 ```
-openssl req -new -x509 -key key.pem -out ecdsa_cert.pem -days 365 -subj "/CN=PoC-Test"
-```
-
-## RSA
-Create key pair
-```
-openssl genrsa -out rsa_key.pem 1984
-```
-
-Create self-signed certificate
-```
-openssl req -new -x509 -key rsa_key.pem -out rsa_cert.pem -days 365 -subj "/CN=PoC-Test"
+openssl req -new -x509 \
+    -key src/test/resources/keys/ecdsa.key \
+    -sha256 \
+    -days 365 \
+    -out src/test/resources/certs/ecdsa.crt \
+    -subj "/CN=PoC"
 ```
 
-### Certificate Creation
-Extract the public key 
+Inspect the certificate
 ```
-openssl x509 -in rsa_cert.pem -pubkey -noout > rsa_pub.pem
-```
-
-Convert to DER
-```
-openssl pkey \
-  -pubin \
-  -in rsa_pub.pem \
-  -outform DER \
-  -out rsa_spki.der
+openssl x509 -in src/test/resources/certs/ecdsa.crt -text -noout
 ```
 
-Convert to hex
+Extract the ECDSA certificate in DER
 ```
-xxd -p rsa_spki.der | tr -d '\n'
-```
-
-Extension
-```
-nano ext2.cnf
+openssl x509 -in src/test/resources/certs/ecdsa.crt -outform DER -out src/test/resources/certs/ecdsa.der
 ```
 
-Create hybrid certificate
+Parse the certificate with ASN.1
 ```
-openssl x509 \
-  -in ecdsa_cert.pem \
-  -out hybrid_cert.pem \
-  -extfile ext2.cnf \
-  -extensions v3_ext \
-  -signkey key.pem
+openssl asn1parse -inform DER -in src/test/resources/certs/ecdsa.der -i
 ```
 
-## MAYO
-In a WSL terminal
-```
-mkdir ~/oqs-test && cd ~/oqs-test
-```
-```
-export OPENSSL_CONF=$PWD/oqs.cnf
-```
-```
-export OPENSSL_MODULES=/mnt/c/Users/culachisi/oqs-provider/_build/lib
-```
-```
-openssl list -providers -provider oqsprovider
-```
-```
-openssl list -signature-algorithms -provider oqsprovider | grep mayo
-```
-
-Create key
-```
-openssl genpkey \
-  -provider default \
-  -provider oqsprovider \
-  -algorithm mayo1 \
-  -out qkey.pem
-```
-
-Get certificate info
-```
-openssl x509 -in qcert.pem -text -noout
-```
-> OID: 1.3.9999.8.1.3
-
-Create certificate 
-```
-openssl req -x509 \
-  -provider default \
-  -provider oqsprovider \
-  -key qkey.pem \
-  -out qcert.pem \
-  -days 365 \
-  -subj "/CN=MAYO-POC"
-```
-Check certificate
-```
-openssl x509 -in qcert.pem -text -noout
-```
-Copy them to this project
-```
-cp ~/oqs-test/qkey.pem /mnt/c/Users/culachisi/Hybrid-Cryptographic-Schemes/
-cp ~/oqs-test/qcert.pem /mnt/c/Users/culachisi/Hybrid-Cryptographic-Schemes/
-```
-
-## Composite Certificate Creation
-Extract PQ certificate structure: 
-```
-openssl x509 -in qcert.pem -outform DER -out qcert.der
-```
-```
-openssl asn1parse -in qcert.der -inform DER
-```
-
-Extract PQ public key:
+Extract the data
 ```
 openssl asn1parse \
-  -in qcert.der \
   -inform DER \
-  -strparse 119 \
-  -out pq_spki.der
+  -in src/test/resources/certs/ecdsa.der \
+  -strparse 4 \
+  -out src/test/resources/certs/tbs.der
 ```
 
-Convert public key to hex 
+Run the python script
 ```
-xxd -p pq_spki.der | tr -d '\n'
-```
-
-Create DCD:
-```
-nano dcd.asn1
-```
-```
-algorithm = OID:1.3.9999.8.1.3
-subjectPK = FORMAT:HEX,OCTETSTRING:3082059b300806062bce0f0801030382058d00506c6722db689e552448d44e2fb1c9497fad015dbf45c11150c2db5ca71fe32642f>
-```
-```
-openssl asn1parse -genconf dcd.asn1 -out dcd.der
+ python src/test/resources/certs/cert.py
 ```
 
-Convert DCD to hex:
+Check the data for hawk is there
 ```
-xxd -p dcd.der | tr -d '\n'
-```
-
-Embed DCD into cert:
-```
-nano ext.cnf
-```
-```
-[ v3_ext ]
-1.3.6.1.4.1.55555.1.1 = ASN1:SEQUENCE:dcd
-
-[dcd]
-subjectPKInfo = FORMAT:HEX,OCTETSTRING:3082059b300806062bce0f0801030382058d00506c6722db689e552448d44e2fb1c9497fad015dbf45c11150c2db5ca71fe32>
+openssl asn1parse -inform DER -in src/test/resources/certs/delta_tbs.der -i
 ```
 
-Create the new certificate
+Check the signature is there
+```
+openssl asn1parse \
+  -inform DER \
+  -in src/test/resources/certs/delta_tbs.der \
+  -strparse 126 \
+  -dump
+```
+
+Run HawkSignCert.java to get the signature of the Delta Certificate data
+```
+ mvn clean test-compile 
+ mvn exec:java "-Dexec.mainClass=HawkSignCert" "-Dexec.classpathScope=test"
+```
+
+Create DCD
+```
+python src/test/resources/certs/create_dcd.py
+```
+
+Inspect it
+```
+openssl asn1parse \
+  -inform DER \
+  -in src/test/resources/certs/dcd.der \
+  -i
+```
+
+Add DCD extension
+```
+python src/test/resources/certs/add_dcd_extension.py
+```
+
+Inspect it 
 ```
 openssl x509 \
-  -in cert.pem \
-  -out chameleon_cert.pem \
-  -extfile ext.cnf \
-  -extensions v3_ext \
-  -signkey key.pem
+ -inform DER \
+ -in src/test/resources/certs/chameleon_cert.der \
+ -text \
+ -noout
 ```
 
-Verify the new certificate 
+Find the data length of the newly created certificate
 ```
-openssl x509 -in chameleon_cert.pem -text -noout
+openssl asn1parse \
+    -inform DER \
+    -in src/test/resources/certs/chameleon_cert.der \
+    -i
 ```
 
-Convert key to pkcs8: 
+Extract it
 ```
-openssl pkcs8 -topk8 -nocrypt -in key.pem -out key_pkcs8.pem
+openssl asn1parse \
+    -inform DER \
+    -in src/test/resources/certs/chameleon_cert.der \
+    -strparse 4 \
+    -out src/test/resources/certs/final_tbs.der
+```
+
+Sign with ECDSA
+```
+openssl dgst \
+    -sha256 \
+    -sign src/test/resources/keys/ecdsa.key \
+    -out src/test/resources/sigs/ecdsa_new_signature.bin \
+    src/test/resources/certs/final_tbs.der
+```
+
+Replace the SignatureValue in the hybrid certificate
+```
+ python src/test/resources/sigs/replace_signature.py
+```
+
+Check certificate
+```
+openssl x509 \
+  -inform DER \
+  -in src/test/resources/certs/chameleon_signed.der \
+  -text \
+  -noout
+```
+
+Verify
+```
+openssl verify \
+  -CAfile src/test/resources/certs/chameleon_signed.der \
+  src/test/resources/certs/chameleon_signed.der
+```
+
+Convert
+```
+openssl x509 \
+    -inform DER \
+    -in src/test/resources/certs/chameleon_signed.der \
+    -outform PEM \
+    -out src/test/resources/certs/chameleon_signed.crt
 ```

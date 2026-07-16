@@ -6,6 +6,7 @@ org\bouncycastle\pqc\crypto\hawk\SmallPrime.class
 Chameleon\ChameleonTest3.class
 org\bouncycastle\pqc\crypto\hawk\HawkEngine.class
 Chameleon\ChameleonTest2.class
+HawkSignCert.class
 org\bouncycastle\pqc\crypto\hawk\HawkPrivateKeyParameters.class
 org\bouncycastle\pqc\crypto\hawk\package-info.class
 org\bouncycastle\pqc\crypto\hawk\HawkSigner$GaussianTable.class
