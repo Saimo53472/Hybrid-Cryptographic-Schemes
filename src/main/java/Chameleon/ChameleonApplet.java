@@ -181,34 +181,72 @@ public class ChameleonApplet extends Applet {
         dataToSignLen = 0;
     }
 
+    // private void internalAuthenticate(APDU apdu) {
+    //     byte[] local = dataToSign;
+    //     short pos = 0;
+
+    //     local[pos++] = 0x05;
+    //     local[pos++] = 0x01;
+    //     local[pos++] = 0x08;
+
+    //     byte[] dynamic = new byte[] {
+    //         (byte)0x6c,(byte)0x55,(byte)0x44,(byte)0x79,
+    //         (byte)0x7a,(byte)0x91,(byte)0x11,(byte)0x5d
+    //     };
+
+    //     Util.arrayCopy(dynamic, (short) 0, local, pos, (short) 8);
+    //     pos += 8;
+
+    //     // padding
+    //     short paddingLen = (short) (255 - pos - 4);
+    //     for (short i = 0; i < paddingLen; i++) {
+    //         local[pos++] = (byte)0xBB;
+    //     }
+
+    //     // challenge
+    //     local[pos++] = 0x01;
+    //     local[pos++] = 0x02;
+    //     local[pos++] = 0x03;
+    //     local[pos++] = 0x04;
+
+    //     dataToSignLen = pos;
+    // }
+
     private void internalAuthenticate(APDU apdu) {
+        byte[] buffer = apdu.getBuffer();
         byte[] local = dataToSign;
         short pos = 0;
+
+        short challengeLen = (short)(buffer[ISO7816.OFFSET_LC] & 0xFF);
 
         local[pos++] = 0x05;
         local[pos++] = 0x01;
         local[pos++] = 0x08;
 
-        byte[] dynamic = new byte[] {
-            (byte)0x6c,(byte)0x55,(byte)0x44,(byte)0x79,
-            (byte)0x7a,(byte)0x91,(byte)0x11,(byte)0x5d
+        byte[] dynamic = {
+            (byte)0x6c, (byte)0x55, (byte)0x44, (byte)0x79,
+            (byte)0x7a, (byte)0x91, (byte)0x11, (byte)0x5d
         };
 
-        Util.arrayCopy(dynamic, (short) 0, local, pos, (short) 8);
-        pos += 8;
+        Util.arrayCopy(dynamic, (short)0, local, pos, (short)dynamic.length);
+        pos += (short)dynamic.length;
 
         // padding
-        short paddingLen = (short) (255 - pos - 4);
+        short paddingLen = (short)(255 - pos - challengeLen);
+
         for (short i = 0; i < paddingLen; i++) {
             local[pos++] = (byte)0xBB;
         }
 
-        // challenge
-        local[pos++] = 0x01;
-        local[pos++] = 0x02;
-        local[pos++] = 0x03;
-        local[pos++] = 0x04;
-
+        // copy terminal challenge
+        Util.arrayCopy(
+            buffer,
+            ISO7816.OFFSET_CDATA,
+            local,
+            pos,
+            challengeLen
+        );
+        pos += challengeLen;
         dataToSignLen = pos;
     }
 

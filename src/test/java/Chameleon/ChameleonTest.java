@@ -62,7 +62,7 @@ public class ChameleonTest {
             throw new RuntimeException("Assertion failed: expected 0x9000");
         }
 
-        // 2. Load EC private key and certificate
+        // 2. Load private keys and certificate
         try {
             byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
             byte[] qkey = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_private.key"));
@@ -147,7 +147,9 @@ public class ChameleonTest {
         verifyHAWK(data.getHawkPublicKey(), data.getHawkSignature(), deltaTbs);
 
         // 5. Internal authenticate (build dataToSign)
-        byte[] challenge = { 0x01, 0x02, 0x03, 0x04 };
+        SecureRandom rnd = new SecureRandom();
+        byte[] challenge = new byte[4];
+        rnd.nextBytes(challenge);
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
         // 6. Create classical signature
@@ -178,7 +180,7 @@ public class ChameleonTest {
         }
 
         // 10. Verify signatures
-        byte[] expectedMessage = buildExpectedMessage();
+        byte[] expectedMessage = buildExpectedMessage(challenge);
         Signature ecdsaVerifier = Signature.getInstance("SHA256withECDSA");
         ecdsaVerifier.initVerify(cert.getPublicKey());
         ecdsaVerifier.update(expectedMessage);
@@ -309,9 +311,8 @@ public class ChameleonTest {
         return oct.getOctets();
     }
 
-    private static byte[] buildExpectedMessage() {
+    private static byte[] buildExpectedMessage(byte[] challenge) {
         byte[] msg = new byte[255];
-
         int pos = 0;
 
         msg[pos++] = 0x05;
@@ -336,10 +337,8 @@ public class ChameleonTest {
             msg[pos++] = (byte)0xBB;
         }
 
-        msg[pos++] = 0x01;
-        msg[pos++] = 0x02;
-        msg[pos++] = 0x03;
-        msg[pos++] = 0x04;
+        System.arraycopy(challenge, 0, msg, pos, challenge.length);
+        pos += challenge.length;
 
         return msg;
     }
