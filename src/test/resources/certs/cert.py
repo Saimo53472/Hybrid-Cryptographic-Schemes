@@ -3,7 +3,7 @@ from pyasn1.type import univ
 from pyasn1.codec.der.encoder import encode
 
 
-# Files
+# Files - change for issuer or ICC
 TBS_FILE = "src/test/resources/certs/tbs.der"
 HAWK_KEY_FILE = "src/test/resources/keys/hawk512_public.key"
 OUTPUT_FILE = "src/test/resources/certs/delta_tbs.der"

@@ -39,7 +39,8 @@ public class ChameleonTest {
     private static long timeBaseSign = 0;
     private static long timeDeltaSign = 0;
 
-    private static final String DCD_OID = "1.3.6.1.4.1.55555.1.100";
+    private static final String Issuer_DCD_OID = "1.3.6.1.4.1.55555.1.100";
+    private static final String ICC_DCD_OID = "1.3.6.1.4.1.55555.1.101";
 
     public static void main(String[] args) throws Exception {
 
@@ -56,24 +57,24 @@ public class ChameleonTest {
         System.out.println("Applet selected");
 
         // 1. INIT
-        ResponseAPDU response = send(simulator, new CommandAPDU(CLA, 0x10, 0x00, 0x00));
+        ResponseAPDU response = send(simulator, new CommandAPDU(CLA, 0x00, 0x00, 0x00));
 
         if (response.getSW() != 0x9000) {
             throw new RuntimeException("Assertion failed: expected 0x9000");
         }
 
-        // 2. Load private keys and certificate
+        // 2. Load private keys and certificates
         try {
             byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
             byte[] qkey = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_private.key"));
-            HawkPrivateKeyParameters sk = new HawkPrivateKeyParameters(HawkParameters.Hawk_512, qkey, 0, qkey.length);
+            byte[] issuer_cert = loadCertificate(
+                    Paths.get("src", "test", "resources", "certs", "issuer_chameleon_signed.crt"));
             byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "chameleon_signed.crt"));
 
             send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
 
             int offset = 0;
             int chunkSize = 200;
-
             while (offset < qkey.length) {
                 int len = Math.min(chunkSize, qkey.length - offset);
                 byte[] chunk = Arrays.copyOfRange(qkey, offset, offset + len);
@@ -83,15 +84,28 @@ public class ChameleonTest {
 
             offset = 0;
             chunkSize = 200;
-            int S_cert = cert.length; // certificate size in bytes
-            System.out.println("S_cert = " + S_cert);
+            int S_cert = issuer_cert.length; // certificate size in bytes
+            System.out.println("S_issuer_cert = " + S_cert);
+            while (offset < issuer_cert.length) {
+                int len = Math.min(chunkSize, issuer_cert.length - offset);
 
+                byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
+
+                send(simulator, new CommandAPDU(CLA, 0x72, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+
+                offset += len;
+            }
+
+            offset = 0;
+            chunkSize = 200;
+            S_cert = cert.length; // certificate size in bytes
+            System.out.println("S_cert = " + S_cert);
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
 
                 byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
 
-                send(simulator, new CommandAPDU(CLA, 0x72, offset == 0 ? 0x00 : 0x01, 0x00, chunk)); // fix
+                send(simulator, new CommandAPDU(CLA, 0x73, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
 
                 offset += len;
             }
@@ -100,10 +114,28 @@ public class ChameleonTest {
         }
 
         // 3. Lock card
-        send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0x74, 0x00, 0x00));
 
         // 4. Get certificate
         int offset = 0;
+        ByteArrayOutputStream issuerCertBuffer = new ByteArrayOutputStream();
+
+        while (true) {
+            int p1 = (offset >> 8) & 0xFF;
+            int p2 = offset & 0xFF;
+
+            ResponseAPDU resp = send(simulator, new CommandAPDU(CLA, 0x10, p1, p2));
+            byte[] data = resp.getData();
+            if (data.length == 0)
+                break;
+            issuerCertBuffer.write(data);
+            offset += data.length;
+            if (data.length < 200)
+                break; // last chunk
+        }
+        byte[] receivedIssuerCert = issuerCertBuffer.toByteArray();
+
+        offset = 0;
         ByteArrayOutputStream certBuffer = new ByteArrayOutputStream();
 
         while (true) {
@@ -123,28 +155,46 @@ public class ChameleonTest {
 
         // 4*. Verify certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        X509Certificate caCert = (X509Certificate) cf
+                .generateCertificate(new FileInputStream("src/test/resources/certs/CA_ECDSA.crt"));
+        X509Certificate issuerCert = (X509Certificate) cf
+                .generateCertificate(new ByteArrayInputStream(receivedIssuerCert));
         X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedCert));
 
         // 4.1 Verify ECDSA
-        boolean certECDSAOK;
+        boolean issuerECDSAOK;
         try {
-            cert.verify(cert.getPublicKey());
-            certECDSAOK = true;
+            issuerCert.verify(caCert.getPublicKey());
+            issuerECDSAOK = true;
         } catch (Exception e) {
-            certECDSAOK = false;
+            issuerECDSAOK = false;
         }
-        System.out.println("ECDSA: " + certECDSAOK);
 
-        // 4.2 Extract DCD
-        byte[] dcd = unwrapExtension(cert.getExtensionValue(DCD_OID));
+        System.out.println("Issuer certificate ECDSA: " + issuerECDSAOK);
 
-        // 4.3 Parse DCD
-        DCDData data = DCDData.parseDCD(dcd);
+        boolean iccECDSAOK;
+        try {
+            cert.verify(issuerCert.getPublicKey());
+            iccECDSAOK = true;
+        } catch (Exception e) {
+            iccECDSAOK = false;
+        }
 
-        // 4.4 Verify HAWK
+        System.out.println("ICC certificate ECDSA: " + iccECDSAOK);
+
+        // 4.2 Extract and parse DCD 
+        byte[] issuerDCD = unwrapExtension(issuerCert.getExtensionValue(Issuer_DCD_OID));
+        DCDData issuerData = DCDData.parseDCD(issuerDCD);
+        byte[] iccDCD = unwrapExtension(cert.getExtensionValue(ICC_DCD_OID));
+        DCDData iccData = DCDData.parseDCD(iccDCD);
+
+        // 4.3 Verify HAWK
+        byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs.der"));
         byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
 
-        verifyHAWK(data.getHawkPublicKey(), data.getHawkSignature(), deltaTbs);
+        byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
+        verifyHAWK(caPub, issuerData.getHawkSignature(), issuerDeltaTbs);
+        verifyHAWK(issuerData.getHawkPublicKey(), iccData.getHawkSignature(), deltaTbs);
 
         // 5. Internal authenticate (build dataToSign)
         SecureRandom rnd = new SecureRandom();
@@ -187,16 +237,16 @@ public class ChameleonTest {
         boolean ecdsaOK = ecdsaVerifier.verify(sigData);
         System.out.println("Card ECDSA signature: " + ecdsaOK);
 
-        byte[] pub = Files.readAllBytes(Paths.get("src","test","resources", "keys", "hawk512_public.key"));
+        byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
         HawkPublicKeyParameters pk = new HawkPublicKeyParameters(
-            HawkParameters.Hawk_512,
-            pub,
-            0,
-            pub.length);
+                HawkParameters.Hawk_512,
+                pub,
+                0,
+                pub.length);
         HawkSigner verifier = new HawkSigner();
         verifier.init(false, pk);
         boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
-        System.out.println("Card HAWK signature: " + hawkOK); 
+        System.out.println("Card HAWK signature: " + hawkOK);
 
         // 10. Print metrics
         System.out.println("METRICS");
@@ -320,21 +370,21 @@ public class ChameleonTest {
         msg[pos++] = 0x08;
 
         byte[] dynamic = {
-                (byte)0x6c,
-                (byte)0x55,
-                (byte)0x44,
-                (byte)0x79,
-                (byte)0x7a,
-                (byte)0x91,
-                (byte)0x11,
-                (byte)0x5d
+                (byte) 0x6c,
+                (byte) 0x55,
+                (byte) 0x44,
+                (byte) 0x79,
+                (byte) 0x7a,
+                (byte) 0x91,
+                (byte) 0x11,
+                (byte) 0x5d
         };
 
         System.arraycopy(dynamic, 0, msg, pos, dynamic.length);
         pos += dynamic.length;
 
         while (pos < 251) {
-            msg[pos++] = (byte)0xBB;
+            msg[pos++] = (byte) 0xBB;
         }
 
         System.arraycopy(challenge, 0, msg, pos, challenge.length);

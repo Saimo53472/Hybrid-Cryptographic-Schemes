@@ -22,8 +22,6 @@ public class DCDData {
         ASN1Sequence dcd = ASN1Sequence.getInstance(
                 ASN1Primitive.fromByteArray(dcdBytes));
 
-        System.out.println("DCD elements: " + dcd.size());
-
         ASN1Sequence spki = ASN1Sequence.getInstance(
                 dcd.getObjectAt(0));
 
@@ -45,15 +43,6 @@ public class DCDData {
 
         result.hawkPublicKey = hawkPublicKey;
         result.hawkSignature = sig.getOctets();
-
-        System.out.println(
-                "HAWK public key length: "
-                        + hawkPublicKey.length);
-
-        System.out.println(
-                "HAWK signature length: "
-                        + result.hawkSignature.length);
-
         return result;
     }
 

@@ -10,7 +10,7 @@ public class HawkSignCert {
     private static final String TBS_FILE =
             "src/test/resources/certs/delta_tbs.der";
     private static final String PRIVATE_KEY_FILE =
-            "src/test/resources/keys/hawk512_private.key";
+            "src/test/resources/keys/issuer_hawk512_private.key";
     private static final String SIGNATURE_FILE =
             "src/test/resources/sigs/hawk_signature.bin";
 
