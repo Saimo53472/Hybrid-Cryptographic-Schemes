@@ -15,73 +15,51 @@ import java.io.*;
 
 import javax.smartcardio.*;
 
-import org.bouncycastle.pqc.crypto.hawk.HawkParameters;
-import org.bouncycastle.pqc.crypto.hawk.HawkPublicKeyParameters;
-import org.bouncycastle.pqc.crypto.hawk.HawkSigner;
-
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.interfaces.ECPrivateKey;
 
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Primitive;
-
-public class ChameleonTest {
+public class BaseTest {
 
     private static final byte CLA = (byte) 0x00;
 
     // Metrics
-    private static int apduCount = 0; // N_APDU
-    private static int bytesSent = 0; // B_comm (host -> card)
-    private static int bytesReceived = 0; // B_comm (card -> host)
+    private static int apduCount = 0;          // N_APDU
+    private static int bytesSent = 0;          // B_comm (host -> card)
+    private static int bytesReceived = 0;      // B_comm (card -> host)
 
     // Timing
     private static long timeBaseSign = 0;
-    private static long timeDeltaSign = 0;
 
-    private static final String Issuer_DCD_OID = "1.3.6.1.4.1.55555.1.100";
-    private static final String ICC_DCD_OID = "1.3.6.1.4.1.55555.1.101";
-
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception{
 
         CardSimulator simulator = new CardSimulator();
 
         // Applet AID
-        byte[] aidBytes = { (byte) 0xA0, 0x00, 0x00, 0x00, 0x62, 0x01 };
+        byte[] aidBytes = {(byte) 0xA0, 0x00, 0x00, 0x00, 0x62, 0x01};
         AID aid = new AID(aidBytes, (short) 0, (byte) aidBytes.length);
 
         // Install + select
-        simulator.installApplet(aid, ChameleonApplet.class);
+        simulator.installApplet(aid, BaseApplet.class);
         simulator.selectApplet(aid);
 
         System.out.println("Applet selected");
 
         // 1. INIT
-        ResponseAPDU response = send(simulator, new CommandAPDU(CLA, 0x00, 0x00, 0x00));
-
+        ResponseAPDU response = send(simulator, new CommandAPDU(CLA, 0x10, 0x00, 0x00));
+        
         if (response.getSW() != 0x9000) {
             throw new RuntimeException("Assertion failed: expected 0x9000");
         }
 
-        // 2. Load private keys and certificates
+        // 2. Load EC private key and certificate
         try {
             byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
-            byte[] qkey = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_private.key"));
-            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_chameleon_signed.crt"));
-            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "chameleon_signed.crt"));
+            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa.crt"));
+            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa.crt"));
 
             send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
-
             int offset = 0;
             int chunkSize = 200;
-            while (offset < qkey.length) {
-                int len = Math.min(chunkSize, qkey.length - offset);
-                byte[] chunk = Arrays.copyOfRange(qkey, offset, offset + len);
-                send(simulator, new CommandAPDU(CLA, 0x71, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
-                offset += len;
-            }
-
-            offset = 0;
-            chunkSize = 200;
             int S_cert = issuer_cert.length; // certificate size in bytes
             System.out.println("S_issuer_cert = " + S_cert);
             while (offset < issuer_cert.length) {
@@ -89,7 +67,7 @@ public class ChameleonTest {
 
                 byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
 
-                send(simulator, new CommandAPDU(CLA, 0x72, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(simulator, new CommandAPDU(CLA, 0x71, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
 
                 offset += len;
             }
@@ -103,7 +81,7 @@ public class ChameleonTest {
 
                 byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
 
-                send(simulator, new CommandAPDU(CLA, 0x73, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(simulator, new CommandAPDU(CLA, 0x72, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
 
                 offset += len;
             }
@@ -112,7 +90,7 @@ public class ChameleonTest {
         }
 
         // 3. Lock card
-        send(simulator, new CommandAPDU(CLA, 0x74, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
 
         // Reset metrics
         apduCount = 0;
@@ -127,7 +105,7 @@ public class ChameleonTest {
             int p1 = (offset >> 8) & 0xFF;
             int p2 = offset & 0xFF;
 
-            ResponseAPDU resp = send(simulator, new CommandAPDU(CLA, 0x10, p1, p2));
+            ResponseAPDU resp = send(simulator, new CommandAPDU(CLA, 0x20, p1, p2));
             byte[] data = resp.getData();
             if (data.length == 0)
                 break;
@@ -145,7 +123,7 @@ public class ChameleonTest {
             int p1 = (offset >> 8) & 0xFF;
             int p2 = offset & 0xFF;
 
-            ResponseAPDU resp = send(simulator, new CommandAPDU(CLA, 0x20, p1, p2));
+            ResponseAPDU resp = send(simulator, new CommandAPDU(CLA, 0x30, p1, p2));
             byte[] data = resp.getData();
             if (data.length == 0)
                 break;
@@ -158,10 +136,8 @@ public class ChameleonTest {
 
         // 4*. Verify certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        X509Certificate caCert = (X509Certificate) cf
-                .generateCertificate(new FileInputStream("src/test/resources/certs/CA_ECDSA.crt"));
-        X509Certificate issuerCert = (X509Certificate) cf
-                .generateCertificate(new ByteArrayInputStream(receivedIssuerCert));
+        X509Certificate caCert = (X509Certificate) cf.generateCertificate(new FileInputStream("src/test/resources/certs/CA_ECDSA.crt"));
+        X509Certificate issuerCert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedIssuerCert));
         X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedCert));
 
         // 4.1 Verify ECDSA
@@ -185,61 +161,28 @@ public class ChameleonTest {
 
         System.out.println("ICC certificate ECDSA: " + iccECDSAOK);
 
-        // 4.2 Extract and parse DCD 
-        byte[] issuerDCD = unwrapExtension(issuerCert.getExtensionValue(Issuer_DCD_OID));
-        DCDData issuerData = DCDData.parseDCD(issuerDCD);
-        byte[] iccDCD = unwrapExtension(cert.getExtensionValue(ICC_DCD_OID));
-        DCDData iccData = DCDData.parseDCD(iccDCD);
-
-        // 4.3 Verify HAWK
-        byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs.der"));
-        byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
-
-        byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
-        verifyHAWK(caPub, issuerData.getHawkSignature(), issuerDeltaTbs);
-        verifyHAWK(issuerData.getHawkPublicKey(), iccData.getHawkSignature(), deltaTbs);
-
         // 5. Internal authenticate (build dataToSign)
-        SecureRandom rnd = new SecureRandom();
-        byte[] challenge = new byte[4];
-        rnd.nextBytes(challenge);
+        byte[] challenge = {0x01, 0x02, 0x03, 0x04};
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
+        // 6. Create ECDSA signature
         Runtime rt = Runtime.getRuntime();
         rt.gc();
         long ramBefore = rt.totalMemory() - rt.freeMemory();
 
-        // 6. Create classical signature
         long startBase = System.nanoTime();
-        send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
         long endBase = System.nanoTime();
         timeBaseSign = endBase - startBase;
-
-        // 7. Create post-quantum signature
-        long startDelta = System.nanoTime();
-        send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
-        long endDelta = System.nanoTime();
-        timeDeltaSign = endDelta - startDelta;
 
         long ramAfter = rt.totalMemory() - rt.freeMemory();
         long ramUsed = ramAfter - ramBefore;
 
-        // 8. Get classical signature
+        // 8. Get signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
         byte[] sigData = sigResponse.getData();
 
-        // 9. Get post-quantum signature
-        byte[] signature = new byte[555];
-        offset = 0;
-
-        while (offset < signature.length) {
-            ResponseAPDU rsp = send(simulator, new CommandAPDU(CLA, 0x60, (offset >> 8) & 0xFF, offset & 0xFF));
-            byte[] chunk = rsp.getData();
-            System.arraycopy(chunk, 0, signature, offset, chunk.length);
-            offset += chunk.length;
-        }
-
-        // 10. Verify signatures
+        // 9. Verify signature 
         byte[] expectedMessage = buildExpectedMessage(challenge);
         Signature ecdsaVerifier = Signature.getInstance("SHA256withECDSA");
         ecdsaVerifier.initVerify(cert.getPublicKey());
@@ -247,23 +190,11 @@ public class ChameleonTest {
         boolean ecdsaOK = ecdsaVerifier.verify(sigData);
         System.out.println("Card ECDSA signature: " + ecdsaOK);
 
-        byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(
-                HawkParameters.Hawk_512,
-                pub,
-                0,
-                pub.length);
-        HawkSigner verifier = new HawkSigner();
-        verifier.init(false, pk);
-        boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
-        System.out.println("Card HAWK signature: " + hawkOK);
-
         // 10. Print metrics
         System.out.println("METRICS");
+
         // Time
-        System.out.println("Time classical signing (ns): " + timeBaseSign);
-        System.out.println("Time post-quantum signing (ns): " + timeDeltaSign);
-        System.out.println("Time hybrid signing (ns): " + (timeBaseSign + timeDeltaSign));
+       System.out.println("Signing time ECDSA (ns): " + timeBaseSign);
 
         // Communication
         System.out.println("Number of APDU transmissions: " + apduCount);
@@ -271,19 +202,12 @@ public class ChameleonTest {
         System.out.println("Communication bytes received: " + bytesReceived);
         System.out.println("Total communication bytes: " + (bytesSent + bytesReceived));
 
-        // Certificate sizes
+        // Certificate and signature sizes
         int issuerCertSize = receivedIssuerCert.length;
         int iccCertSize = receivedCert.length;
         System.out.println("Issuer certificate size = " + issuerCertSize);
         System.out.println("ICC certificate size = " + iccCertSize);
-        System.out.println("Total memory required by certificates = " + (issuerCertSize + iccCertSize));
-
-        // Signature sizes
-        int classicalSigSize = sigData.length;
-        int pqSigSize = signature.length;
-        System.out.println("Base signature size = " + classicalSigSize);
-        System.out.println("Delta signature size = " + pqSigSize);
-        System.out.println("Total memory required bt signatures = " + (classicalSigSize + pqSigSize));
+        System.out.println("ECDSA signature size (bytes): " + sigData.length);
 
         // RAM used for signing
         System.out.println("Signing RAM (bytes) = "+ ramUsed);
@@ -316,7 +240,7 @@ public class ChameleonTest {
         }
         return sb.toString();
     }
-
+    
     private static byte[] loadECPrivateKey(Path path) throws Exception {
         byte[] keyBytes = Files.readAllBytes(path);
 
@@ -367,22 +291,6 @@ public class ChameleonTest {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         X509Certificate cert = (X509Certificate) cf.generateCertificate(fis);
         return cert.getPublicKey();
-    }
-
-    private static void verifyHAWK(byte[] hawkPublicKey, byte[] signature, byte[] message) throws Exception {
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, hawkPublicKey, 0,
-                hawkPublicKey.length);
-        HawkSigner verifier = new HawkSigner();
-        verifier.init(false, pk);
-        boolean ok = verifier.verifySignature(message, signature);
-        System.out.println("HAWK: " + ok);
-    }
-
-    private static byte[] unwrapExtension(byte[] extension) throws Exception {
-        ASN1OctetString oct = ASN1OctetString.getInstance(
-                ASN1Primitive.fromByteArray(extension));
-
-        return oct.getOctets();
     }
 
     private static byte[] buildExpectedMessage(byte[] challenge) {

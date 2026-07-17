@@ -1,6 +1,5 @@
 org\bouncycastle\util\Integers.class
 org\bouncycastle\pqc\crypto\hawk\SmallPrime.class
-Chameleon\ChameleonTest2.class
 HawkSignCert.class
 org\bouncycastle\pqc\crypto\hawk\package-info.class
 Chameleon\DCDData.class
@@ -16,9 +15,9 @@ org\bouncycastle\pqc\crypto\hawk\HawkKeyPairGenerator.class
 HawkTest.class
 org\bouncycastle\math\raw\Nat.class
 org\bouncycastle\pqc\crypto\hawk\HawkSigner.class
-Chameleon\ChameleonTest3.class
 org\bouncycastle\pqc\crypto\hawk\HawkEngine.class
 org\bouncycastle\pqc\crypto\hawk\HawkPrivateKeyParameters.class
 org\bouncycastle\pqc\crypto\hawk\HawkSigner$GaussianTable.class
 Chameleon\ChameleonTest.class
 org\bouncycastle\pqc\crypto\hawk\HawkKeyParameters.class
+Chameleon\BaseTest.class

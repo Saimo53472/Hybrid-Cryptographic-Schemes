@@ -26,19 +26,16 @@ public class ChameleonApplet extends Applet {
     private short dataToSignLen;
 
     // Classical values 
-    private ECPrivateKey issuerClassicalPrivateKey; // on card
     private ECPrivateKey classicalPrivateKey; // on card
     private Signature classicalSignature; 
     private short classicalSigLen;
     private byte[] classicalSigBuffer;
 
     // Post-Quantum values
-    private byte[] issuerPqPrivateKey; // on card 
     private byte[] pqPrivateKey; // on card 
     private byte[] pqSignature; 
     private short pqSignatureLen;
 
-    private short issuerPqKeyLen = 0;
     private short pqKeyLen = 0;
 
     // Certificate storage
@@ -54,12 +51,10 @@ public class ChameleonApplet extends Applet {
         certificate = new byte[2048];
         issuerCertificate = new byte[2048];
 
-        issuerClassicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_256, false);
         classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_256, false);
         classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA_256, false);
         classicalSigBuffer = new byte[128];
 
-        issuerPqPrivateKey = new byte[2048];
         pqPrivateKey = new byte[2048];
         pqSignature = new byte[600];
 
