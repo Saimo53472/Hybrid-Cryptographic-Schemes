@@ -16,7 +16,6 @@ import java.io.*;
 import javax.smartcardio.*;
 
 import org.bouncycastle.pqc.crypto.hawk.HawkParameters;
-import org.bouncycastle.pqc.crypto.hawk.HawkPrivateKeyParameters;
 import org.bouncycastle.pqc.crypto.hawk.HawkPublicKeyParameters;
 import org.bouncycastle.pqc.crypto.hawk.HawkSigner;
 
@@ -116,6 +115,11 @@ public class ChameleonTest {
         // 3. Lock card
         send(simulator, new CommandAPDU(CLA, 0x74, 0x00, 0x00));
 
+        // Reset metrics
+        apduCount = 0;
+        bytesSent = 0;
+        bytesReceived = 0;
+
         // 4. Get certificate
         int offset = 0;
         ByteArrayOutputStream issuerCertBuffer = new ByteArrayOutputStream();
@@ -202,21 +206,28 @@ public class ChameleonTest {
         rnd.nextBytes(challenge);
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
+        Runtime rt = Runtime.getRuntime();
+        rt.gc();
+        long ramBefore = rt.totalMemory() - rt.freeMemory();
+
         // 6. Create classical signature
         long startBase = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
         long endBase = System.nanoTime();
         timeBaseSign = endBase - startBase;
 
-        // 7. Get signature
-        ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
-        byte[] sigData = sigResponse.getData();
-
-        // 8. Create post-quantum signature
+        // 7. Create post-quantum signature
         long startDelta = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
         long endDelta = System.nanoTime();
         timeDeltaSign = endDelta - startDelta;
+
+        long ramAfter = rt.totalMemory() - rt.freeMemory();
+        long ramUsed = ramAfter - ramBefore;
+
+        // 8. Get classical signature
+        ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
+        byte[] sigData = sigResponse.getData();
 
         // 9. Get post-quantum signature
         byte[] signature = new byte[555];
@@ -251,18 +262,32 @@ public class ChameleonTest {
         // 10. Print metrics
         System.out.println("METRICS");
         // Time
-        System.out.println("T_sign_classical (ns): " + timeBaseSign);
-        System.out.println("T_sign_post-quantum (ns): " + timeDeltaSign);
+        System.out.println("Time classical signing (ns): " + timeBaseSign);
+        System.out.println("Time post-quantum signing (ns): " + timeDeltaSign);
+        System.out.println("Time hybrid signing (ns): " + (timeBaseSign + timeDeltaSign));
 
         // Communication
-        System.out.println("N_APDU: " + apduCount);
-        System.out.println("B_comm_sent: " + bytesSent);
-        System.out.println("B_comm_received: " + bytesReceived);
-        System.out.println("B_comm_total: " + (bytesSent + bytesReceived));
+        System.out.println("Number of APDU transmissions: " + apduCount);
+        System.out.println("Communication bytes sent: " + bytesSent);
+        System.out.println("Communication bytes received: " + bytesReceived);
+        System.out.println("Total communication bytes: " + (bytesSent + bytesReceived));
+
+        // Certificate sizes
+        int issuerCertSize = receivedIssuerCert.length;
+        int iccCertSize = receivedCert.length;
+        System.out.println("Issuer certificate size = " + issuerCertSize);
+        System.out.println("ICC certificate size = " + iccCertSize);
+        System.out.println("Total memory required by certificates = " + (issuerCertSize + iccCertSize));
 
         // Signature sizes
-        System.out.println("S_sig_base = " + sigData.length);
-        System.out.println("S_sig_delta = " + signature.length);
+        int classicalSigSize = sigData.length;
+        int pqSigSize = signature.length;
+        System.out.println("Base signature size = " + classicalSigSize);
+        System.out.println("Delta signature size = " + pqSigSize);
+        System.out.println("Total memory required bt signatures = " + (classicalSigSize + pqSigSize));
+
+        // RAM used for signing
+        System.out.println("Signing RAM (bytes) = "+ ramUsed);
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
