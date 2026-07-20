@@ -205,10 +205,6 @@ public class ChameleonTest {
         rnd.nextBytes(challenge);
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
-        Runtime rt = Runtime.getRuntime();
-        rt.gc();
-        long ramBefore = rt.totalMemory() - rt.freeMemory();
-
         // 6. Create classical signature
         long startBase = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
@@ -220,9 +216,6 @@ public class ChameleonTest {
         send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
         long endDelta = System.nanoTime();
         timeDeltaSign = endDelta - startDelta;
-
-        long ramAfter = rt.totalMemory() - rt.freeMemory();
-        long ramUsed = ramAfter - ramBefore;
 
         // 8. Get classical signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
@@ -284,9 +277,6 @@ public class ChameleonTest {
         System.out.println("Base signature size = " + classicalSigSize);
         System.out.println("Delta signature size = " + pqSigSize);
         System.out.println("Total memory required bt signatures = " + (classicalSigSize + pqSigSize));
-
-        // RAM used for signing
-        System.out.println("Signing RAM (bytes) = "+ ramUsed);
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {

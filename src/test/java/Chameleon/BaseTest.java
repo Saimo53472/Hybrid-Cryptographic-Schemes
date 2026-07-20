@@ -166,17 +166,10 @@ public class BaseTest {
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
         // 6. Create ECDSA signature
-        Runtime rt = Runtime.getRuntime();
-        rt.gc();
-        long ramBefore = rt.totalMemory() - rt.freeMemory();
-
         long startBase = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
         long endBase = System.nanoTime();
         timeBaseSign = endBase - startBase;
-
-        long ramAfter = rt.totalMemory() - rt.freeMemory();
-        long ramUsed = ramAfter - ramBefore;
 
         // 8. Get signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
@@ -208,9 +201,6 @@ public class BaseTest {
         System.out.println("Issuer certificate size = " + issuerCertSize);
         System.out.println("ICC certificate size = " + iccCertSize);
         System.out.println("ECDSA signature size (bytes): " + sigData.length);
-
-        // RAM used for signing
-        System.out.println("Signing RAM (bytes) = "+ ramUsed);
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {

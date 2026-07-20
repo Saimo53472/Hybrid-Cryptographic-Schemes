@@ -39,8 +39,8 @@ public class BaseApplet extends Applet {
 
     protected BaseApplet() {
         dataToSign = new byte[255];
-        certificate = new byte[2048];
-        issuerCertificate = new byte[2048];
+        certificate = new byte[400];
+        issuerCertificate = new byte[400];
         signatureBuffer = new byte[128];
 
         classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_256, false);

@@ -55,7 +55,7 @@ public class ChameleonApplet extends Applet {
         classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA_256, false);
         classicalSigBuffer = new byte[128];
 
-        pqPrivateKey = new byte[2048];
+        pqPrivateKey = new byte[200];
         pqSignature = new byte[600];
 
         personalized = false;
