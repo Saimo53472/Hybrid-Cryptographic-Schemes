@@ -254,7 +254,7 @@ public class ChameleonApplet extends Applet {
 
         Hawk signer = new Hawk();
 
-        byte[] tmp = new byte[6 * 1024]; 
+        byte[] tmp = new byte[6*512 + 1024]; 
 
         int ret = signer.signMessage(9, pqSignature, dataToSign, dataToSignLen, pqPrivateKey, pqKeyLen, tmp,
                 tmp.length);

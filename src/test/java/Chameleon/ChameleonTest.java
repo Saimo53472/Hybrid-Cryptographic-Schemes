@@ -276,7 +276,7 @@ public class ChameleonTest {
         int pqSigSize = signature.length;
         System.out.println("Base signature size = " + classicalSigSize);
         System.out.println("Delta signature size = " + pqSigSize);
-        System.out.println("Total memory required bt signatures = " + (classicalSigSize + pqSigSize));
+        System.out.println("Total memory required for signatures = " + (classicalSigSize + pqSigSize));
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
