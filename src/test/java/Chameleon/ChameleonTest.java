@@ -1,6 +1,8 @@
 package Chameleon;
 
 import com.licel.jcardsim.smartcardio.CardSimulator;
+import com.test.ChameleonApplet;
+
 import javacard.framework.AID;
 
 import java.nio.file.Files;
@@ -328,11 +330,11 @@ public class ChameleonTest {
 
         byte[] d = ecKey.getS().toByteArray();
 
-        if (d.length > 32) {
-            d = Arrays.copyOfRange(d, d.length - 32, d.length);
-        } else if (d.length < 32) {
-            byte[] padded = new byte[32];
-            System.arraycopy(d, 0, padded, 32 - d.length, d.length);
+        if (d.length > 24) {
+            d = Arrays.copyOfRange(d, d.length - 24, d.length);
+        } else if (d.length < 24) {
+            byte[] padded = new byte[24];
+            System.arraycopy(d, 0, padded, 24 - d.length, d.length);
             d = padded;
         }
 

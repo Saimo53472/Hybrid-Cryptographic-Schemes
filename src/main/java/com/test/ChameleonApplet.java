@@ -1,4 +1,4 @@
-package Chameleon;
+package com.test;
 
 import javacard.framework.*; // Applet class
 import javacard.security.*; // Cryptographic operations
@@ -51,8 +51,8 @@ public class ChameleonApplet extends Applet {
         certificate = new byte[2048];
         issuerCertificate = new byte[2048];
 
-        classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_256, false);
-        classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA_256, false);
+        classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_192, false);
+        classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA, false);
         classicalSigBuffer = new byte[128];
 
         pqPrivateKey = new byte[200];

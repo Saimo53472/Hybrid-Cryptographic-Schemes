@@ -1,10 +1,8 @@
-Chameleon\HawkApplet.class
+com\test\ChameleonApplet.class
+com\test\HawkSigner.class
 SHAKE\KeccakF1600.class
-Chameleon\Hawk.class
-Chameleon\HawkSigner.class
 SHAKE\SHAKE256JC.class
-Chameleon\BaseApplet.class
-Chameleon\test.class
+com\test\Hawk.class
 SHAKE\TestSHAKE256.class
-Chameleon\ChameleonApplet.class
-Chameleon\Hello.class
+com\test\BaseApplet.class
+com\test\HawkApplet.class

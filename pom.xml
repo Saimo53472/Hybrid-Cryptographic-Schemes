@@ -19,7 +19,7 @@
         <dependency>
             <groupId>org.javacard</groupId>
             <artifactId>javacard-api</artifactId>
-            <version>3.0.5</version>
+            <version>2.2.2</version>
             <scope>provided</scope>
         </dependency>
 

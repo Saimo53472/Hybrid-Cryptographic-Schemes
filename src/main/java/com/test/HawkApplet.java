@@ -1,4 +1,4 @@
-package Chameleon;
+package com.test;
 
 import SHAKE.SHAKE256JC;
 import javacard.framework.*;
@@ -1222,7 +1222,7 @@ class HawkSigner {
         int n = 1 << logn;
         byte[] seed = new byte[41];
         byte[] tmp = new byte[40];
-        random.nextBytes(tmp, (short) 0, (short) 40);
+        random.generateData(tmp, (short) 0, (short) 40);
         Util.arrayCopy(tmp, (short) 0, seed,(short) 0, (short) tmp.length);
 
         int sn = 0;
@@ -1526,7 +1526,7 @@ class HawkSigner {
 
             // Generate salt
             byte[] salt = new byte[saltLen];
-            random.nextBytes(salt, (short) 0, (short) saltLen);
+            random.generateData(salt, (short) 0, (short) saltLen);
 
             if (useShake != 0) {
                 byte[] tbuf = new byte[4];

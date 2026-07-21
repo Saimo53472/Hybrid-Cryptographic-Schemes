@@ -22,7 +22,7 @@ public class HawkTest {
         byte[] aidBytes = { (byte) 0xA0, 0x00, 0x00, 0x00, 0x62, 0x01 };
         AID aid = new AID(aidBytes, (short) 0, (byte) aidBytes.length);
 
-        simulator.installApplet(aid, Chameleon.HawkApplet.class);
+        simulator.installApplet(aid, com.test.HawkApplet.class);
         simulator.selectApplet(aid);
 
         System.out.println("Applet selected");

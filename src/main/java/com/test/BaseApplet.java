@@ -1,4 +1,4 @@
-package Chameleon;
+package com.test;
 
 import javacard.framework.*; // Applet class
 import javacard.security.*; // Cryptographic operations
@@ -41,10 +41,10 @@ public class BaseApplet extends Applet {
         dataToSign = new byte[255];
         certificate = new byte[400];
         issuerCertificate = new byte[400];
-        signatureBuffer = new byte[128];
+        signatureBuffer = new byte[64];
 
-        classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_256, false);
-        classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA_256, false);
+        classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_192, false);
+        classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA, false);
 
         personalized = false;
         register(); // makes the applet selectable 
