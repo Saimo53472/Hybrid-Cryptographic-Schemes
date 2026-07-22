@@ -36,12 +36,12 @@ $env:PATH = "$env:JC_HOME\bin;$env:PATH"
 ```
 
 ```
-javac -source 1.5 -target 1.5 -cp "$env:JC_HOME\lib\api.jar" -d out src\main\java\com\test\Hello.java
+javac -source 1.5 -target 1.5 -cp "$env:JC_HOME\lib\api.jar" -d out src\main\java\com\test\BaseApplet.java
 ```
 
 To convert to cap:
 ``` 
-& "$env:JC_HOME\bin\converter.bat" -classdir out -exportpath "$env:JC_HOME\api_export_files" -d capout  -out CAP EXP JCA -applet 0xA0:0x01:0x01:0x01:0x01:0x01:0x01 com.test.Hello com.test 0xA0:0x01:0x01:0x01:0x01:0x01  1.0
+& "$env:JC_HOME\bin\converter.bat" -classdir out -exportpath "$env:JC_HOME\api_export_files" -d capout  -out CAP EXP JCA -applet 0xA0:0x01:0x01:0x01:0x01:0x01:0x01 com.test.BaseApplet com.test 0xA0:0x01:0x01:0x01:0x01:0x01  1.0
 ```
 
 ```
@@ -62,14 +62,10 @@ java -jar gp.jar -l -r "SCM Microsystems Inc. SCR33x USB Smart Card Reader 0"
 
 First the APP:
 ```
-java -jar gp.jar `                                                           
- --delete A0010101010101 `      
- -r "SCM Microsystems Inc. SCR33x USB Smart Card Reader 0"
+java -jar gp.jar --delete A0010101010101 -r "SCM Microsystems Inc. SCR33x USB Smart Card Reader 0"
 ```
 
 Then the PKG:
 ```
-java -jar gp.jar `                                                           
-  --delete A00101010101 `      
-  -r "SCM Microsystems Inc. SCR33x USB Smart Card Reader 0"
+java -jar gp.jar --delete A00101010101 -r "SCM Microsystems Inc. SCR33x USB Smart Card Reader 0"
 ```

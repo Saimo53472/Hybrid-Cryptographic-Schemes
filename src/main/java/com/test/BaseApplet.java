@@ -5,19 +5,21 @@ import javacard.security.*; // Cryptographic operations
 
 public class BaseApplet extends Applet {
 
-    // Commands that can be sent from the terminal to control the applet behavior
+    // APDU command buffers
     private static final byte INS_INIT = (byte) 0x10; // Initializes/resets session state
     private static final byte INS_GET_ISSUER_CERT = (byte) 0x20; // Returns the stored Issuer Certificate
     private static final byte INS_GET_CERT = (byte) 0x30; // Returns the stored ICC Certificate
     private static final byte INS_SIGN = (byte) 0x40; // Creates the ECDSA signature
     private static final byte INS_GET_SIG = (byte) 0x50; // Returns the computed ECDSA signature
 
-    private static final byte INS_LOAD_PRIVKEY = (byte) 0x70;
-    private static final byte INS_LOAD_ISSUER_CERT = (byte) 0x71; 
-    private static final byte INS_LOAD_CERT = (byte) 0x72;
-    private static final byte INS_LOCK_CARD = (byte) 0x73;
+    // Personalization commands
+    private static final byte INS_LOAD_PRIVKEY = (byte) 0xB0; // Load ICC private key
+    private static final byte INS_LOAD_ISSUER_CERT = (byte) 0xB1; // Load Issuer certificate
+    private static final byte INS_LOAD_CERT = (byte) 0xB2; // Load ICC certificate
+    private static final byte INS_LOCK_CARD = (byte) 0xB3; // Lock card
 
-    private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88;
+    // Internal Authenticate command 
+    private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88; // Create the data to be signed
 
     private byte[] dataToSign; // data to be signed
     private short dataToSignLen;
@@ -32,22 +34,31 @@ public class BaseApplet extends Applet {
     private byte[] certificate; // stored on card
     private short certLen;
 
+    // Stores the generated ECDSA signature until it is requested by the terminal
     private byte[] signatureBuffer;
     private short signatureLen;
 
+    // Prevents modification of credentials after personalization
     private boolean personalized;
 
+    // Temporary key pair used only to obtain EC domain parameters accepted by the card implementation
+    KeyPair kp = new KeyPair(
+            KeyPair.ALG_EC_FP,
+            KeyBuilder.LENGTH_EC_FP_192
+        );
+
     protected BaseApplet() {
+        // Working buffers
         dataToSign = new byte[255];
         certificate = new byte[400];
         issuerCertificate = new byte[400];
         signatureBuffer = new byte[64];
 
+        // Create empty EC private key object
         classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_192, false);
         classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA, false);
-
         personalized = false;
-        register(); // makes the applet selectable 
+        register(); // Make applet selectable by the card manager
     }
 
     // Called once during applet installation on the card
@@ -110,21 +121,43 @@ public class BaseApplet extends Applet {
     }
 
     private void loadPrivateKeyBase(APDU apdu) {
+        // Private key may only be loaded during personalization
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
         byte[] buf = apdu.getBuffer();
         short len = apdu.setIncomingAndReceive();
 
-        // Loads EC private scalar S
-        classicalPrivateKey.setS(
-            buf,
-            (short) ISO7816.OFFSET_CDATA,
-            len
-        );
+        // Load externally generated private scalar d
+        classicalPrivateKey.setS(buf, (short) ISO7816.OFFSET_CDATA, len);
+        // Generate a temporary EC key pair.
+        kp.genKeyPair();
+
+        ECPrivateKey gen = (ECPrivateKey)kp.getPrivate();
+
+        byte[] tmp = new byte[80];
+
+        short lenn;
+
+        // Copy EC domain parameters from the generated key into the imported key object.
+        lenn = gen.getField(tmp,(short)0);
+        classicalPrivateKey.setFieldFP(tmp,(short)0,lenn);
+
+        lenn = gen.getA(tmp,(short)0);
+        classicalPrivateKey.setA(tmp,(short)0,lenn);
+
+        lenn = gen.getB(tmp,(short)0);
+        classicalPrivateKey.setB(tmp,(short)0,lenn);
+
+        lenn = gen.getG(tmp,(short)0);
+        classicalPrivateKey.setG(tmp,(short)0,lenn);
+
+        lenn = gen.getR(tmp,(short)0);
+        classicalPrivateKey.setR(tmp,(short)0,lenn);
     }
 
     private void loadIssuerCertificate(APDU apdu) {
+        // Certificate may only be loaded during personalization
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
@@ -140,6 +173,7 @@ public class BaseApplet extends Applet {
     }
 
     private void loadCertificate(APDU apdu) {
+        // Certificate may only be loaded during personalization
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
@@ -154,15 +188,22 @@ public class BaseApplet extends Applet {
         certLen += len;
     }
 
+    // Finalize personalization.
+    // After this point no credentials or certificates may be modified.
     private void lockCard() {
         personalized = true;
     }
 
+    // Clear data from a previous authentication session
     private void initSession(APDU apdu) {
         signatureLen = 0;
         dataToSignLen = 0;
     }
 
+    // Construct the message that will be authenticated.
+    // Structure:
+    // Header || Dynamic Data || Padding || Terminal Challenge
+    // The resulting 255-byte message is later signed using ECDSA.
     private void internalAuthenticate(APDU apdu) {
         byte[] buffer = apdu.getBuffer();
         byte[] local = dataToSign;
@@ -201,11 +242,14 @@ public class BaseApplet extends Applet {
         dataToSignLen = pos;
     }
 
+    // Generate ECDSA signature over the assembled authentication data
     private void createSignatureBase(APDU apdu) {
         classicalSignature.init(classicalPrivateKey, Signature.MODE_SIGN);
         signatureLen = classicalSignature.sign(dataToSign, (short) 0, dataToSignLen, signatureBuffer, (short) 0);
     }
 
+    // Return certificate data in chunks.
+    // The host repeatedly requests blocks until the entire certificate has been transferred.
     private void sendIssuerCertificate(APDU apdu) {
 
         if (issuerCertLen == 0) {
@@ -256,6 +300,7 @@ public class BaseApplet extends Applet {
         apdu.sendBytesLong(certificate, offset, chunk);
     }
 
+    // Return the generated ECDSA signature to the terminal
     private void sendSignatureBase(APDU apdu) {
         apdu.setOutgoing();
         apdu.setOutgoingLength(signatureLen);

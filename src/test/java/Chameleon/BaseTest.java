@@ -20,8 +20,6 @@ import javax.smartcardio.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.interfaces.ECPrivateKey;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 public class BaseTest {
 
     private static final byte CLA = (byte) 0x00;
@@ -61,7 +59,7 @@ public class BaseTest {
             byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa.crt"));
             byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa.crt"));
 
-            send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
+            send(simulator, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
             int offset = 0;
             int chunkSize = 200;
             int S_cert = issuer_cert.length; // certificate size in bytes
@@ -71,7 +69,7 @@ public class BaseTest {
 
                 byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
 
-                send(simulator, new CommandAPDU(CLA, 0x71, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(simulator, new CommandAPDU(CLA, 0xB1, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
 
                 offset += len;
             }
@@ -85,7 +83,7 @@ public class BaseTest {
 
                 byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
 
-                send(simulator, new CommandAPDU(CLA, 0x72, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(simulator, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
 
                 offset += len;
             }
@@ -94,7 +92,7 @@ public class BaseTest {
         }
 
         // 3. Lock card
-        send(simulator, new CommandAPDU(CLA, 0x73, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0xB3, 0x00, 0x00));
 
         // Reset metrics
         apduCount = 0;
@@ -257,6 +255,37 @@ public class BaseTest {
         PrivateKey pk = kf.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
 
         ECPrivateKey ecKey = (ECPrivateKey) pk;
+
+        java.security.spec.ECParameterSpec spec = ecKey.getParams();
+
+        System.out.println(pk.getAlgorithm());
+        System.out.println(ecKey.getParams());
+
+        System.out.println("Curve A = " + spec.getCurve().getA().toString(16));
+        System.out.println("Curve B = " + spec.getCurve().getB().toString(16));
+        System.out.println("Order N = " + spec.getOrder().toString(16));
+        System.out.println("Cofactor H = " + spec.getCofactor());
+
+        System.out.println("Gx = " +
+                spec.getGenerator().getAffineX().toString(16));
+
+        System.out.println("Gy = " +
+                spec.getGenerator().getAffineY().toString(16));
+
+        System.out.println("D = " +
+                ecKey.getS().toString(16));
+
+        java.security.interfaces.ECPublicKey pub =
+        (java.security.interfaces.ECPublicKey)
+        loadPublicKeyFromCert(
+                "src/test/resources/certs/ecdsa.crt");
+
+        System.out.println("Qx = " +
+                pub.getW().getAffineX().toString(16));
+
+        System.out.println("Qy = " +
+                pub.getW().getAffineY().toString(16));
+
 
         byte[] d = ecKey.getS().toByteArray();
 
