@@ -256,37 +256,6 @@ public class BaseTest {
 
         ECPrivateKey ecKey = (ECPrivateKey) pk;
 
-        java.security.spec.ECParameterSpec spec = ecKey.getParams();
-
-        System.out.println(pk.getAlgorithm());
-        System.out.println(ecKey.getParams());
-
-        System.out.println("Curve A = " + spec.getCurve().getA().toString(16));
-        System.out.println("Curve B = " + spec.getCurve().getB().toString(16));
-        System.out.println("Order N = " + spec.getOrder().toString(16));
-        System.out.println("Cofactor H = " + spec.getCofactor());
-
-        System.out.println("Gx = " +
-                spec.getGenerator().getAffineX().toString(16));
-
-        System.out.println("Gy = " +
-                spec.getGenerator().getAffineY().toString(16));
-
-        System.out.println("D = " +
-                ecKey.getS().toString(16));
-
-        java.security.interfaces.ECPublicKey pub =
-        (java.security.interfaces.ECPublicKey)
-        loadPublicKeyFromCert(
-                "src/test/resources/certs/ecdsa.crt");
-
-        System.out.println("Qx = " +
-                pub.getW().getAffineX().toString(16));
-
-        System.out.println("Qy = " +
-                pub.getW().getAffineY().toString(16));
-
-
         byte[] d = ecKey.getS().toByteArray();
 
         if (d.length > 24) {

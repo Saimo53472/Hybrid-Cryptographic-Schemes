@@ -26,7 +26,7 @@ public class RealCardTestBase {
 
     public static void main(String[] args) throws Exception {
 
-        // Find readers
+        // Retrieve the list of smart card readers available on the host system
         TerminalFactory factory = TerminalFactory.getDefault();
         List<CardTerminal> terminals = factory.terminals().list();
 
@@ -34,25 +34,26 @@ public class RealCardTestBase {
             throw new RuntimeException("No smart card readers found");
         }
 
+        // Display all detected readers to the users
         System.out.println("Available readers:");
-
         for (int i = 0; i < terminals.size(); i++) {
             System.out.println(
                 i + ": " + terminals.get(i).getName());
         }
 
+        // Select the first available reader
         CardTerminal terminal = terminals.get(0);
-
         System.out.println("\nUsing: " + terminal.getName());
 
+        // Wait until a smart card is inserted into the reader
         terminal.waitForCardPresent(0);
 
+        // Establish a connection with the inserted card
         Card card = terminal.connect("*");
-
         System.out.println("Connected");
 
-        CardChannel channel =
-                card.getBasicChannel();
+        // Obtain the basic communication channel used to exchange APDU commands
+        CardChannel channel = card.getBasicChannel();
 
         // Select Applet
         byte[] aid = {(byte)0xA0, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
@@ -75,8 +76,6 @@ public class RealCardTestBase {
             send(channel, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
             int offset = 0;
             int chunkSize = 200;
-            int S_cert = issuer_cert.length; // certificate size in bytes
-            System.out.println("S_issuer_cert = " + S_cert);
             while (offset < issuer_cert.length) {
                 int len = Math.min(chunkSize, issuer_cert.length - offset);
 
@@ -89,8 +88,6 @@ public class RealCardTestBase {
 
             offset = 0;
             chunkSize = 200;
-            S_cert = cert.length; // certificate size in bytes
-            System.out.println("S_cert = " + S_cert);
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
 
