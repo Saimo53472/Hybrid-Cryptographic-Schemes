@@ -15,28 +15,6 @@ mvn install:install-file `
   "-Dpackaging=jar"
 ```
 
-## Simulator
-To use jdk17:
-```
-$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot"
-$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
-```
-
-To use the Java card development kit:
-```
-$env:JC_HOME = "$env:USERPROFILE\Downloads\java_card_devkit_tools-bin-v25.1-b_611-26-OCT-2025"
-$env:PATH = "$env:JC_HOME\bin;$env:PATH"
-```
-
-### Test
-```
-javac -d out -cp "out;.;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" src/main/java/Chameleon/ChameleonApplet.java
-```
-
-```
-java -cp "out;.;jcardsim.jar;gp.jar;api_classic-3.0.5.jar" ChameleonTest
-```
-
 ## Card
 ```
 Remove-Item -Recurse -Force out -ErrorAction Ignore

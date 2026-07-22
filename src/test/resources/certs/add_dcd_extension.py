@@ -8,7 +8,7 @@ OUTPUT = "src/test/resources/certs/chameleon_cert.der"
 
 
 # Experimental DCD extension OID
-DCD_OID = "1.3.6.1.4.1.55555.1.101"
+DCD_OID = "1.3.6.1.4.1.55555.1.102"
 
 
 # Load certificate

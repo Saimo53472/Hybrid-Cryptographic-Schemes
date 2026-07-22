@@ -40,8 +40,8 @@ public class ChameleonTest {
     private static long timeBaseSign = 0;
     private static long timeDeltaSign = 0;
 
-    private static final String Issuer_DCD_OID = "1.3.6.1.4.1.55555.1.100";
-    private static final String ICC_DCD_OID = "1.3.6.1.4.1.55555.1.101";
+    private static final String Issuer_DCD_OID = "1.3.6.1.4.1.55555.1.101";
+    private static final String ICC_DCD_OID = "1.3.6.1.4.1.55555.1.102";
 
     public static void main(String[] args) throws Exception {
 
@@ -236,7 +236,7 @@ public class ChameleonTest {
 
         // 10. Verify signatures
         byte[] expectedMessage = buildExpectedMessage(challenge);
-        Signature ecdsaVerifier = Signature.getInstance("SHA256withECDSA");
+        Signature ecdsaVerifier = Signature.getInstance("SHA1withECDSA");
         ecdsaVerifier.initVerify(cert.getPublicKey());
         ecdsaVerifier.update(expectedMessage);
         boolean ecdsaOK = ecdsaVerifier.verify(sigData);

@@ -2,14 +2,14 @@
 ## CA Certificate 
 Create CA key
 ```
-openssl ecparam -name prime256v1 -genkey -noout -out src/test/resources/keys/CA_ecdsa.key
+openssl ecparam -name prime192v1 -genkey -noout -out src/test/resources/keys/CA_ecdsa.key
 ```
 
 Create CA ECDSA certificate signed by CA sk
 ```
 openssl req -new -x509 \
     -key src/test/resources/keys/CA_ecdsa.key \
-    -sha256 \
+    -sha1 \
     -days 365 \
     -out src/test/resources/certs/CA_ecdsa.crt \
     -subj "/CN=PoC"
@@ -18,7 +18,7 @@ openssl req -new -x509 \
 ## Issuer Certificate
 Create issuer key
 ```
-openssl ecparam -name prime256v1 -genkey -noout -out src/test/resources/keys/issuer_ecdsa.key
+openssl ecparam -name prime192v1 -genkey -noout -out src/test/resources/keys/issuer_ecdsa.key
 ```
 
 Create Issuer ECDSA certificate signed by CA sk
@@ -39,7 +39,7 @@ openssl x509 \
     -CAcreateserial \
     -out src/test/resources/certs/issuer_ecdsa.crt \
     -days 365 \
-    -sha256
+    -sha1
 ```
 
 Inspect the certificate
@@ -68,7 +68,7 @@ openssl asn1parse \
 
 Run the python script
 ```
- python src/test/resources/certs/cert.py
+python src/test/resources/certs/cert.py
 ```
 
 Check the data for hawk is there
@@ -81,7 +81,7 @@ Check the signature is there
 openssl asn1parse \
   -inform DER \
   -in src/test/resources/certs/issuer_delta_tbs.der \
-  -strparse 129 \
+  -strparse 132 \
   -dump
 ```
 
@@ -138,7 +138,7 @@ openssl asn1parse \
 Sign with ECDSA
 ```
 openssl dgst \
-    -sha256 \
+    -sha1 \
     -sign src/test/resources/keys/CA_ecdsa.key \
     -out src/test/resources/sigs/issuer_ecdsa_new_signature.bin \
     src/test/resources/certs/issuer_final_tbs.der
@@ -170,7 +170,7 @@ openssl x509 \
 ## ICC Certificate
 Create ECDSA private key
 ```
-openssl ecparam -name prime256v1 -genkey -noout -out src/test/resources/keys/ecdsa.key
+openssl ecparam -name prime192v1 -genkey -noout -out src/test/resources/keys/ecdsa.key
 ```
 
 Convert it to pkcs8
@@ -199,7 +199,7 @@ openssl x509 \
     -CAcreateserial \
     -out src/test/resources/certs/ecdsa.crt \
     -days 365 \
-    -sha256
+    -sha1
 ```
 
 Inspect the certificate
@@ -241,7 +241,7 @@ Check the signature is there
 openssl asn1parse \
   -inform DER \
   -in src/test/resources/certs/delta_tbs.der \
-  -strparse 129 \
+  -strparse 132 \
   -dump
 ```
 
@@ -298,7 +298,7 @@ openssl asn1parse \
 Sign with ECDSA
 ```
 openssl dgst \
-    -sha256 \
+    -sha1 \
     -sign src/test/resources/keys/issuer_ecdsa.key \
     -out src/test/resources/sigs/ecdsa_new_signature.bin \
     src/test/resources/certs/final_tbs.der

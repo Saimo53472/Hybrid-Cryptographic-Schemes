@@ -20,6 +20,8 @@ import javax.smartcardio.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.interfaces.ECPrivateKey;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 public class BaseTest {
 
     private static final byte CLA = (byte) 0x00;
@@ -138,7 +140,7 @@ public class BaseTest {
 
         // 4*. Verify certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        X509Certificate caCert = (X509Certificate) cf.generateCertificate(new FileInputStream("src/test/resources/certs/CA_ECDSA.crt"));
+        X509Certificate caCert = (X509Certificate) cf.generateCertificate(new FileInputStream("src/test/resources/certs/CA_ecdsa.crt"));
         X509Certificate issuerCert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedIssuerCert));
         X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedCert));
 
@@ -148,6 +150,7 @@ public class BaseTest {
             issuerCert.verify(caCert.getPublicKey());
             issuerECDSAOK = true;
         } catch (Exception e) {
+            e.printStackTrace();
             issuerECDSAOK = false;
         }
 
@@ -158,13 +161,16 @@ public class BaseTest {
             cert.verify(issuerCert.getPublicKey());
             iccECDSAOK = true;
         } catch (Exception e) {
+            e.printStackTrace();
             iccECDSAOK = false;
         }
 
         System.out.println("ICC certificate ECDSA: " + iccECDSAOK);
 
         // 5. Internal authenticate (build dataToSign)
-        byte[] challenge = {0x01, 0x02, 0x03, 0x04};
+        SecureRandom rnd = new SecureRandom();
+        byte[] challenge = new byte[4];
+        rnd.nextBytes(challenge);
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
         // 6. Create ECDSA signature

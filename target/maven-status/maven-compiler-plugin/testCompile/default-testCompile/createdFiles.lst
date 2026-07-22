@@ -20,4 +20,5 @@ org\bouncycastle\pqc\crypto\hawk\HawkPrivateKeyParameters.class
 org\bouncycastle\pqc\crypto\hawk\HawkSigner$GaussianTable.class
 Chameleon\ChameleonTest.class
 org\bouncycastle\pqc\crypto\hawk\HawkKeyParameters.class
+Chameleon\RealCardTestBase.class
 Chameleon\BaseTest.class
