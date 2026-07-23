@@ -5,7 +5,7 @@ import javacard.security.*; // Cryptographic operations
 
 public class ChameleonApplet extends Applet {
 
-    // Commands that can be sent from the terminal to control the applet behavior
+    // APDU command buffers
     private static final byte INS_INIT = (byte) 0x00; // Initializes/resets session state
     private static final byte INS_GET_ISSUER_CERT = (byte) 0x10; // Returns the stored Issuer Certificate
     private static final byte INS_GET_CERT = (byte) 0x20; // Returns the stored ICC Certificate
@@ -14,13 +14,15 @@ public class ChameleonApplet extends Applet {
     private static final byte INS_GET_SIG_BASE = (byte) 0x50; // Returns the computed classical signature
     private static final byte INS_GET_SIG_DELTA = (byte) 0x60; // Returns the computed delta signature 
 
-    private static final byte INS_LOAD_PRIVKEY_BASE = (byte) 0x70; 
-    private static final byte INS_LOAD_PRIVKEY_DELTA = (byte) 0x71; 
-    private static final byte INS_LOAD_ISSUER_CERT = (byte) 0x72;
-    private static final byte INS_LOAD_CERT = (byte) 0x73;
-    private static final byte INS_LOCK_CARD = (byte) 0x74;
+    // Personalization commands
+    private static final byte INS_LOAD_PRIVKEY_BASE = (byte) 0xB0; // Load ICC ECDSA private key 
+    private static final byte INS_LOAD_PRIVKEY_DELTA = (byte) 0xB1; // Load ICC HAWK private key 
+    private static final byte INS_LOAD_ISSUER_CERT = (byte) 0xB2; // Load issuer certificate
+    private static final byte INS_LOAD_CERT = (byte) 0xB3; // Load ICC certificate
+    private static final byte INS_LOCK_CARD = (byte) 0xB4; // Lock card
 
-    private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88;
+    // Internal authenticate command
+    private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88; // Create the data to be signed
 
     private byte[] dataToSign; // data to be signed
     private short dataToSignLen;
@@ -35,7 +37,6 @@ public class ChameleonApplet extends Applet {
     private byte[] pqPrivateKey; // on card 
     private byte[] pqSignature; 
     private short pqSignatureLen;
-
     private short pqKeyLen = 0;
 
     // Certificate storage
@@ -44,22 +45,32 @@ public class ChameleonApplet extends Applet {
     private byte[] certificate; // stored on card
     private short certLen;
 
+    // Prevents modification of credentials after personalization
     private boolean personalized;
 
+    // Temporary key pair used only to obtain EC domain parameters accepted by the card implementation
+    KeyPair kp = new KeyPair(
+            KeyPair.ALG_EC_FP,
+            KeyBuilder.LENGTH_EC_FP_192
+        );
+
     protected ChameleonApplet() {
+        // Working buffers
         dataToSign = new byte[255];
         certificate = new byte[2048];
         issuerCertificate = new byte[2048];
 
+        // Create empty EC private key object
         classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_192, false);
         classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA, false);
         classicalSigBuffer = new byte[128];
 
+        // Create key and signature cotainers for
         pqPrivateKey = new byte[200];
         pqSignature = new byte[600];
 
         personalized = false;
-        register(); // makes the applet selectable 
+        register(); // Makes the applet selectable 
     }
 
     // Called once during applet installation on the card
@@ -134,19 +145,39 @@ public class ChameleonApplet extends Applet {
     }
 
     private void loadPrivateKeyBase(APDU apdu) {
-
+        // Private key may only be loaded during personalization
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
         byte[] buf = apdu.getBuffer();
         short len = apdu.setIncomingAndReceive();
 
-        // Loads EC private scalar S
-        classicalPrivateKey.setS(
-            buf,
-            (short) ISO7816.OFFSET_CDATA,
-            len
-        );
+        // Load externally generated private scalar d
+        classicalPrivateKey.setS(buf, (short) ISO7816.OFFSET_CDATA, len);
+        // Generate a temporary EC key pair.
+        kp.genKeyPair();
+
+        ECPrivateKey gen = (ECPrivateKey)kp.getPrivate();
+
+        byte[] tmp = new byte[80];
+
+        short lenn;
+
+        // Copy EC domain parameters from the generated key into the imported key object.
+        lenn = gen.getField(tmp,(short)0);
+        classicalPrivateKey.setFieldFP(tmp,(short)0,lenn);
+
+        lenn = gen.getA(tmp,(short)0);
+        classicalPrivateKey.setA(tmp,(short)0,lenn);
+
+        lenn = gen.getB(tmp,(short)0);
+        classicalPrivateKey.setB(tmp,(short)0,lenn);
+
+        lenn = gen.getG(tmp,(short)0);
+        classicalPrivateKey.setG(tmp,(short)0,lenn);
+
+        lenn = gen.getR(tmp,(short)0);
+        classicalPrivateKey.setR(tmp,(short)0,lenn);
     }
 
     private void loadPrivateKeyDelta(APDU apdu) {
@@ -165,6 +196,7 @@ public class ChameleonApplet extends Applet {
     }
 
     private void loadIssuerCertificate(APDU apdu) {
+        // Certificate may only be loaded during personalization
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
@@ -180,6 +212,7 @@ public class ChameleonApplet extends Applet {
     }
     
     private void loadCertificate(APDU apdu) {
+        // Certificate may only be loaded during personalization
         if (personalized)
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
@@ -194,16 +227,23 @@ public class ChameleonApplet extends Applet {
         certLen += len;
     }
 
+    // Finalize personalization.
+    // After this point no credentials or certificates may be modified.
     private void lockCard() {
         personalized = true;
     }
 
+    // Clear data from a previous authentication session
     private void initSession(APDU apdu) {
         classicalSigLen = 0;
         pqSignatureLen = 0;
         dataToSignLen = 0;
     }
 
+    // Construct the message that will be authenticated.
+    // Structure:
+    // Header || Dynamic Data || Padding || Terminal Challenge
+    // The resulting 255-byte message is later signed using ECDSA.
     private void internalAuthenticate(APDU apdu) {
         byte[] buffer = apdu.getBuffer();
         byte[] local = dataToSign;
@@ -242,18 +282,22 @@ public class ChameleonApplet extends Applet {
         dataToSignLen = pos;
     }
 
+    // Generate ECDSA signature over the assembled authentication data
     private void createSignatureBase(APDU apdu) {
         classicalSignature.init(classicalPrivateKey, Signature.MODE_SIGN);
         classicalSigLen = classicalSignature.sign(dataToSign, (short) 0, dataToSignLen, classicalSigBuffer, (short) 0);
     }
 
+    // Generate HAWK signature over the assembled authentication data
     private void createSignatureDelta(APDU apdu) {
         if (dataToSignLen == 0)
             ISOException.throwIt(
                     ISO7816.SW_CONDITIONS_NOT_SATISFIED);
 
+        // Hawk-512 signer
         Hawk signer = new Hawk();
 
+        // Temporary workspace
         byte[] tmp = new byte[6*512 + 1024]; 
 
         int ret = signer.signMessage(9, pqSignature, dataToSign, dataToSignLen, pqPrivateKey, pqKeyLen, tmp,
@@ -266,6 +310,8 @@ public class ChameleonApplet extends Applet {
         pqSignatureLen = Hawk.HAWK_SIG_SIZE(9);
     }
 
+    // Return certificate data in chunks.
+    // The host repeatedly requests blocks until the entire certificate has been transferred.
     private void sendIssuerCertificate(APDU apdu) {
 
         if (issuerCertLen == 0) {
@@ -316,12 +362,14 @@ public class ChameleonApplet extends Applet {
         apdu.sendBytesLong(certificate, offset, chunk);
     }
 
+    // Return the generated ECDSA signature to the terminal
     private void sendSignatureBase(APDU apdu) {
         apdu.setOutgoing();
         apdu.setOutgoingLength(classicalSigLen);
         apdu.sendBytesLong(classicalSigBuffer, (short) 0, classicalSigLen);
     }
 
+    // Return the generated HAWK signature to the terminal
     private void sendSignatureDelta(APDU apdu) {
         byte[] buf = apdu.getBuffer();
 

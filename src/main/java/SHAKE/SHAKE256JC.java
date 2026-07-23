@@ -1,14 +1,7 @@
 package SHAKE;
 
 /**
- * Java Card–friendly SHAKE256 sponge that uses KeccakF1600.permute(state, scratch).
- * No internal allocations in absorb/finalize/squeeze.
- *
- * Caller must provide buffers (prefer transient on Java Card):
- *  - byte[] state (200 bytes)
- *  - int[] scratch (120 ints)
- *  - byte[] tmp8 (>=8) for word decoding
- *  - byte[] singleByte (>=1) for x4
+ * SHAKE256 sponge that uses KeccakF1600.permute(state, scratch).
  */
 public final class SHAKE256JC
 {
@@ -49,6 +42,10 @@ public final class SHAKE256JC
         squeezing = false;
     }
 
+    /**
+     * Absorb input data into the SHAKE sponge.
+     * Data is XORed into the rate portion of the state and a Keccak permutation is applied whenever the rate is full.
+     */
     public void absorbXor(byte[] in, int inOff, int len)
     {
         if (squeezing) throw new IllegalStateException("already finalised for squeezing");
@@ -84,6 +81,10 @@ public final class SHAKE256JC
         squeezing = true;
     }
 
+    /**
+     * Extract output bytes from the sponge.
+     * Additional Keccak permutations are applied as needed when more output is requested than fits in one rate block.
+     */
     public void squeezeBytes(byte[] out, int outOff, int outLen)
     {
         if (!squeezing) finalizeSqueeze();
@@ -105,17 +106,27 @@ public final class SHAKE256JC
         }
     }
 
+    /**
+     * Convenience wrapper for absorbing input data.
+     */
     public void update(byte[] in, int off, int len)
     {
         absorbXor(in, off, len);
     }
 
+    /**
+     * Generate the requested number of output bytes without
+     * resetting the sponge state.
+     */
     public int doOutput(byte[] out, int off, int len)
     {
         squeezeBytes(out, off, len);
         return len;
     }
 
+    /**
+     * Generate output bytes and then reset the sponge so it can be reused for a new SHAKE computation.
+     */
     public int doFinal(byte[] out, int off, int len)
     {
         squeezeBytes(out, off, len);

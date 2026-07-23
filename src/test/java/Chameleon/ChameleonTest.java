@@ -71,42 +71,32 @@ public class ChameleonTest {
             byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_chameleon_signed.crt"));
             byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "chameleon_signed.crt"));
 
-            send(simulator, new CommandAPDU(CLA, 0x70, 0x00, 0x00, key));
+            send(simulator, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
 
             int offset = 0;
             int chunkSize = 200;
             while (offset < qkey.length) {
                 int len = Math.min(chunkSize, qkey.length - offset);
                 byte[] chunk = Arrays.copyOfRange(qkey, offset, offset + len);
-                send(simulator, new CommandAPDU(CLA, 0x71, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(simulator, new CommandAPDU(CLA, 0xB1, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
 
             offset = 0;
             chunkSize = 200;
-            int S_cert = issuer_cert.length; // certificate size in bytes
-            System.out.println("S_issuer_cert = " + S_cert);
             while (offset < issuer_cert.length) {
                 int len = Math.min(chunkSize, issuer_cert.length - offset);
-
                 byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
-
-                send(simulator, new CommandAPDU(CLA, 0x72, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
-
+                send(simulator, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
 
             offset = 0;
             chunkSize = 200;
-            S_cert = cert.length; // certificate size in bytes
-            System.out.println("S_cert = " + S_cert);
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
-
                 byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
-
-                send(simulator, new CommandAPDU(CLA, 0x73, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
-
+                send(simulator, new CommandAPDU(CLA, 0xB3, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
         } catch (Exception e) {
@@ -114,7 +104,7 @@ public class ChameleonTest {
         }
 
         // 3. Lock card
-        send(simulator, new CommandAPDU(CLA, 0x74, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0xB4, 0x00, 0x00));
 
         // Reset metrics
         apduCount = 0;
@@ -160,10 +150,8 @@ public class ChameleonTest {
 
         // 4*. Verify certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        X509Certificate caCert = (X509Certificate) cf
-                .generateCertificate(new FileInputStream("src/test/resources/certs/CA_ECDSA.crt"));
-        X509Certificate issuerCert = (X509Certificate) cf
-                .generateCertificate(new ByteArrayInputStream(receivedIssuerCert));
+        X509Certificate caCert = (X509Certificate) cf.generateCertificate(new FileInputStream("src/test/resources/certs/CA_ecdsa.crt"));
+        X509Certificate issuerCert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedIssuerCert));
         X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedCert));
 
         // 4.1 Verify ECDSA
@@ -243,11 +231,7 @@ public class ChameleonTest {
         System.out.println("Card ECDSA signature: " + ecdsaOK);
 
         byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(
-                HawkParameters.Hawk_512,
-                pub,
-                0,
-                pub.length);
+        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
         HawkSigner verifier = new HawkSigner();
         verifier.init(false, pk);
         boolean hawkOK = verifier.verifySignature(expectedMessage, signature);

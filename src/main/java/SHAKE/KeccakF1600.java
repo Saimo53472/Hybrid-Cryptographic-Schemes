@@ -2,9 +2,6 @@ package SHAKE;
 
 /**
  * Allocation-free Keccak-f[1600] permutation using 32-bit hi/lo lane pairs.
- * Use permute(state, scratch) on Java Card (scratch must be int[120]).
- *
- * Also provides legacy permute(state) that allocates scratch (desktop convenience).
  */
 public final class KeccakF1600
 {
@@ -16,7 +13,7 @@ public final class KeccakF1600
         18,  2, 61, 56, 14
     };
 
-    // Round constants split into hi / lo 32-bit parts (no long usage in Java Card paths).
+    // Round constants split into hi / lo 32-bit parts.
     private static final int[] RC_HI = new int[] {
         0x00000000, 0x00000000, 0x80000000, 0x80000000,
         0x00000000, 0x00000000, 0x80000000, 0x80000000,
@@ -35,14 +32,12 @@ public final class KeccakF1600
         0x80008081, 0x00008080, 0x80000001, 0x80008008
     };
 
-    // Legacy convenience for desktop: allocates scratch (do NOT use this on-card).
     public static void permute(byte[] state)
     {
         int[] scratch = new int[120];
         permute(state, scratch);
     }
 
-    // Java Card friendly: caller must supply scratch int[120]. No allocations inside.
     public static void permute(byte[] state, int[] scratch)
     {
         if (state == null || state.length != 200) throw new IllegalArgumentException("state must be 200 bytes");

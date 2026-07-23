@@ -14,7 +14,7 @@ public class BaseApplet extends Applet {
 
     // Personalization commands
     private static final byte INS_LOAD_PRIVKEY = (byte) 0xB0; // Load ICC private key
-    private static final byte INS_LOAD_ISSUER_CERT = (byte) 0xB1; // Load Issuer certificate
+    private static final byte INS_LOAD_ISSUER_CERT = (byte) 0xB1; // Load issuer certificate
     private static final byte INS_LOAD_CERT = (byte) 0xB2; // Load ICC certificate
     private static final byte INS_LOCK_CARD = (byte) 0xB3; // Lock card
 

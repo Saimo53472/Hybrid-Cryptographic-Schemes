@@ -384,6 +384,8 @@ class Hawk {
         dst[dstOffset + 3] = (byte) ((x >>> 24) & 0xFF);
     }
 
+    // Decode 32-bit integer from little-endian bytes
+
     private static int dec32le(byte[] src, int off) {
         return (src[off] & 0xFF)
                 | ((src[off + 1] & 0xFF) << 8)
@@ -391,6 +393,7 @@ class Hawk {
                 | ((src[off + 3] & 0xFF) << 24);
     }
 
+    // Decode 16-bit integer from little-endian bytes
     private static int dec16le(byte[] src, int off) {
         return (src[off] & 0xFF)
                 | ((src[off + 1] & 0xFF) << 8);
@@ -403,7 +406,9 @@ class Hawk {
         return ((a ^ 0x80000000) < (b ^ 0x80000000)) ? 1 : 0;
     }
 
-    // Extract the lowest bit of each coefficient
+    /*
+     * Extract the lowest bit of each coefficient
+     */
     private static void extract_lowbit(int logn, byte[] dst, byte[] src) {
         int n = 1 << logn;
         for (int i = 0; i < n; i += 8) {
@@ -433,6 +438,9 @@ class Hawk {
     private static final int BYTES_64 = SIZE_64 / 8;
     private static final int BYTES_128 = SIZE_128 / 8;
 
+    /**
+    * Computes the 64-bit product of two 32-bit integers without using Java long arithmetic.
+    */
     private static void mul64(int a, int b, int[] out, int off) {
         int a0 = a & 0xFFFF;
         int a1 = a >>> 16;
@@ -461,6 +469,9 @@ class Hawk {
         out[off + 1] = lo;
     }
 
+    /**
+    * XOR of two 64-bit binary polynomials represented as byte arrays.
+    */
     public static void bpXor64(byte[] d, int dOffset,
             byte[] a, int aOffset,
             byte[] b, int bOffset) {
@@ -474,6 +485,9 @@ class Hawk {
         enc32le(d, dOffset + 4, hi);
     }
 
+    /**
+     * Multiplies two 32-bit binary polynomials over GF(2).
+     */
     public static void bpMul32(
             int x,
             int y,
@@ -584,6 +598,10 @@ class Hawk {
         out[off + 1] = z0lo | z1lo | z2lo | z3lo;
     }
 
+    /**
+     * Multiply-and-accumulate operation for 64-bit binary polynomials.
+     * Uses a Karatsuba-style decomposition to avoid 64-bit arithmetic.
+     */
     public static void bpMuladd64(
             byte[] d, int dOffset,
             byte[] a, int aOffset,
@@ -626,19 +644,27 @@ class Hawk {
         enc32le(d, dOffset + 12, d1hi);
     }
 
+    /** 
+     * XOR of two 512-bit binary polynomials.
+     */
     private static void bpXor512(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
         for (int u = 0; u < 64; u++) {
             d[dOffset + u] = (byte) (a[aOffset + u] ^ b[bOffset + u]);
         }
     }
 
+    /** 
+     * XOR of two 128-bit binary polynomials.
+     */
     public static void bpXor128(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
         // Process as two 64-bit chunks
         bpXor64(d, dOffset, a, aOffset, b, bOffset);
         bpXor64(d, dOffset + 8, a, aOffset + 8, b, bOffset + 8);
     }
 
-    // Specialized implementations for better performance
+    /**
+     * Multiply-and-accumulate operation for 128-bit binary polynomials.
+     */
     public static void bpMuladd128(byte[] d, int dOffset,
             byte[] a, int aOffset,
             byte[] b, int bOffset,
@@ -669,6 +695,9 @@ class Hawk {
         bpXor128(d, dOffset + BYTES_64, d, dOffset + BYTES_64, tmp, t1Offset);
     }
 
+    /** 
+     * XOR of two 256-bit binary polynomials.
+     */
     private static void bpXor256(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
         for (int u = 0; u < 32; u++) {
             d[dOffset + u] = (byte) (a[aOffset + u] ^ b[bOffset + u]);
@@ -676,8 +705,8 @@ class Hawk {
     }
 
     /**
-     * Binary polynomial multiplication and accumulation for 256-bit polynomials
-     * Uses Karatsuba algorithm with 128-bit halves
+     * Binary polynomial multiplication and accumulation for 256-bit polynomials.
+     * Uses Karatsuba algorithm with 128-bit halves.
      */
     public static void bpMuladd256(byte[] d, int dOffset,
             byte[] a, int aOffset,
@@ -713,7 +742,9 @@ class Hawk {
         bpXor256(d, dOffset + halfByteLen, d, dOffset + halfByteLen, tmp, t1Offset);
     }
 
-    // Generic XOR for any size
+    /**
+     * Generic XOR for any size.
+     */
     private static void bpXor(int bitSize, byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
         int byteSize = bitSize / 8;
         for (int u = 0; u < byteSize; u++) {
@@ -721,7 +752,9 @@ class Hawk {
         }
     }
 
-    // Generic binary polynomial multiplication using Karatsuba algorithm
+    /**
+     * Generic binary polynomial multiplication using Karatsuba algorithm
+     */
     private static void bpMulmod(int n, int hn, byte[] d, int dOffset,
             byte[] a, int aOffset, byte[] b, int bOffset,
             byte[] tmp, int tmpOffset) {
@@ -751,7 +784,9 @@ class Hawk {
         bpXor(hn, d, dOffset + halfByteLen, d, dOffset + halfByteLen, tmp, t1Offset);
     }
 
-    // Basis multiplication modulo 2
+    /**
+     * Basis multiplication modulo 2
+     */
     public static void basisM2Mul(int logn, byte[] t0, int t0Offset, byte[] t1, int t1Offset,
             byte[] h0, int h0Offset, byte[] h1, int h1Offset,
             byte[] f2, int f2Offset, byte[] g2, int g2Offset,
@@ -800,7 +835,6 @@ class Hawk {
     /**
      * Modular subtraction: (x - y) mod Q, result in [1..Q] where Q represents 0 mod
      * Q.
-     * Matches the C formula: {@code d = y-x; d += Q & (d>>16); return Q-d;}
      */
     public int mq18433Sub(int x, int y) {
         int d = y - x;
@@ -810,7 +844,6 @@ class Hawk {
 
     /**
      * Modular addition: (x + y) mod Q, result in [1..Q] where Q represents 0 mod Q.
-     * Matches the C formula: {@code d = Q-(x+y); d += Q & (d>>16); return Q-d;}
      */
     public int mq18433Add(int x, int y) {
         int d = Q - (x + y);
@@ -905,7 +938,7 @@ class Hawk {
         }
     }
 
-        /**
+     /**
      * Inverse NTT matching C mq18433_iNTT exactly.
      * 1/n normalization is embedded in the iGM twiddle factors.
      */
@@ -944,6 +977,9 @@ class Hawk {
         }
     }
 
+    /**
+     * Convert a coefficient from the modular range [0, Q-1] to the centered signed range approximately [-Q/2, Q/2].
+     */
     public static int mq18433Snorm(int x) {
         int mask = ((Q >> 1) - x) >> 31; // -1 if x > Q/2, 0 otherwise
         return x - (Q & mask);
@@ -966,7 +1002,6 @@ class Hawk {
      * 0 s is entirely zero
      */
     public static int polySymBreak(int logn, short[] s, int sOffset) {
-        // Matches C's poly_symbreak exactly:
         // returns 0 if polynomial is all-zero
         // returns 1 if first non-zero coefficient is positive
         // returns -1 (= 0xFFFFFFFF as uint32) if first non-zero coefficient is negative
@@ -993,7 +1028,6 @@ class Hawk {
 
     /**
      * Generate x with the right Gaussian, for the specified parity bits.
-     * This JavaCard version avoids all long arithmetic.
      *
      * Returned value is the squared norm of x.
      */
@@ -1138,6 +1172,12 @@ class Hawk {
         return sn;
     }
 
+    /**
+     * Encode the signature, with output length exactly sigLen bytes.
+     * Padding is applied if necessary. Returned value is 1 on success, 0
+     * on error; an error is reported if the signature does not fit in the
+     * provided buffer.
+     */
     public static boolean encodeSig(int logn, byte[] sig, short sigOffset, short sigLen, byte[] salt, short saltOffset,
             short saltLen, short[] s1, short s1Offset) {
         short n = (short) (1 << logn);
@@ -1238,9 +1278,7 @@ class Hawk {
             }
         }
 
-        /*
-         * Flush remaining bits
-         */
+        // Flush remaining bits
         if (accLen > 0) {
 
             if (remainingLen <= 0) {
@@ -1257,17 +1295,9 @@ class Hawk {
         return true;
     }
 
-    public void reset(byte[] state, int[] scratch) {
-        for (int i = 0; i < 200; i++) {
-            state[i] = 0;
-        }
-
-        for (int i = 0; i < 120; i++) {
-            scratch[i] = 0;
-        }
-    }
-
-    // Sign method
+    /**
+     * Sign method
+     */
     public int sign(int logn, int useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, int privLen, byte[] tmp, int tmpLen) {
         // Ensure proper alignment for 64-bit access
         if (tmpLen < 7) {
@@ -1315,10 +1345,6 @@ class Hawk {
         byte[] hm = new byte[64];
         shake256jc.update(hpub, 0, hpubLen);
         shake256jc.doFinal(hm, 0, hm.length);
-
-        int rejectNorm = 0;
-        int rejectBounds = 0;
-        int rejectEncode = 0;
 
         // Main signing loop
         for (int attempt = 0; attempt < 1000; attempt += 2) {
@@ -1382,7 +1408,6 @@ class Hawk {
 
             // Reject if squared norm is too large
             if (xsn > maxXnorm) {
-                rejectNorm++;
                 continue;
             }
 
@@ -1436,17 +1461,11 @@ class Hawk {
             }
 
             if (reject != 0) {
-                rejectBounds++;
                 continue;
             }
 
             // Encode signature
             short sigLen = HAWK_SIG_SIZE(logn);
-            if (!encodeSig(logn, tmp, (short) 0, sigLen, salt, (short) 0, saltLen, s1, (short) 0)) {
-                rejectEncode++;
-                continue;
-            }
-
             if (encodeSig(logn, tmp, (short) 0, sigLen, salt, (short) 0, saltLen, s1, (short) 0)) {
                 if (sig != null) {
                     Util.arrayCopy(tmp, (short) 0, sig, (short) 0, sigLen);
@@ -1454,44 +1473,15 @@ class Hawk {
                 return 1;
             }
         }
-        if (rejectNorm > 0)
-            ISOException.throwIt((short)0x6301);
-
-        if (rejectBounds > 0)
-            ISOException.throwIt((short)0x6302);
-
-        if (rejectEncode > 0)
-            ISOException.throwIt((short)0x6303);
-
-        // ISOException.throwIt((short)0x63FF);
 
         return 0;
     }
-
-    public int signMessage(
-            int logn,
-            byte[] sig,
-            byte[] message,
-            short messageLen,
-            byte[] priv,
-            int privLen,
-            byte[] tmp,
-            int tmpLen) {
-
+    
+    public int signMessage(int logn, byte[] sig, byte[] message, short messageLen, byte[] priv, int privLen, byte[] tmp, int tmpLen) {
         SHAKE256JC sc = new SHAKE256JC();
-
-        // Equivalent of sc.update(message, 0, mlen);
         sc.update(message, 0, messageLen);
 
-        // Equivalent of hawkSignFinish(...)
-        return sign(
-                logn,
-                1,
-                sig,
-                sc,
-                priv,
-                privLen,
-                tmp,
-                tmpLen);
+        // Equivalent of hawkSignFinish
+        return sign(logn, 1, sig, sc, priv, privLen, tmp, tmpLen);
     }
 }
