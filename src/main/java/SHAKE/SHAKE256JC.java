@@ -5,12 +5,12 @@ package SHAKE;
  */
 public final class SHAKE256JC
 {
-    public static final int RATE_BYTES = 136;
-    public static final int STATE_SIZE = 200;
+    public static final short RATE_BYTES = 136;
+    public static final short STATE_SIZE = 200;
 
     private final byte[] state;   // 200 bytes
     private final int[] scratch;  // 120 ints for permutation
-    private int ratePos;
+    private short ratePos;
     private boolean squeezing;
 
     public SHAKE256JC()
@@ -46,7 +46,7 @@ public final class SHAKE256JC
      * Absorb input data into the SHAKE sponge.
      * Data is XORed into the rate portion of the state and a Keccak permutation is applied whenever the rate is full.
      */
-    public void absorbXor(byte[] in, int inOff, int len)
+    public void absorbXor(byte[] in, short inOff, short len)
     {
         if (squeezing) throw new IllegalStateException("already finalised for squeezing");
         int i = inOff;
@@ -85,7 +85,7 @@ public final class SHAKE256JC
      * Extract output bytes from the sponge.
      * Additional Keccak permutations are applied as needed when more output is requested than fits in one rate block.
      */
-    public void squeezeBytes(byte[] out, int outOff, int outLen)
+    public void squeezeBytes(byte[] out, short outOff, short outLen)
     {
         if (!squeezing) finalizeSqueeze();
         int o = outOff;
@@ -109,7 +109,7 @@ public final class SHAKE256JC
     /**
      * Convenience wrapper for absorbing input data.
      */
-    public void update(byte[] in, int off, int len)
+    public void update(byte[] in, short off, short len)
     {
         absorbXor(in, off, len);
     }
@@ -118,7 +118,7 @@ public final class SHAKE256JC
      * Generate the requested number of output bytes without
      * resetting the sponge state.
      */
-    public int doOutput(byte[] out, int off, int len)
+    public int doOutput(byte[] out, short off, short len)
     {
         squeezeBytes(out, off, len);
         return len;
@@ -127,7 +127,7 @@ public final class SHAKE256JC
     /**
      * Generate output bytes and then reset the sponge so it can be reused for a new SHAKE computation.
      */
-    public int doFinal(byte[] out, int off, int len)
+    public int doFinal(byte[] out, short off, short len)
     {
         squeezeBytes(out, off, len);
         reset();

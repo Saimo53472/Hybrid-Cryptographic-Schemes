@@ -438,19 +438,17 @@ class Hawk {
     /*
      * Returns 1 iff a < b when interpreted as unsigned ints.
      */
-    private static short uLessThan(short aHi, short aLo, short bHi, short bLo) {
-        int ah = aHi & 0xFFFF;
-        int al = aLo & 0xFFFF;
-        int bh = bHi & 0xFFFF;
-        int bl = bLo & 0xFFFF;
+    private static short uLessThan(
+        short aHi, short aLo,
+        short bHi, short bLo)
+    {
+        if (aHi != bHi) {
+            return (short)(((aHi ^ (short)0x8000)
+                    < (bHi ^ (short)0x8000)) ? 1 : 0);
+        }
 
-        if (ah < bh) {
-            return 1;
-        }
-        if (ah > bh) {
-            return 0;
-        }
-        return (short)(al < bl ? 1 : 0);
+        return (short)(((aLo ^ (short)0x8000)
+                < (bLo ^ (short)0x8000)) ? 1 : 0);
     }
 
     /*
@@ -458,12 +456,14 @@ class Hawk {
      */
     private static void extract_lowbit(short logn, byte[] dst, byte[] src) {
         short n = (short) (1 << logn);
-        for (int i = 0; i < n; i += 8) {
+        for (short i = 0; i < n; i += 8) {
             byte val = 0;
-            for (int j = 0; j < 8; j++) {
-                val |= ((src[i + j] & 1) << j);
+            for (short j = 0; j < 8; j++) {
+                if ((src[(short)(i + j)] & 1) != 0) {
+                     val |= (byte)(1 << j);
+                }
             }
-            dst[i >> 3] = val;
+            dst[(short) (i >> 3)] = val;
         }
     }
 
@@ -1386,11 +1386,11 @@ class Hawk {
             SHAKE256JC sc = new SHAKE256JC(shake);
 
             seed[40] = (byte)j;
-            sc.update(seed, 0, 41);
+            sc.update(seed, (short) 0, (short) 41);
             byte[] buffer = new byte[40];
 
             for (int u = 0; u < (n << 1); u += 16) {
-                sc.squeezeBytes(buffer, 0, 40);
+                sc.squeezeBytes(buffer, (short) 0, (short) 40);
                 for (int k = 0; k < 4; k++) {
                     int v = u + (j << 2) + k;
                     short[] d32 = new short[4];
@@ -1648,8 +1648,8 @@ class Hawk {
 
         // Compute hm = SHAKE256(message || hpub)
         byte[] hm = new byte[64];
-        shake256jc.update(hpub, 0, hpubLen);
-        shake256jc.doFinal(hm, 0, hm.length);
+        shake256jc.update(hpub, (short) 0, (short) hpubLen);
+        shake256jc.doFinal(hm, (short) 0, (short) hm.length);
 
         // Main signing loop
         for (int attempt = 0; attempt < 1000; attempt += 2) {
@@ -1674,20 +1674,20 @@ class Hawk {
                     (short)attempt);
 
                 SHAKE256JC saltShake = new SHAKE256JC();
-                saltShake.update(hm, 0, hm.length);
-                saltShake.update(priv, 0, seedLen); // problem?
-                saltShake.update(tbuf, 0, tbuf.length);
-                saltShake.update(salt, 0, saltLen);
-                saltShake.doFinal(salt, 0, saltLen);
+                saltShake.update(hm, (short) 0, (short) hm.length);
+                saltShake.update(priv, (short) 0, (short) seedLen); // problem?
+                saltShake.update(tbuf, (short) 0, (short) tbuf.length);
+                saltShake.update(salt, (short) 0, (short) saltLen);
+                saltShake.doFinal(salt, (short) 0, saltLen);
             }
 
             // Compute h = SHAKE256(hm || salt)
             SHAKE256JC hShake = new SHAKE256JC();
-            hShake.update(hm, 0, hm.length);
-            hShake.update(salt, 0, saltLen);
+            hShake.update(hm, (short) 0, (short) hm.length);
+            hShake.update(salt, (short) 0, (short) saltLen);
 
             // Squeeze h0 and h1 (total n >> 2 bytes)
-            hShake.doFinal(ww, h0Offset, n >> 2);
+            hShake.doFinal(ww, (short) h0Offset, (short) (n >> 2));
 
             // Extract low bits and compute t = B*h (mod 2)
             byte[] f2 = new byte[n >> 3];
@@ -1718,9 +1718,9 @@ class Hawk {
 
             SHAKE256JC gaussShake = new SHAKE256JC();
 
-            gaussShake.update(hm, 0, hm.length);
-            gaussShake.update(priv, 0, seedLen); // ?
-            gaussShake.update(tbuf, 0, tbuf.length);
+            gaussShake.update(hm, (short) 0, (short) hm.length);
+            gaussShake.update(priv, (short) 0, (short) seedLen); 
+            gaussShake.update(tbuf, (short) 0, (short) tbuf.length);
 
             xsn = sigGauss(logn, gaussShake, x0, (short) 0, ww, (short) t0Offset);
 
@@ -1802,7 +1802,7 @@ class Hawk {
 
     public short signMessage(short logn, byte[] sig, byte[] message, short messageLen, byte[] priv, short privLen, byte[] tmp, short tmpLen) {
         SHAKE256JC sc = new SHAKE256JC();
-        sc.update(message, 0, messageLen);
+        sc.update(message, (short) 0, (short) messageLen);
 
         // Equivalent of hawkSignFinish
         return sign(logn, (short) 1, sig, sc, priv, privLen, tmp, tmpLen);
