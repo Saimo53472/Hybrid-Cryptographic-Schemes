@@ -14,6 +14,7 @@ org\bouncycastle\util\Longs.class
 org\bouncycastle\pqc\crypto\hawk\HawkKeyPairGenerator.class
 HawkTest.class
 org\bouncycastle\math\raw\Nat.class
+Chameleon\RealCardTestChameleon.class
 org\bouncycastle\pqc\crypto\hawk\HawkSigner.class
 org\bouncycastle\pqc\crypto\hawk\HawkEngine.class
 org\bouncycastle\pqc\crypto\hawk\HawkPrivateKeyParameters.class

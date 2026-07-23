@@ -300,14 +300,13 @@ public class ChameleonApplet extends Applet {
         // Temporary workspace
         byte[] tmp = new byte[6*512 + 1024]; 
 
-        int ret = signer.signMessage(9, pqSignature, dataToSign, dataToSignLen, pqPrivateKey, pqKeyLen, tmp,
-                tmp.length);
+        int ret = signer.signMessage((short) 9, pqSignature, dataToSign, dataToSignLen, pqPrivateKey, (short) pqKeyLen, tmp, (short) tmp.length);
 
         if (ret == 0) {
             ISOException.throwIt(ISO7816.SW_UNKNOWN);
         }
 
-        pqSignatureLen = Hawk.HAWK_SIG_SIZE(9);
+        pqSignatureLen = Hawk.HAWK_SIG_SIZE((short) 9);
     }
 
     // Return certificate data in chunks.

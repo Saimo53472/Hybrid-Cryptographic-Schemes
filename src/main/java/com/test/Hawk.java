@@ -6,12 +6,12 @@ import javacard.security.*;
 
 class Hawk {
     // Parameters
-    private int logn;
-    private int n;
-    private static final int Q = 18433;
-    private static final int R2 = 806;
+    private short logn;
+    private short n;
+    private static final short Q = 18433;
+    private static final short R2 = 806;
     private short saltLen;
-    private int maxXnorm;
+    private short maxXnorm;
     private RandomData random;
     private static final short[] GM = new short[] {
             4564, 17110, 12162, 16208, 10701, 9705, 3451, 5078,
@@ -284,54 +284,91 @@ class Hawk {
             (short) 0x000A, (short) 0x0001
     };
 
-    public static final int SG_MAX_HI_HAWK_512 = SIG_GAUSS_HI_HAWK_512.length;
+    public static final short SG_MAX_HI_HAWK_512 = 10;
 
-    public static final int[] SIG_GAUSS_LO_HI_HAWK_512 = {
-            0x0C27920A, 0x3C689D92,
-            0x1C4FF17C, 0x7B908C81,
-            0x5E63263B, 0x4EBEFD8F,
-            0x56AEDFB0, 0x4628BC6B,
-            0x061E21D5, 0x7F769211,
-            0x2BA568D9, 0x0668F461,
-            0x00CF0F86, 0x001670DB,
-            0x000216A0, 0x00002AB6,
-            0x000002ED, 0x0000002C,
-            0x00000002, 0x00000000,
-            0x00000000, 0x00000000,
-            0x00000000, 0x00000000,
-            0x00000000, 0x00000000
+    public static final short[] SIG_GAUSS_LO_HI_HI_HAWK_512 = {
+        (short)0x0C27, (short)0x3C68,
+        (short)0x1C4F, (short)0x7B90,
+        (short)0x5E63, (short)0x4EBE,
+        (short)0x56AE, (short)0x4628,
+        (short)0x061E, (short)0x7F76,
+        (short)0x2BA5, (short)0x0668,
+        (short)0x00CF, (short)0x0016,
+        (short)0x0002, (short)0x0000,
+        (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000
     };
 
-    public static final int[] SIG_GAUSS_LO_LO_HAWK_512 = {
-            0x04F8F267, 0x13449DC9,
-            0x204AA058, 0xFCE3524F,
-            0xE0098FFD, 0xF4F07378,
-            0x876A3BD8, 0x23887196,
-            0x88CC61CC, 0xF07B326F,
-            0x2EEC18E7, 0x693DFF8F,
-            0x87D3B009, 0x65964485,
-            0xC344EB45, 0xE11C2552,
-            0xF0B98A84, 0x253C7E81,
-            0x3AF3B2E7, 0x18C14ABF,
-            0x00EBCC6A, 0x0007876E,
-            0x000034CF, 0x0000013D,
-            0x00000006, 0x00000000
+    public static final short[] SIG_GAUSS_LO_HI_LO_HAWK_512 = {
+        (short)0x920A, (short)0x9D92,
+        (short)0xF17C, (short)0x8C81,
+        (short)0x263B, (short)0xFD8F,
+        (short)0xDFB0, (short)0xBC6B,
+        (short)0x21D5, (short)0x9211,
+        (short)0x68D9, (short)0xF461,
+        (short)0x0F86, (short)0x70DB,
+        (short)0x16A0, (short)0x2AB6,
+        (short)0x02ED, (short)0x002C,
+        (short)0x0002, (short)0x0000,
+        (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000
     };
 
-    public static final int SG_MAX_LO_HAWK_512 = SIG_GAUSS_LO_LO_HAWK_512.length;
+    public static final short[] SIG_GAUSS_LO_LO_HI_HAWK_512 = {
+        (short)0x04F8, (short)0x1344,
+        (short)0x204A, (short)0xFCE3,
+        (short)0xE009, (short)0xF4F0,
+        (short)0x876A, (short)0x2388,
+        (short)0x88CC, (short)0xF07B,
+        (short)0x2EEC, (short)0x693D,
+        (short)0x87D3, (short)0x6596,
+        (short)0xC344, (short)0xE11C,
+        (short)0xF0B9, (short)0x253C,
+        (short)0x3AF3, (short)0x18C1,
+        (short)0x00EB, (short)0x0007,
+        (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000
+    };
+
+    public static final short[] SIG_GAUSS_LO_LO_LO_HAWK_512 = {
+        (short)0xF267, (short)0x9DC9,
+        (short)0xA058, (short)0x524F,
+        (short)0x8FFD, (short)0x7378,
+        (short)0x3BD8, (short)0x7196,
+        (short)0x61CC, (short)0x326F,
+        (short)0x18E7, (short)0xFF8F,
+        (short)0xB009, (short)0x4485,
+        (short)0xEB45, (short)0x2552,
+        (short)0x8A84, (short)0x7E81,
+        (short)0xB2E7, (short)0x4ABF,
+        (short)0xCC6A, (short)0x876E,
+        (short)0x34CF, (short)0x013D,
+        (short)0x0006, (short)0x0000
+    };
+
+    public static final short SG_MAX_LO_HAWK_512 = 26;
 
     // Constructor
     public Hawk() {
         logn = 9;
-        n = 1 << logn; // 2^logn = 512
+        n = (short) (1 << logn); // 2^logn = 512
         saltLen = 24;
         maxXnorm = 8317;
         random = RandomData.getInstance(RandomData.ALG_SECURE_RANDOM);
     }
 
-    // Methods
-    public static short HAWK_SIG_SIZE(int logn) {
+    // Helper methods
+    public static short HAWK_SIG_SIZE(short logn) {
         return (short) (249 + 306 * (2 >> (10 - logn)) + 360 * (1 >> (10 - logn)));
+    }
+
+    private static int getInt32(short[] hi, short[] lo, short i) {
+        return ((hi[i] & 0xFFFF) << 16)
+            |  (lo[i] & 0xFFFF);
     }
 
     /**
@@ -410,7 +447,7 @@ class Hawk {
      * Extract the lowest bit of each coefficient
      */
     private static void extract_lowbit(int logn, byte[] dst, byte[] src) {
-        int n = 1 << logn;
+        short n = (short) (1 << logn);
         for (int i = 0; i < n; i += 8) {
             byte val = 0;
             for (int j = 0; j < 8; j++) {
@@ -429,19 +466,19 @@ class Hawk {
     }
 
     // Constants for sizes
-    public static final int SIZE_64 = 64;
-    public static final int SIZE_128 = 128;
-    public static final int SIZE_256 = 256;
-    public static final int SIZE_512 = 512;
+    public static final short SIZE_64 = 64;
+    public static final short SIZE_128 = 128;
+    public static final short SIZE_256 = 256;
+    public static final short SIZE_512 = 512;
 
     // Precomputed byte lengths
-    private static final int BYTES_64 = SIZE_64 / 8;
-    private static final int BYTES_128 = SIZE_128 / 8;
+    private static final short BYTES_64 = SIZE_64 / 8;
+    private static final short BYTES_128 = SIZE_128 / 8;
 
     /**
     * Computes the 64-bit product of two 32-bit integers without using Java long arithmetic.
     */
-    private static void mul64(int a, int b, int[] out, int off) {
+    private static void mul64(int a, int b, short[] out, short off) {
         int a0 = a & 0xFFFF;
         int a1 = a >>> 16;
 
@@ -465,8 +502,10 @@ class Hawk {
                 + (p10 >>> 16)
                 + (middle >>> 16);
 
-        out[off] = hi;
-        out[off + 1] = lo;
+        out[off] = (short)hi;
+        out[off + 1] = (short)(hi >>> 16);
+        out[off + 2] = (short)lo;
+        out[off + 3] = (short)(lo >>> 16);
     }
 
     /**
@@ -488,11 +527,7 @@ class Hawk {
     /**
      * Multiplies two 32-bit binary polynomials over GF(2).
      */
-    public static void bpMul32(
-            int x,
-            int y,
-            int[] out,
-            int off) {
+    public static void bpMul32(int x, int y, short[] out, short off) {
         int x0 = x & 0x11111111;
         int x1 = x & 0x22222222;
         int x2 = x & 0x44444444;
@@ -503,83 +538,115 @@ class Hawk {
         int y2 = y & 0x44444444;
         int y3 = y & 0x88888888;
 
-        int[] t = new int[2];
-
         int z0hi = 0;
         int z0lo = 0;
 
-        mul64(x0, y0, t, 0);
-        z0hi ^= t[0];
-        z0lo ^= t[1];
+        short[] mul = new short[4];
+        int hi, lo;
+        mul64(x0, y0, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z0hi ^= hi;
+        z0lo ^= lo;
 
-        mul64(x1, y3, t, 0);
-        z0hi ^= t[0];
-        z0lo ^= t[1];
+        mul64(x1, y3, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z0hi ^= hi;
+        z0lo ^= lo;
 
-        mul64(x2, y2, t, 0);
-        z0hi ^= t[0];
-        z0lo ^= t[1];
+        mul64(x2, y2, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z0hi ^= hi;
+        z0lo ^= lo;
 
-        mul64(x3, y1, t, 0);
-        z0hi ^= t[0];
-        z0lo ^= t[1];
+        mul64(x3, y1, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z0hi ^= hi;
+        z0lo ^= lo;
 
         int z1hi = 0;
         int z1lo = 0;
 
-        mul64(x0, y1, t, 0);
-        z1hi ^= t[0];
-        z1lo ^= t[1];
+        mul64(x0, y1, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z1hi ^= hi;
+        z1lo ^= lo;
 
-        mul64(x1, y0, t, 0);
-        z1hi ^= t[0];
-        z1lo ^= t[1];
+        mul64(x1, y0, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z1hi ^= hi;
+        z1lo ^= lo;
 
-        mul64(x2, y3, t, 0);
-        z1hi ^= t[0];
-        z1lo ^= t[1];
+        mul64(x2, y3, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z1hi ^= hi;
+        z1lo ^= lo;
 
-        mul64(x3, y2, t, 0);
-        z1hi ^= t[0];
-        z1lo ^= t[1];
+        mul64(x3, y2, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z1hi ^= hi;
+        z1lo ^= lo;
 
         int z2hi = 0;
         int z2lo = 0;
 
-        mul64(x0, y2, t, 0);
-        z2hi ^= t[0];
-        z2lo ^= t[1];
+        mul64(x0, y2, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z2hi ^= hi;
+        z2lo ^= lo;
 
-        mul64(x1, y1, t, 0);
-        z2hi ^= t[0];
-        z2lo ^= t[1];
+        mul64(x1, y1, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z2hi ^= hi;
+        z2lo ^= lo;
 
-        mul64(x2, y0, t, 0);
-        z2hi ^= t[0];
-        z2lo ^= t[1];
+        mul64(x2, y0, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z2hi ^= hi;
+        z2lo ^= lo;
 
-        mul64(x3, y3, t, 0);
-        z2hi ^= t[0];
-        z2lo ^= t[1];
+        mul64(x3, y3, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z2hi ^= hi;
+        z2lo ^= lo;
 
         int z3hi = 0;
         int z3lo = 0;
 
-        mul64(x0, y3, t, 0);
-        z3hi ^= t[0];
-        z3lo ^= t[1];
+        mul64(x0, y3, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z3hi ^= hi;
+        z3lo ^= lo;
 
-        mul64(x1, y2, t, 0);
-        z3hi ^= t[0];
-        z3lo ^= t[1];
+        mul64(x1, y2, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z3hi ^= hi;
+        z3lo ^= lo;
 
-        mul64(x2, y1, t, 0);
-        z3hi ^= t[0];
-        z3lo ^= t[1];
+        mul64(x2, y1, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z3hi ^= hi;
+        z3lo ^= lo;
 
-        mul64(x3, y0, t, 0);
-        z3hi ^= t[0];
-        z3lo ^= t[1];
+        mul64(x3, y0, mul, (short) 0);
+        hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
+        lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
+        z3hi ^= hi;
+        z3lo ^= lo;
 
         z0hi &= 0x11111111;
         z0lo &= 0x11111111;
@@ -593,53 +660,63 @@ class Hawk {
         z3hi &= 0x88888888;
         z3lo &= 0x88888888;
 
-        out[off] = z0hi | z1hi | z2hi | z3hi;
+        int hii = z0hi | z1hi | z2hi | z3hi;
+        int loo = z0lo | z1lo | z2lo | z3lo;
 
-        out[off + 1] = z0lo | z1lo | z2lo | z3lo;
+        out[off] = (short)hii;
+        out[off + 1] = (short)(hii >>> 16);
+        out[off + 2] = (short)loo;
+        out[off + 3] = (short)(loo >>> 16);
     }
 
     /**
      * Multiply-and-accumulate operation for 64-bit binary polynomials.
      * Uses a Karatsuba-style decomposition to avoid 64-bit arithmetic.
      */
-    public static void bpMuladd64(
-            byte[] d, int dOffset,
-            byte[] a, int aOffset,
-            byte[] b, int bOffset,
-            byte[] tmp, int tmpOffset) {
+    public static void bpMuladd64(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset, byte[] tmp, int tmpOffset) {
         int a0 = dec32le(a, aOffset);
         int a1 = dec32le(a, aOffset + 4);
 
         int b0 = dec32le(b, bOffset);
         int b1 = dec32le(b, bOffset + 4);
 
-        int[] c = new int[6];
+        int c0;
+        int c1;
+        int c2;
+        int c3;
+        int c4;
+        int c5;
 
-        bpMul32(a0, b0, c, 0);
-        bpMul32(a1, b1, c, 2);
-        bpMul32(a0 ^ a1, b0 ^ b1, c, 4);
+        short[] mul32 = new short[4];
+        bpMul32(a0, b0, mul32, (short)0);
+        c0 = ((mul32[1] & 0xFFFF) << 16) | (mul32[0] & 0xFFFF);
+        c1 = ((mul32[3] & 0xFFFF) << 16) | (mul32[2] & 0xFFFF);
 
-        c[4] ^= c[0];
-        c[5] ^= c[1];
+        bpMul32(a1, b1, mul32, (short) 0);
+        c2 = ((mul32[1] & 0xFFFF) << 16) | (mul32[0] & 0xFFFF);
+        c3 = ((mul32[3] & 0xFFFF) << 16) | (mul32[2] & 0xFFFF);
 
-        c[4] ^= c[2];
-        c[5] ^= c[3];
+        bpMul32(a0 ^ a1, b0 ^ b1, mul32, (short) 0);
+        c4 = ((mul32[1] & 0xFFFF) << 16) | (mul32[0] & 0xFFFF);
+        c5 = ((mul32[3] & 0xFFFF) << 16) | (mul32[2] & 0xFFFF);
+
+        c4 ^= c0;
+        c5 ^= c1;
+        c4 ^= c2;
+        c5 ^= c3;
 
         int d0lo = dec32le(d, dOffset);
         int d0hi = dec32le(d, dOffset + 4);
-
         int d1lo = dec32le(d, dOffset + 8);
         int d1hi = dec32le(d, dOffset + 12);
 
-        d0hi ^= c[0] ^ c[5];
-        d0lo ^= c[1];
-
-        d1hi ^= c[2];
-        d1lo ^= c[3] ^ c[4];
+        d0hi ^= c0 ^ c5;
+        d0lo ^= c1;
+        d1hi ^= c2;
+        d1lo ^= c3 ^ c4;
 
         enc32le(d, dOffset, d0lo);
         enc32le(d, dOffset + 4, d0hi);
-
         enc32le(d, dOffset + 8, d1lo);
         enc32le(d, dOffset + 12, d1hi);
     }
@@ -1031,33 +1108,17 @@ class Hawk {
      *
      * Returned value is the squared norm of x.
      */
-    public int sigGauss(
-            int logn,
-            SHAKE256JC shake,
-            byte[] x,
-            int xOffset,
-            byte[] t,
-            int tOffset) {
-        int[] tabLoHi;
-        int[] tabLoLo;
-        short[] tabHi;
+    public int sigGauss(int logn, SHAKE256JC shake, byte[] x, int xOffset, byte[] t, int tOffset) {
+        short[] tabLoHiHi, tabLoHiLo, tabLoLoHi, tabLoLoLo, tabHi;
+        short hiLen, loLen;
 
-        int hiLen;
-        int loLen;
-
-        switch (logn) {
-            case 9:
-                tabHi = SIG_GAUSS_HI_HAWK_512;
-                tabLoHi = SIG_GAUSS_LO_HI_HAWK_512;
-                tabLoLo = SIG_GAUSS_LO_LO_HAWK_512;
-                hiLen = SG_MAX_HI_HAWK_512;
-                loLen = SG_MAX_LO_HAWK_512;
-                break;
-
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported logn: " + logn);
-        }
+        tabHi = SIG_GAUSS_HI_HAWK_512;
+        tabLoHiHi = SIG_GAUSS_LO_HI_HI_HAWK_512;
+        tabLoHiLo = SIG_GAUSS_LO_HI_LO_HAWK_512;
+        tabLoLoHi = SIG_GAUSS_LO_LO_HI_HAWK_512;
+        tabLoLoLo = SIG_GAUSS_LO_LO_LO_HAWK_512;
+        hiLen = SG_MAX_HI_HAWK_512;
+        loLen = SG_MAX_LO_HAWK_512;
 
         int n = 1 << logn;
         byte[] seed = new byte[41];
@@ -1076,59 +1137,41 @@ class Hawk {
 
             for (int u = 0; u < (n << 1); u += 16) {
                 sc.squeezeBytes(buffer, 0, 40);
-
                 for (int k = 0; k < 4; k++) {
                     int v = u + (j << 2) + k;
-
                     int loLo = dec32le(tmp, k * 8);
-
                     int loHi = dec32le(tmp, (k * 8) + 4);
-
                     int hi = dec16le(tmp, 32 + (k << 1));
 
                     /*
                      * Extract sign bit.
                      */
                     int neg = -(loHi >>> 31);
-
                     loHi &= 0x7FFFFFFF;
                     hi &= 0x7FFF;
-
                     int pbit = (t[tOffset + (v >>> 3)] >>> (v & 7)) & 1;
-
                     int pOddw = -pbit;
-
                     int r = 0;
 
                     /*
                      * Main comparison loop.
                      */
-                    for (int i = 0; i < hiLen; i += 2) {
+                    for (short i = 0; i < hiLen; i += 2) {
                         int mask = pOddw;
+                        int thi = (tabHi[i] & 0xFFFF) ^ (mask & ((tabHi[i] & 0xFFFF) ^ (tabHi[i + 1] & 0xFFFF)));
 
-                        int thi = (tabHi[i] & 0xFFFF)
-                                ^ (mask
-                                        & ((tabHi[i] & 0xFFFF)
-                                                ^ (tabHi[i + 1] & 0xFFFF)));
+                        int v0 = getInt32(tabLoHiHi, tabLoHiLo, i);
+                        int v1 = getInt32(tabLoHiHi, tabLoHiLo, (short) (i + 1));
+                        int tloHi = v0 ^ (mask & (v0 ^ v1));
 
-                        int tloHi = tabLoHi[i]
-                                ^ (mask
-                                        & (tabLoHi[i]
-                                                ^ tabLoHi[i + 1]));
-
-                        int tloLo = tabLoLo[i]
-                                ^ (mask
-                                        & (tabLoLo[i]
-                                                ^ tabLoLo[i + 1]));
+                        int w0 = getInt32(tabLoLoHi, tabLoLoLo, i);
+                        int w1 = getInt32(tabLoLoHi, tabLoLoLo, (short) (i + 1));
+                        int tloLo = w0 ^ (mask & (w0 ^ w1));
 
                         int borrow = uLessThan(loLo, tloLo);
-
                         int diffHi = loHi - tloHi - borrow;
-
                         int cc = diffHi >>> 31;
-
                         int diffHi16 = hi - thi - cc;
-
                         r += diffHi16 >>> 31;
                     }
 
@@ -1136,39 +1179,28 @@ class Hawk {
                      * Remaining entries.
                      */
                     int hinz = (hi - 1) >>> 31;
-
-                    for (int i = hiLen; i < loLen; i += 2) {
+                    for (short i = hiLen; i < loLen; i += 2) {
                         int mask = pOddw;
+                        int v0 = getInt32(tabLoHiHi, tabLoHiLo, i);
+                        int v1 = getInt32(tabLoHiHi, tabLoHiLo, (short) (i + 1));
+                        int tloHi = v0 ^ (mask & (v0 ^ v1));
 
-                        int tloHi = tabLoHi[i]
-                                ^ (mask
-                                        & (tabLoHi[i]
-                                                ^ tabLoHi[i + 1]));
-
-                        int tloLo = tabLoLo[i]
-                                ^ (mask
-                                        & (tabLoLo[i]
-                                                ^ tabLoLo[i + 1]));
-
+                        int w0 = getInt32(tabLoLoHi, tabLoLoLo, i);
+                        int w1 = getInt32(tabLoLoHi, tabLoLoLo, (short) (i + 1));
+                        int tloLo = w0 ^ (mask & (w0 ^ w1));
                         int borrow = uLessThan(loLo, tloLo);
-
                         int diffHi = loHi - tloHi - borrow;
-
                         int cc = diffHi >>> 31;
-
                         r += hinz & cc;
                     }
 
                     r = (r << 1) - pOddw;
                     r = (r ^ neg) - neg;
-
                     x[xOffset + v] = (byte) r;
-
                     sn += r * r;
                 }
             }
         }
-
         return sn;
     }
 
@@ -1178,8 +1210,7 @@ class Hawk {
      * on error; an error is reported if the signature does not fit in the
      * provided buffer.
      */
-    public static boolean encodeSig(int logn, byte[] sig, short sigOffset, short sigLen, byte[] salt, short saltOffset,
-            short saltLen, short[] s1, short s1Offset) {
+    public static boolean encodeSig(int logn, byte[] sig, short sigOffset, short sigLen, byte[] salt, short saltOffset, short saltLen, short[] s1, short s1Offset) {
         short n = (short) (1 << logn);
         byte low = (byte) ((logn == 10) ? 6 : 5);
 
@@ -1298,7 +1329,7 @@ class Hawk {
     /**
      * Sign method
      */
-    public int sign(int logn, int useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, int privLen, byte[] tmp, int tmpLen) {
+    public short sign(short logn, int useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, short privLen, byte[] tmp, short tmpLen) {
         // Ensure proper alignment for 64-bit access
         if (tmpLen < 7) {
             return 0;
@@ -1476,8 +1507,8 @@ class Hawk {
 
         return 0;
     }
-    
-    public int signMessage(int logn, byte[] sig, byte[] message, short messageLen, byte[] priv, int privLen, byte[] tmp, int tmpLen) {
+
+    public short signMessage(short logn, byte[] sig, byte[] message, short messageLen, byte[] priv, short privLen, byte[] tmp, short tmpLen) {
         SHAKE256JC sc = new SHAKE256JC();
         sc.update(message, 0, messageLen);
 

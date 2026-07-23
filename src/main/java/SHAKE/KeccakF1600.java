@@ -5,7 +5,7 @@ package SHAKE;
  */
 public final class KeccakF1600
 {
-    private static final int[] RHO_OFFSETS = new int[] {
+    private static final byte[] RHO_OFFSETS = new byte[] {
          0,  1, 62, 28, 27,
         36, 44,  6, 55, 20,
          3, 10, 43, 25, 39,
