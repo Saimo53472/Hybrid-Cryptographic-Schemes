@@ -366,9 +366,9 @@ class Hawk {
         return (short) (249 + 306 * (2 >> (10 - logn)) + 360 * (1 >> (10 - logn)));
     }
 
-    private static int getInt32(short[] hi, short[] lo, short i) {
-        return ((hi[i] & 0xFFFF) << 16)
-            |  (lo[i] & 0xFFFF);
+    private static void getInt32(short[] hiArr, short[] loArr, short i, short[] out, short off) {
+        out[off] = hiArr[i];
+        out[(short)(off + 1)] = loArr[i];
     }
 
     /**
@@ -414,39 +414,49 @@ class Hawk {
     }
 
     // Encode 32-bit integer as little-endian bytes
-    public static void enc32le(byte[] dst, int dstOffset, int x) {
-        dst[dstOffset] = (byte) (x & 0xFF);
-        dst[dstOffset + 1] = (byte) ((x >>> 8) & 0xFF);
-        dst[dstOffset + 2] = (byte) ((x >>> 16) & 0xFF);
-        dst[dstOffset + 3] = (byte) ((x >>> 24) & 0xFF);
+    public static void enc32le(byte[] dst, short dstOffset, short hi, short lo) {
+        dst[dstOffset] = (byte)lo;
+        dst[(short)(dstOffset + 1)] = (byte)(lo >>> 8);
+
+        dst[(short)(dstOffset + 2)] = (byte)hi;
+        dst[(short)(dstOffset + 3)] = (byte)(hi >>> 8);
     }
 
     // Decode 32-bit integer from little-endian bytes
-
-    private static int dec32le(byte[] src, int off) {
-        return (src[off] & 0xFF)
-                | ((src[off + 1] & 0xFF) << 8)
-                | ((src[off + 2] & 0xFF) << 16)
-                | ((src[off + 3] & 0xFF) << 24);
+    private static void dec32le(byte[] src, short off, short[] out, short outOff) {
+        short lo = (short)((src[off] & 0xFF) | ((src[(short)(off + 1)] & 0xFF) << 8));
+        short hi = (short)((src[(short)(off + 2)] & 0xFF) | ((src[(short)(off + 3)] & 0xFF) << 8));
+        out[outOff] = hi;
+        out[(short)(outOff + 1)] = lo;
     }
 
     // Decode 16-bit integer from little-endian bytes
-    private static int dec16le(byte[] src, int off) {
-        return (src[off] & 0xFF)
-                | ((src[off + 1] & 0xFF) << 8);
+    private static short dec16le(byte[] src, short off) {
+        return (short)((src[off] & 0xFF) | ((src[(short)(off + 1)] & 0xFF) << 8));
     }
 
     /*
      * Returns 1 iff a < b when interpreted as unsigned ints.
      */
-    private static int uLessThan(int a, int b) {
-        return ((a ^ 0x80000000) < (b ^ 0x80000000)) ? 1 : 0;
+    private static short uLessThan(short aHi, short aLo, short bHi, short bLo) {
+        int ah = aHi & 0xFFFF;
+        int al = aLo & 0xFFFF;
+        int bh = bHi & 0xFFFF;
+        int bl = bLo & 0xFFFF;
+
+        if (ah < bh) {
+            return 1;
+        }
+        if (ah > bh) {
+            return 0;
+        }
+        return (short)(al < bl ? 1 : 0);
     }
 
     /*
      * Extract the lowest bit of each coefficient
      */
-    private static void extract_lowbit(int logn, byte[] dst, byte[] src) {
+    private static void extract_lowbit(short logn, byte[] dst, byte[] src) {
         short n = (short) (1 << logn);
         for (int i = 0; i < n; i += 8) {
             byte val = 0;
@@ -461,8 +471,11 @@ class Hawk {
         return (short) (x >> 15);
     }
 
-    static int tbmaskInt(int x) {
-        return x >> 31;
+    // static int tbmaskInt(int x) {
+    //     return x >> 31;
+    // }
+    static short tbmaskInt(short x) {
+        return (short)(x >> 15);
     }
 
     // Constants for sizes
@@ -478,7 +491,14 @@ class Hawk {
     /**
     * Computes the 64-bit product of two 32-bit integers without using Java long arithmetic.
     */
-    private static void mul64(int a, int b, short[] out, short off) {
+    private static void mul64(
+        short aHi, short aLo,
+        short bHi, short bLo,
+        short[] out, short off)
+    {
+        int a = ((aHi & 0xFFFF) << 16) | (aLo & 0xFFFF);
+        int b = ((bHi & 0xFFFF) << 16) | (bLo & 0xFFFF);
+
         int a0 = a & 0xFFFF;
         int a1 = a >>> 16;
 
@@ -503,31 +523,43 @@ class Hawk {
                 + (middle >>> 16);
 
         out[off] = (short)hi;
-        out[off + 1] = (short)(hi >>> 16);
-        out[off + 2] = (short)lo;
-        out[off + 3] = (short)(lo >>> 16);
+        out[(short)(off + 1)] = (short)(hi >>> 16);
+        out[(short)(off + 2)] = (short)lo;
+        out[(short)(off + 3)] = (short)(lo >>> 16);
     }
 
     /**
     * XOR of two 64-bit binary polynomials represented as byte arrays.
     */
-    public static void bpXor64(byte[] d, int dOffset,
-            byte[] a, int aOffset,
-            byte[] b, int bOffset) {
-        int lo = dec32le(a, aOffset)
-                ^ dec32le(b, bOffset);
+    public static void bpXor64(byte[] d, short dOffset, byte[] a, short aOffset, byte[] b, short bOffset) {
+        short[] ta = new short[2];
+        short[] tb = new short[2];
 
-        int hi = dec32le(a, aOffset + 4)
-                ^ dec32le(b, bOffset + 4);
+        // low 32 bits
+        dec32le(a, aOffset, ta, (short)0);
+        dec32le(b, bOffset, tb, (short)0);
 
-        enc32le(d, dOffset, lo);
-        enc32le(d, dOffset + 4, hi);
+        short loHi = (short)(ta[0] ^ tb[0]);
+        short loLo = (short)(ta[1] ^ tb[1]);
+
+        // high 32 bits
+        dec32le(a, (short)(aOffset + 4), ta, (short)0);
+        dec32le(b, (short)(bOffset + 4), tb, (short)0);
+
+        short hiHi = (short)(ta[0] ^ tb[0]);
+        short hiLo = (short)(ta[1] ^ tb[1]);
+
+        enc32le(d, dOffset, loHi, loLo);
+        enc32le(d, (short)(dOffset + 4), hiHi, hiLo);
     }
 
     /**
      * Multiplies two 32-bit binary polynomials over GF(2).
      */
-    public static void bpMul32(int x, int y, short[] out, short off) {
+    public static void bpMul32(short xHi, short xLo, short yHi, short yLo, short[] out, short off) {
+        int x = ((xHi & 0xFFFF) << 16) | (xLo & 0xFFFF);
+        int y = ((yHi & 0xFFFF) << 16) | (yLo & 0xFFFF);
+
         int x0 = x & 0x11111111;
         int x1 = x & 0x22222222;
         int x2 = x & 0x44444444;
@@ -543,25 +575,25 @@ class Hawk {
 
         short[] mul = new short[4];
         int hi, lo;
-        mul64(x0, y0, mul, (short) 0);
+        mul64((short)(x0 >>> 16), (short)x0, (short)(y0 >>> 16), (short) y0, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z0hi ^= hi;
         z0lo ^= lo;
 
-        mul64(x1, y3, mul, (short) 0);
+        mul64((short)(x1 >>> 16), (short)x1, (short)(y3 >>> 16), (short) y3, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z0hi ^= hi;
         z0lo ^= lo;
 
-        mul64(x2, y2, mul, (short) 0);
+        mul64((short)(x2 >>> 16), (short)x2, (short)(y2 >>> 16), (short) y2, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z0hi ^= hi;
         z0lo ^= lo;
 
-        mul64(x3, y1, mul, (short) 0);
+        mul64((short)(x3 >>> 16), (short)x3, (short)(y1 >>> 16), (short) y1, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z0hi ^= hi;
@@ -570,25 +602,25 @@ class Hawk {
         int z1hi = 0;
         int z1lo = 0;
 
-        mul64(x0, y1, mul, (short) 0);
+        mul64((short)(x0 >>> 16), (short)x0, (short)(y1 >>> 16), (short) y1, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z1hi ^= hi;
         z1lo ^= lo;
 
-        mul64(x1, y0, mul, (short) 0);
+        mul64((short)(x1 >>> 16), (short)x1, (short)(y0 >>> 16), (short) y0, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z1hi ^= hi;
         z1lo ^= lo;
 
-        mul64(x2, y3, mul, (short) 0);
+        mul64((short)(x2 >>> 16), (short)x2, (short)(y3 >>> 16), (short) y3, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z1hi ^= hi;
         z1lo ^= lo;
 
-        mul64(x3, y2, mul, (short) 0);
+        mul64((short)(x3 >>> 16), (short)x3, (short)(y2 >>> 16), (short) y2, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z1hi ^= hi;
@@ -597,25 +629,25 @@ class Hawk {
         int z2hi = 0;
         int z2lo = 0;
 
-        mul64(x0, y2, mul, (short) 0);
+        mul64((short)(x0 >>> 16), (short)x0, (short)(y2 >>> 16), (short) y2, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z2hi ^= hi;
         z2lo ^= lo;
 
-        mul64(x1, y1, mul, (short) 0);
+        mul64((short)(x1 >>> 16), (short)x1, (short)(y1 >>> 16), (short) y1, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z2hi ^= hi;
         z2lo ^= lo;
 
-        mul64(x2, y0, mul, (short) 0);
+        mul64((short)(x2 >>> 16), (short)x2, (short)(y0 >>> 16), (short) y0, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z2hi ^= hi;
         z2lo ^= lo;
 
-        mul64(x3, y3, mul, (short) 0);
+        mul64((short)(x3 >>> 16), (short)x3, (short)(y3 >>> 16), (short) y3, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z2hi ^= hi;
@@ -624,25 +656,25 @@ class Hawk {
         int z3hi = 0;
         int z3lo = 0;
 
-        mul64(x0, y3, mul, (short) 0);
+        mul64((short)(x0 >>> 16), (short)x0, (short)(y3 >>> 16), (short) y3, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z3hi ^= hi;
         z3lo ^= lo;
 
-        mul64(x1, y2, mul, (short) 0);
+        mul64((short)(x1 >>> 16), (short)x1, (short)(y2 >>> 16), (short) y2, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z3hi ^= hi;
         z3lo ^= lo;
 
-        mul64(x2, y1, mul, (short) 0);
+        mul64((short)(x2 >>> 16), (short)x2, (short)(y1 >>> 16), (short) y1, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z3hi ^= hi;
         z3lo ^= lo;
 
-        mul64(x3, y0, mul, (short) 0);
+        mul64((short)(x3 >>> 16), (short)x3, (short)(y0 >>> 16), (short) y0, mul, (short) 0);
         hi = ((mul[1] & 0xFFFF) << 16) | (mul[0] & 0xFFFF);
         lo = ((mul[3] & 0xFFFF) << 16) |  (mul[2] & 0xFFFF);
         z3hi ^= hi;
@@ -673,12 +705,77 @@ class Hawk {
      * Multiply-and-accumulate operation for 64-bit binary polynomials.
      * Uses a Karatsuba-style decomposition to avoid 64-bit arithmetic.
      */
-    public static void bpMuladd64(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset, byte[] tmp, int tmpOffset) {
-        int a0 = dec32le(a, aOffset);
-        int a1 = dec32le(a, aOffset + 4);
+    // public static void bpMuladd64(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset, byte[] tmp, int tmpOffset) {
+    //     int a0 = dec32le(a, aOffset);
+    //     int a1 = dec32le(a, aOffset + 4);
 
-        int b0 = dec32le(b, bOffset);
-        int b1 = dec32le(b, bOffset + 4);
+    //     int b0 = dec32le(b, bOffset);
+    //     int b1 = dec32le(b, bOffset + 4);
+
+    //     int c0;
+    //     int c1;
+    //     int c2;
+    //     int c3;
+    //     int c4;
+    //     int c5;
+
+    //     short[] mul32 = new short[4];
+    //     bpMul32(a0, b0, mul32, (short)0);
+    //     c0 = ((mul32[1] & 0xFFFF) << 16) | (mul32[0] & 0xFFFF);
+    //     c1 = ((mul32[3] & 0xFFFF) << 16) | (mul32[2] & 0xFFFF);
+
+    //     bpMul32(a1, b1, mul32, (short) 0);
+    //     c2 = ((mul32[1] & 0xFFFF) << 16) | (mul32[0] & 0xFFFF);
+    //     c3 = ((mul32[3] & 0xFFFF) << 16) | (mul32[2] & 0xFFFF);
+
+    //     bpMul32(a0 ^ a1, b0 ^ b1, mul32, (short) 0);
+    //     c4 = ((mul32[1] & 0xFFFF) << 16) | (mul32[0] & 0xFFFF);
+    //     c5 = ((mul32[3] & 0xFFFF) << 16) | (mul32[2] & 0xFFFF);
+
+    //     c4 ^= c0;
+    //     c5 ^= c1;
+    //     c4 ^= c2;
+    //     c5 ^= c3;
+
+    //     int d0lo = dec32le(d, dOffset);
+    //     int d0hi = dec32le(d, dOffset + 4);
+    //     int d1lo = dec32le(d, dOffset + 8);
+    //     int d1hi = dec32le(d, dOffset + 12);
+
+    //     d0hi ^= c0 ^ c5;
+    //     d0lo ^= c1;
+    //     d1hi ^= c2;
+    //     d1lo ^= c3 ^ c4;
+
+    //     enc32le(d, dOffset, d0lo);
+    //     enc32le(d, dOffset + 4, d0hi);
+    //     enc32le(d, dOffset + 8, d1lo);
+    //     enc32le(d, dOffset + 12, d1hi);
+    // }
+
+    public static void bpMuladd64(
+        byte[] d, short dOffset,
+        byte[] a, short aOffset,
+        byte[] b, short bOffset,
+        byte[] tmp, short tmpOffset)
+    {
+        short[] t = new short[8];
+
+        // a0
+        dec32le(a, aOffset, t, (short)0);
+        int a0 = ((t[0] & 0xFFFF) << 16) | (t[1] & 0xFFFF);
+
+        // a1
+        dec32le(a, (short)(aOffset + 4), t, (short)0);
+        int a1 = ((t[0] & 0xFFFF) << 16) | (t[1] & 0xFFFF);
+
+        // b0
+        dec32le(b, bOffset, t, (short)0);
+        int b0 = ((t[0] & 0xFFFF) << 16) | (t[1] & 0xFFFF);
+
+        // b1
+        dec32le(b, (short)(bOffset + 4), t, (short)0);
+        int b1 = ((t[0] & 0xFFFF) << 16) | (t[1] & 0xFFFF);
 
         int c0;
         int c1;
@@ -688,15 +785,31 @@ class Hawk {
         int c5;
 
         short[] mul32 = new short[4];
-        bpMul32(a0, b0, mul32, (short)0);
+
+        bpMul32(
+            (short)(a0 >>> 16), (short)a0,
+            (short)(b0 >>> 16), (short)b0,
+            mul32, (short)0);
+
         c0 = ((mul32[1] & 0xFFFF) << 16) | (mul32[0] & 0xFFFF);
         c1 = ((mul32[3] & 0xFFFF) << 16) | (mul32[2] & 0xFFFF);
 
-        bpMul32(a1, b1, mul32, (short) 0);
+        bpMul32(
+            (short)(a1 >>> 16), (short)a1,
+            (short)(b1 >>> 16), (short)b1,
+            mul32, (short)0);
+
         c2 = ((mul32[1] & 0xFFFF) << 16) | (mul32[0] & 0xFFFF);
         c3 = ((mul32[3] & 0xFFFF) << 16) | (mul32[2] & 0xFFFF);
 
-        bpMul32(a0 ^ a1, b0 ^ b1, mul32, (short) 0);
+        int ax = a0 ^ a1;
+        int bx = b0 ^ b1;
+
+        bpMul32(
+            (short)(ax >>> 16), (short)ax,
+            (short)(bx >>> 16), (short)bx,
+            mul32, (short)0);
+
         c4 = ((mul32[1] & 0xFFFF) << 16) | (mul32[0] & 0xFFFF);
         c5 = ((mul32[3] & 0xFFFF) << 16) | (mul32[2] & 0xFFFF);
 
@@ -705,26 +818,52 @@ class Hawk {
         c4 ^= c2;
         c5 ^= c3;
 
-        int d0lo = dec32le(d, dOffset);
-        int d0hi = dec32le(d, dOffset + 4);
-        int d1lo = dec32le(d, dOffset + 8);
-        int d1hi = dec32le(d, dOffset + 12);
+        // d0lo
+        dec32le(d, dOffset, t, (short)0);
+        int d0lo = ((t[0] & 0xFFFF) << 16) | (t[1] & 0xFFFF);
+
+        // d0hi
+        dec32le(d, (short)(dOffset + 4), t, (short)0);
+        int d0hi = ((t[0] & 0xFFFF) << 16) | (t[1] & 0xFFFF);
+
+        // d1lo
+        dec32le(d, (short)(dOffset + 8), t, (short)0);
+        int d1lo = ((t[0] & 0xFFFF) << 16) | (t[1] & 0xFFFF);
+
+        // d1hi
+        dec32le(d, (short)(dOffset + 12), t, (short)0);
+        int d1hi = ((t[0] & 0xFFFF) << 16) | (t[1] & 0xFFFF);
 
         d0hi ^= c0 ^ c5;
         d0lo ^= c1;
         d1hi ^= c2;
         d1lo ^= c3 ^ c4;
 
-        enc32le(d, dOffset, d0lo);
-        enc32le(d, dOffset + 4, d0hi);
-        enc32le(d, dOffset + 8, d1lo);
-        enc32le(d, dOffset + 12, d1hi);
+        enc32le(
+            d, dOffset,
+            (short)(d0lo >>> 16),
+            (short)d0lo);
+
+        enc32le(
+            d, (short)(dOffset + 4),
+            (short)(d0hi >>> 16),
+            (short)d0hi);
+
+        enc32le(
+            d, (short)(dOffset + 8),
+            (short)(d1lo >>> 16),
+            (short)d1lo);
+
+        enc32le(
+            d, (short)(dOffset + 12),
+            (short)(d1hi >>> 16),
+            (short)d1hi);
     }
 
     /** 
      * XOR of two 512-bit binary polynomials.
      */
-    private static void bpXor512(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
+    private static void bpXor512(byte[] d, short dOffset, byte[] a, short aOffset, byte[] b, short bOffset) {
         for (int u = 0; u < 64; u++) {
             d[dOffset + u] = (byte) (a[aOffset + u] ^ b[bOffset + u]);
         }
@@ -733,49 +872,46 @@ class Hawk {
     /** 
      * XOR of two 128-bit binary polynomials.
      */
-    public static void bpXor128(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
+    public static void bpXor128(byte[] d, short dOffset, byte[] a, short aOffset, byte[] b, short bOffset) {
         // Process as two 64-bit chunks
         bpXor64(d, dOffset, a, aOffset, b, bOffset);
-        bpXor64(d, dOffset + 8, a, aOffset + 8, b, bOffset + 8);
+        bpXor64(d, (short) (dOffset + 8), a, (short) (aOffset + 8), b,(short) (bOffset + 8));
     }
 
     /**
      * Multiply-and-accumulate operation for 128-bit binary polynomials.
      */
-    public static void bpMuladd128(byte[] d, int dOffset,
-            byte[] a, int aOffset,
-            byte[] b, int bOffset,
-            byte[] tmp, int tmpOffset) {
+    public static void bpMuladd128(byte[] d, short dOffset,  byte[] a, short aOffset, byte[] b, short bOffset, byte[] tmp, short tmpOffset) {
         // Use optimized implementation for 128-bit polynomials
-        int t1Offset = tmpOffset;
-        int t2Offset = t1Offset + BYTES_128;
+        short t1Offset = tmpOffset;
+        short t2Offset = (short) (t1Offset + BYTES_128);
 
         // Karatsuba algorithm for 128-bit polynomials (split into 64-bit halves)
-        bpXor64(tmp, t2Offset, a, aOffset, a, aOffset + BYTES_64); // a0 + a1
-        bpXor64(tmp, t2Offset + BYTES_64, b, bOffset, b, bOffset + BYTES_64); // b0 + b1
+        bpXor64(tmp, t2Offset, a, aOffset, a, (short) (aOffset + BYTES_64)); // a0 + a1
+        bpXor64(tmp, (short) (t2Offset + BYTES_64), b, bOffset, b, (short) (bOffset + BYTES_64)); // b0 + b1
 
         // t1 = (a0+a1)*(b0+b1) + d0 + d1
-        bpXor128(tmp, t1Offset, d, dOffset, d, dOffset + BYTES_128);
-        bpMuladd64(tmp, t1Offset, tmp, t2Offset, tmp, t2Offset + BYTES_64, tmp, t2Offset + BYTES_128);
+        bpXor128(tmp, t1Offset, d, dOffset, d, (short) (dOffset + BYTES_128));
+        bpMuladd64(tmp, t1Offset, tmp, t2Offset, tmp, (short) (t2Offset + BYTES_64), tmp, (short) (t2Offset + BYTES_128));
 
         // d0 += a0*b0
         bpMuladd64(d, dOffset, a, aOffset, b, bOffset, tmp, t2Offset);
 
         // d1 += a1*b1
-        bpMuladd64(d, dOffset + BYTES_128, a, aOffset + BYTES_64, b, bOffset + BYTES_64, tmp, t2Offset);
+        bpMuladd64(d, (short) (dOffset + BYTES_128), a, (short) (aOffset + BYTES_64), b, (short) (bOffset + BYTES_64), tmp, t2Offset);
 
         // t1 = t1 + d0 + d1 = a0*b1 + a1*b0
         bpXor128(tmp, t1Offset, tmp, t1Offset, d, dOffset);
-        bpXor128(tmp, t1Offset, tmp, t1Offset, d, dOffset + BYTES_128);
+        bpXor128(tmp, t1Offset, tmp, t1Offset, d, (short) (dOffset + BYTES_128));
 
         // d += (x^64)*t1: d[8:24] ⊕= t1[0:16]
-        bpXor128(d, dOffset + BYTES_64, d, dOffset + BYTES_64, tmp, t1Offset);
+        bpXor128(d, (short) (dOffset + BYTES_64), d, (short) (dOffset + BYTES_64), tmp, t1Offset);
     }
 
     /** 
      * XOR of two 256-bit binary polynomials.
      */
-    private static void bpXor256(byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
+    private static void bpXor256(byte[] d, short dOffset, byte[] a, short aOffset, byte[] b, short bOffset) {
         for (int u = 0; u < 32; u++) {
             d[dOffset + u] = (byte) (a[aOffset + u] ^ b[bOffset + u]);
         }
@@ -785,103 +921,200 @@ class Hawk {
      * Binary polynomial multiplication and accumulation for 256-bit polynomials.
      * Uses Karatsuba algorithm with 128-bit halves.
      */
-    public static void bpMuladd256(byte[] d, int dOffset,
-            byte[] a, int aOffset,
-            byte[] b, int bOffset,
-            byte[] tmp, int tmpOffset) {
-        final int n = 256;
-        final int hn = 128;
-        final int byteLen = n / 8;
-        final int halfByteLen = hn / 8;
+    public static void bpMuladd256(byte[] d, short dOffset,
+            byte[] a, short aOffset,
+            byte[] b, short bOffset,
+            byte[] tmp, short tmpOffset) {
+        final short byteLen = 32;
+        final short halfByteLen = 16;
 
         // Temporary buffers within the provided tmp array
-        int t1Offset = tmpOffset;
-        int t2Offset = t1Offset + byteLen;
-        int t3Offset = t2Offset + byteLen;
+        short t1Offset = tmpOffset;
+        short t2Offset = (short) (t1Offset + byteLen);
+        short t3Offset = (short) (t2Offset + byteLen);
 
         // t1 <- (a0 + a1)*(b0 + b1) + d0 + d1
-        bpXor128(tmp, t2Offset, a, aOffset, a, aOffset + halfByteLen); // a0 + a1
-        bpXor128(tmp, t2Offset + halfByteLen, b, bOffset, b, bOffset + halfByteLen); // b0 + b1
-        bpXor256(tmp, t1Offset, d, dOffset, d, dOffset + byteLen); // d0 + d1
-        bpMuladd128(tmp, t1Offset, tmp, t2Offset, tmp, t2Offset + halfByteLen, tmp, t3Offset);
+        bpXor128(tmp, t2Offset, a, aOffset, a, (short) (aOffset + halfByteLen)); // a0 + a1
+        bpXor128(tmp, (short) (t2Offset + halfByteLen), b, bOffset, b, (short) (bOffset + halfByteLen)); // b0 + b1
+        bpXor256(tmp, t1Offset, d, dOffset, d, (short) (dOffset + byteLen)); // d0 + d1
+        bpMuladd128(tmp, t1Offset, tmp, t2Offset, tmp, (short) (t2Offset + halfByteLen), tmp, t3Offset);
 
         // d0 <- d0 + a0*b0
         bpMuladd128(d, dOffset, a, aOffset, b, bOffset, tmp, t3Offset);
 
         // d1 <- d1 + a1*b1
-        bpMuladd128(d, dOffset + byteLen, a, aOffset + halfByteLen, b, bOffset + halfByteLen, tmp, t3Offset);
+        bpMuladd128(d, (short) (dOffset + byteLen), a, (short) (aOffset + halfByteLen), b, (short) (bOffset + halfByteLen), tmp, t3Offset);
 
         // t1 <- t1 + d0 + d1 = a0*b1 + a1*b0
         bpXor256(tmp, t1Offset, tmp, t1Offset, d, dOffset);
-        bpXor256(tmp, t1Offset, tmp, t1Offset, d, dOffset + byteLen);
+        bpXor256(tmp, t1Offset, tmp, t1Offset, d, (short) (dOffset + byteLen));
 
         // d <- d + (x^{n/2})*t1: d[16:48] ⊕= t1[0:32]
-        bpXor256(d, dOffset + halfByteLen, d, dOffset + halfByteLen, tmp, t1Offset);
+        bpXor256(d, (short) (dOffset + halfByteLen), d, (short) (dOffset + halfByteLen), tmp, t1Offset);
     }
 
     /**
      * Generic XOR for any size.
      */
-    private static void bpXor(int bitSize, byte[] d, int dOffset, byte[] a, int aOffset, byte[] b, int bOffset) {
-        int byteSize = bitSize / 8;
-        for (int u = 0; u < byteSize; u++) {
-            d[dOffset + u] = (byte) (a[aOffset + u] ^ b[bOffset + u]);
+    private static void bpXor(
+        short bitSize,
+        byte[] d, short dOffset,
+        byte[] a, short aOffset,
+        byte[] b, short bOffset)
+    {
+        short byteSize = (short)(bitSize >> 3);
+
+        for (short u = 0; u < byteSize; u++) {
+            d[(short)(dOffset + u)] =
+                (byte)(a[(short)(aOffset + u)]
+                    ^ b[(short)(bOffset + u)]);
         }
     }
 
     /**
      * Generic binary polynomial multiplication using Karatsuba algorithm
      */
-    private static void bpMulmod(int n, int hn, byte[] d, int dOffset,
-            byte[] a, int aOffset, byte[] b, int bOffset,
-            byte[] tmp, int tmpOffset) {
-        int byteLen = n / 8;
-        int halfByteLen = hn / 8;
+    private static void bpMulmod(
+            short n,
+            short hn,
+            byte[] d, short dOffset,
+            byte[] a, short aOffset,
+            byte[] b, short bOffset,
+            byte[] tmp, short tmpOffset)
+    {
+        short byteLen = (short)(n / 8);
+        short halfByteLen = (short)(hn / 8);
 
-        int t1Offset = tmpOffset;
-        int t2Offset = t1Offset + byteLen;
+        short t1Offset = tmpOffset;
+        short t2Offset = (short)(t1Offset + byteLen);
 
         // t1 <- (a0 + a1)*(b0 + b1)
-        bpXor(hn, d, dOffset, a, aOffset, a, aOffset + halfByteLen);
-        bpXor(hn, d, dOffset + halfByteLen, b, bOffset, b, bOffset + halfByteLen);
-        bpXor(n, tmp, t1Offset, d, dOffset, d, dOffset + halfByteLen);
-        Util.arrayFillNonAtomic(tmp, (short) t1Offset, (short) byteLen, (byte) 0);
-        bpMuladd256(tmp, t1Offset, d, dOffset, d, dOffset + halfByteLen, tmp, t2Offset);
+
+        bpXor(hn,
+                d, dOffset,
+                a, aOffset,
+                a, (short)(aOffset + halfByteLen));
+
+        bpXor(hn,
+                d, (short)(dOffset + halfByteLen),
+                b, bOffset,
+                b, (short)(bOffset + halfByteLen));
+
+        bpXor(n,
+                tmp, t1Offset,
+                d, dOffset,
+                d, (short)(dOffset + halfByteLen));
+
+        Util.arrayFillNonAtomic(
+                tmp,
+                t1Offset,
+                byteLen,
+                (byte)0);
+
+        bpMuladd256(
+                tmp, t1Offset,
+                d, dOffset,
+                d, (short)(dOffset + halfByteLen),
+                tmp, t2Offset);
 
         // d <- a0*b0 + a1*b1
-        Util.arrayFillNonAtomic(d, (short) dOffset, (short) byteLen, (byte) 0);
-        bpMuladd256(d, dOffset, a, aOffset, b, bOffset, tmp, t2Offset);
-        bpMuladd256(d, dOffset, a, aOffset + halfByteLen, b, bOffset + halfByteLen, tmp, t2Offset);
+
+        Util.arrayFillNonAtomic(
+                d,
+                dOffset,
+                byteLen,
+                (byte)0);
+
+        bpMuladd256(
+                d, dOffset,
+                a, aOffset,
+                b, bOffset,
+                tmp, t2Offset);
+
+        bpMuladd256(
+                d, dOffset,
+                a, (short)(aOffset + halfByteLen),
+                b, (short)(bOffset + halfByteLen),
+                tmp, t2Offset);
 
         // t1 <- t1 + d = a0*b1 + a1*b0
-        bpXor(n, tmp, t1Offset, tmp, t1Offset, d, dOffset);
+
+        bpXor(n,
+                tmp, t1Offset,
+                tmp, t1Offset,
+                d, dOffset);
 
         // d <- d + rotate_{n/2}(t1)
-        bpXor(hn, d, dOffset, d, dOffset, tmp, t1Offset + halfByteLen);
-        bpXor(hn, d, dOffset + halfByteLen, d, dOffset + halfByteLen, tmp, t1Offset);
+
+        bpXor(hn,
+                d, dOffset,
+                d, dOffset,
+                tmp, (short)(t1Offset + halfByteLen));
+
+        bpXor(hn,
+                d, (short)(dOffset + halfByteLen),
+                d, (short)(dOffset + halfByteLen),
+                tmp, t1Offset);
     }
 
     /**
      * Basis multiplication modulo 2
      */
-    public static void basisM2Mul(int logn, byte[] t0, int t0Offset, byte[] t1, int t1Offset,
-            byte[] h0, int h0Offset, byte[] h1, int h1Offset,
-            byte[] f2, int f2Offset, byte[] g2, int g2Offset,
-            byte[] F2, int F2Offset, byte[] G2, int G2Offset,
-            byte[] tmp, int tmpOffset) {
+    public static void basisM2Mul(
+            short logn,
+            byte[] t0, short t0Offset,
+            byte[] t1, short t1Offset,
+            byte[] h0, short h0Offset,
+            byte[] h1, short h1Offset,
+            byte[] f2, short f2Offset,
+            byte[] g2, short g2Offset,
+            byte[] F2, short F2Offset,
+            byte[] G2, short G2Offset,
+            byte[] tmp, short tmpOffset)
+    {
+        short n = (short)(1 << logn);
+        short byteLen = (short)(n >> 3);
 
-        int n = 1 << logn;
-        int byteLen = n >> 3;
+        short w1Offset = tmpOffset;
+        short w2Offset = (short)(w1Offset + byteLen);
 
-        int w1Offset = tmpOffset;
-        int w2Offset = w1Offset + byteLen;
+        bpMulmod(
+                (short)512, (short)256,
+                t0, t0Offset,
+                h0, h0Offset,
+                f2, f2Offset,
+                tmp, w2Offset);
 
-        bpMulmod(512, 256, t0, t0Offset, h0, h0Offset, f2, f2Offset, tmp, w2Offset); // still need to resolve
-        bpMulmod(512, 256, tmp, w1Offset, h1, h1Offset, F2, F2Offset, tmp, w2Offset);
-        bpXor512(t0, t0Offset, t0, t0Offset, tmp, w1Offset);
-        bpMulmod(512, 256, t1, t1Offset, h0, h0Offset, g2, g2Offset, tmp, w2Offset);
-        bpMulmod(512, 256, tmp, w1Offset, h1, h1Offset, G2, G2Offset, tmp, w2Offset);
-        bpXor512(t1, t1Offset, t1, t1Offset, tmp, w1Offset);
+        bpMulmod(
+                (short)512, (short)256,
+                tmp, w1Offset,
+                h1, h1Offset,
+                F2, F2Offset,
+                tmp, w2Offset);
+
+        bpXor512(
+                t0, t0Offset,
+                t0, t0Offset,
+                tmp, w1Offset);
+
+        bpMulmod(
+                (short)512, (short)256,
+                t1, t1Offset,
+                h0, h0Offset,
+                g2, g2Offset,
+                tmp, w2Offset);
+
+        bpMulmod(
+                (short)512, (short)256,
+                tmp, w1Offset,
+                h1, h1Offset,
+                G2, G2Offset,
+                tmp, w2Offset);
+
+        bpXor512(
+                t1, t1Offset,
+                t1, t1Offset,
+                tmp, w1Offset);
     }
 
     /**
@@ -902,67 +1135,76 @@ class Hawk {
      * representation.
      * This is the equivalent of Zq(poly_set_small)
      */
-    public void mq18433PolySetSmall(int logn, short[] d, int dOffset, byte[] a, int aOffset) {
-        int n = 1 << logn;
+    public void mq18433PolySetSmall(short logn, short[] d, short dOffset, byte[] a, short aOffset) {
+        short n = (short) (1 << logn);
         for (int u = 0; u < n; u++) {
             d[dOffset + u] = mq18433SetSmall(a[aOffset + u]);
         }
     }
 
     /**
-     * Modular subtraction: (x - y) mod Q, result in [1..Q] where Q represents 0 mod
-     * Q.
+     * Modular subtraction: (x - y) mod Q,
+     * result in [1..Q] where Q represents 0 mod Q.
      */
-    public int mq18433Sub(int x, int y) {
-        int d = y - x;
+    public short mq18433Sub(short x, short y) {
+        int d = (y & 0xFFFF) - (x & 0xFFFF);
         d += Q & (d >> 16);
-        return Q - d;
+        return (short)(Q - d);
     }
 
     /**
-     * Modular addition: (x + y) mod Q, result in [1..Q] where Q represents 0 mod Q.
+     * Modular addition: (x + y) mod Q,
+     * result in [1..Q] where Q represents 0 mod Q.
      */
-    public int mq18433Add(int x, int y) {
-        int d = Q - (x + y);
+    public short mq18433Add(short x, short y) {
+        int d = Q - ((x & 0xFFFF) + (y & 0xFFFF));
         d += Q & (d >> 16);
-        return Q - d;
+        return (short)(Q - d);
     }
 
     /**
-     * Montgomery reduction. The Hawk protocol never feeds x == 0 here (NTT/INTT
-     * butterfly products in [1..Q] representation, where Q itself represents 0),
-     * but the original short-circuit `if (x == 0) return 0;` is a data-dependent
-     * branch on a secret-derived intermediate — replaced with a branchless mask
-     * to preserve byte-identity while removing the L1 timing channel.
+     * Montgomery reduction.
      */
-    public int mq18433MontyRed(int x) {
-        int xLo = x & 0xFFFF;
-        int xHi = x >>> 16;
+    public short mq18433MontyRed(short xHi, short xLo)
+    {
+        int xx = ((xHi & 0xFFFF) << 16)
+            | (xLo & 0xFFFF);
 
-        int pLL = xLo * 18431;
-        int pLH = xLo * 60352;
-        int pHL = xHi * 18431;
+        int pLL = (xLo & 0xFFFF) * 18431;
+        int pLH = (xLo & 0xFFFF) * 60352;
+        int pHL = (xHi & 0xFFFF) * 18431;
 
         int word16 = ((pLL >>> 16) + pLH + pHL) & 0xFFFF;
         int step2 = word16 * Q;
         int result = (step2 >>> 16) + 1;
 
-        int nonzero = -((x | -x) >>> 31);
-        return result & nonzero;
+        int nonzero = -((xx | -xx) >>> 31);
+
+        return (short)(result & nonzero);
     }
 
     /**
      * Montgomery multiplication: returns (x * y) mod Q in Montgomery form
      */
-    public int mq18433MontyMul(int x, int y) {
-        return mq18433MontyRed(x * y);
+    public short mq18433MontyMul(short x, short y)
+    {
+        int product = (x & 0xFFFF) * (y & 0xFFFF);
+
+        return mq18433MontyRed(
+                (short)(product >>> 16),
+                (short)product);
     }
 
     /**
      * Convert a number to Montgomery form
      */
-    public int mq18433ToMonty(int x) {
-        return mq18433MontyRed(x * R2);
+    public short mq18433ToMonty(short x)
+    {
+        int product = (x & 0xFFFF) * R2;
+
+        return mq18433MontyRed(
+                (short)(product >>> 16),
+                (short)product);
     }
 
      /**
@@ -972,15 +1214,16 @@ class Hawk {
      * as HawkEngine.mpHalf — fold the conditional `+ Q` (only applied when x is
      * odd, to keep the result an integer) into a branchless mask.
      */
-    public int mq18433Half(int x)
+    public short mq18433Half(short x)
     {
-        return (x + (Q & -(x & 1))) >> 1;
+        return (short)(((x & 0xFFFF)
+                + (Q & -((x & 0xFFFF) & 1))) >> 1);
     }
 
     /**
      * Number Theoretic Transform (NTT) for modulus 18433
      */
-    public void mq18433NTT(int logn, short[] a, int aOffset) {
+    public void mq18433NTT(short logn, short[] a, short aOffset) {
         if (logn == 0) {
             return;
         }
@@ -993,21 +1236,19 @@ class Hawk {
             int v0 = 0;
 
             for (int u = 0; u < m; u++) {
-                int s = GM[u + m] & 0xFFFF; // NTT root
+                short s = (short)(GM[u + m] & 0xFFFF);
 
                 for (int v = 0; v < ht; v++) {
                     int k1 = aOffset + v0 + v;
                     int k2 = k1 + ht;
 
-                    int x1 = a[k1] & 0xFFFF;
-                    int x2 = a[k2] & 0xFFFF;
+                    short x1 = (short)(a[k1] & 0xFFFF);
+                    short x2 = (short)(a[k2] & 0xFFFF);
 
-                    // Montgomery multiplication
-                    int x2_monty = mq18433MontyMul(x2, s);
+                    short x2Monty = mq18433MontyMul(x2, s);
 
-                    // Butterfly operation
-                    a[k1] = (short) mq18433Add(x1, x2_monty);
-                    a[k2] = (short) mq18433Sub(x1, x2_monty);
+                    a[k1] = mq18433Add(x1, x2Monty);
+                    a[k2] = mq18433Sub(x1, x2Monty);
                 }
                 v0 += t;
             }
@@ -1019,7 +1260,7 @@ class Hawk {
      * Inverse NTT matching C mq18433_iNTT exactly.
      * 1/n normalization is embedded in the iGM twiddle factors.
      */
-    public void mq18433INTT(int logn, short[] a, int aOffset)
+    public void mq18433INTT(short logn, short[] a, short aOffset)
     {
         if (logn == 0)
         {
@@ -1027,6 +1268,7 @@ class Hawk {
         }
 
         int t = 1;
+
         for (int lm = 0; lm < logn; lm++)
         {
             int hm = 1 << (logn - 1 - lm);
@@ -1035,21 +1277,27 @@ class Hawk {
 
             for (int u = 0; u < hm; u++)
             {
-                int s = iGM[u + hm] & 0xFFFF;
+                short s = (short)(iGM[u + hm] & 0xFFFF);
 
                 for (int v = 0; v < t; v++)
                 {
                     int k1 = aOffset + v0 + v;
                     int k2 = k1 + t;
 
-                    int x1 = a[k1] & 0xFFFF;
-                    int x2 = a[k2] & 0xFFFF;
+                    short x1 = (short)(a[k1] & 0xFFFF);
+                    short x2 = (short)(a[k2] & 0xFFFF);
 
-                    a[k1] = (short)mq18433Half(mq18433Add(x1, x2));
-                    a[k2] = (short)mq18433MontyMul(s, mq18433Sub(x1, x2));
+                    a[k1] = mq18433Half(
+                                mq18433Add(x1, x2));
+
+                    a[k2] = mq18433MontyMul(
+                                s,
+                                mq18433Sub(x1, x2));
                 }
+
                 v0 += dt;
             }
+
             t = dt;
         }
     }
@@ -1057,18 +1305,24 @@ class Hawk {
     /**
      * Convert a coefficient from the modular range [0, Q-1] to the centered signed range approximately [-Q/2, Q/2].
      */
-    public static int mq18433Snorm(int x) {
-        int mask = ((Q >> 1) - x) >> 31; // -1 if x > Q/2, 0 otherwise
-        return x - (Q & mask);
+    public static short mq18433Snorm(short x) {
+        int xx = x & 0xFFFF;
+
+        int mask = ((Q >> 1) - xx) >> 31;
+        return (short)(xx - (Q & mask));
     }
 
     /**
      * Apply signed normalization to polynomial coefficients
      */
-    public static void mq18433PolySnorm(int logn, short[] d, int dOffset) {
+    public static void mq18433PolySnorm(short logn, short[] d, short dOffset) {
         int n = 1 << logn;
+
         for (int u = 0; u < n; u++) {
-            d[dOffset + u] = (short) mq18433Snorm(d[dOffset + u] & 0xFFFF);
+            int k = dOffset + u;
+
+            d[k] = mq18433Snorm(
+                    (short)(d[k] & 0xFFFF));
         }
     }
 
@@ -1078,28 +1332,28 @@ class Hawk {
      * -1 first non-zero coefficient of s is negative
      * 0 s is entirely zero
      */
-    public static int polySymBreak(int logn, short[] s, int sOffset) {
-        // returns 0 if polynomial is all-zero
-        // returns 1 if first non-zero coefficient is positive
-        // returns -1 (= 0xFFFFFFFF as uint32) if first non-zero coefficient is negative
-        // The caller uses ~tbmask(r-1) to decide negation:
-        // r=0: tbmask(-1)= -1, ~(-1)=0 -> no negation
-        // r=1: tbmask(0) = 0, ~0 =-1 -> negate (positive first coeff -> negate)
-        // r=-1: tbmask(-2)= -1, ~(-1)=0 -> no negation (negative first coeff)
+    public static short polySymBreak(short logn, short[] s, short sOffset)
+    {
         int n = 1 << logn;
-        int r = 0;
-        int c = 0xFFFFFFFF; // Mask for tracking first non-zero
+
+        short r = 0;
+        short c = (short)0xFFFF;
 
         for (int u = 0; u < n; u++) {
-            int x = s[sOffset + u];
-            int nz = c & tbmaskInt(x | -x); // Non-zero mask
-            c &= ~nz; // Clear the bit for this coefficient
-            r |= nz & (tbmaskInt(x) | 1); // r=1 if positive, r=-1 if negative
+
+            short x = s[sOffset + u];
+
+            short nz =
+                (short)(c & tbmaskInt((short)(x | -x)));
+
+            c = (short)(c & ~nz);
+
+            r = (short)(
+                    r |
+                    (nz & (short)(tbmaskInt(x) | 1))
+                );
         }
 
-        // Return raw r (same bit pattern as C's uint32_t return value):
-        // 0 = all-zero, 1 = positive first coeff, -1 (=0xFFFFFFFF) = negative first
-        // coeff
         return r;
     }
 
@@ -1108,7 +1362,7 @@ class Hawk {
      *
      * Returned value is the squared norm of x.
      */
-    public int sigGauss(int logn, SHAKE256JC shake, byte[] x, int xOffset, byte[] t, int tOffset) {
+    public short sigGauss(short logn, SHAKE256JC shake, byte[] x, short xOffset, byte[] t, short tOffset) {
         short[] tabLoHiHi, tabLoHiLo, tabLoLoHi, tabLoLoLo, tabHi;
         short hiLen, loLen;
 
@@ -1139,9 +1393,18 @@ class Hawk {
                 sc.squeezeBytes(buffer, 0, 40);
                 for (int k = 0; k < 4; k++) {
                     int v = u + (j << 2) + k;
-                    int loLo = dec32le(tmp, k * 8);
-                    int loHi = dec32le(tmp, (k * 8) + 4);
-                    int hi = dec16le(tmp, 32 + (k << 1));
+                    short[] d32 = new short[4];
+
+                    dec32le(tmp, (short)(k * 8), d32, (short)0);
+                    dec32le(tmp, (short)((k * 8) + 4), d32, (short)2);
+
+                    int loLo = ((d32[0] & 0xFFFF) << 16)
+                            |  (d32[1] & 0xFFFF);
+
+                    int loHi = ((d32[2] & 0xFFFF) << 16)
+                            |  (d32[3] & 0xFFFF);
+
+                    short hi = dec16le(tmp, (short) (32 + (k << 1)));
 
                     /*
                      * Extract sign bit.
@@ -1160,15 +1423,20 @@ class Hawk {
                         int mask = pOddw;
                         int thi = (tabHi[i] & 0xFFFF) ^ (mask & ((tabHi[i] & 0xFFFF) ^ (tabHi[i + 1] & 0xFFFF)));
 
-                        int v0 = getInt32(tabLoHiHi, tabLoHiLo, i);
-                        int v1 = getInt32(tabLoHiHi, tabLoHiLo, (short) (i + 1));
+                        short[] tmp32 = new short[4];
+                        getInt32(tabLoHiHi, tabLoHiLo, i, tmp32, (short)0);
+                        getInt32(tabLoHiHi, tabLoHiLo, (short)(i + 1), tmp32, (short)2);
+                        int v0 = ((tmp32[0] & 0xFFFF) << 16) |  (tmp32[1] & 0xFFFF);
+                        int v1 = ((tmp32[2] & 0xFFFF) << 16)  |  (tmp32[3] & 0xFFFF);
                         int tloHi = v0 ^ (mask & (v0 ^ v1));
 
-                        int w0 = getInt32(tabLoLoHi, tabLoLoLo, i);
-                        int w1 = getInt32(tabLoLoHi, tabLoLoLo, (short) (i + 1));
+                        short[] tmpp32 = new short[4];
+                        getInt32(tabLoLoHi, tabLoLoLo, i, tmpp32, (short)0);
+                        getInt32(tabLoLoHi, tabLoLoLo, (short)(i + 1), tmpp32, (short)2);
+                        int w0 = ((tmpp32[0] & 0xFFFF) << 16) |  (tmpp32[1] & 0xFFFF);
+                        int w1 = ((tmpp32[2] & 0xFFFF) << 16)  |  (tmpp32[3] & 0xFFFF);
                         int tloLo = w0 ^ (mask & (w0 ^ w1));
-
-                        int borrow = uLessThan(loLo, tloLo);
+                        short borrow = uLessThan((short)(loLo >>> 16), (short)loLo, (short)(tloLo >>> 16), (short)tloLo);
                         int diffHi = loHi - tloHi - borrow;
                         int cc = diffHi >>> 31;
                         int diffHi16 = hi - thi - cc;
@@ -1181,14 +1449,20 @@ class Hawk {
                     int hinz = (hi - 1) >>> 31;
                     for (short i = hiLen; i < loLen; i += 2) {
                         int mask = pOddw;
-                        int v0 = getInt32(tabLoHiHi, tabLoHiLo, i);
-                        int v1 = getInt32(tabLoHiHi, tabLoHiLo, (short) (i + 1));
+                        short[] tmp32 = new short[4];
+                        getInt32(tabLoHiHi, tabLoHiLo, i, tmp32, (short)0);
+                        getInt32(tabLoHiHi, tabLoHiLo, (short)(i + 1), tmp32, (short)2);
+                        int v0 = ((tmp32[0] & 0xFFFF) << 16) |  (tmp32[1] & 0xFFFF);
+                        int v1 = ((tmp32[2] & 0xFFFF) << 16)  |  (tmp32[3] & 0xFFFF);
                         int tloHi = v0 ^ (mask & (v0 ^ v1));
 
-                        int w0 = getInt32(tabLoLoHi, tabLoLoLo, i);
-                        int w1 = getInt32(tabLoLoHi, tabLoLoLo, (short) (i + 1));
+                        short[] tmpp32 = new short[4];
+                        getInt32(tabLoLoHi, tabLoLoLo, i, tmpp32, (short)0);
+                        getInt32(tabLoLoHi, tabLoLoLo, (short)(i + 1), tmpp32, (short)2);
+                        int w0 = ((tmpp32[0] & 0xFFFF) << 16) |  (tmpp32[1] & 0xFFFF);
+                        int w1 = ((tmpp32[2] & 0xFFFF) << 16)  |  (tmpp32[3] & 0xFFFF);
                         int tloLo = w0 ^ (mask & (w0 ^ w1));
-                        int borrow = uLessThan(loLo, tloLo);
+                        short borrow = uLessThan((short)(loLo >>> 16), (short)loLo, (short)(tloLo >>> 16), (short)tloLo);
                         int diffHi = loHi - tloHi - borrow;
                         int cc = diffHi >>> 31;
                         r += hinz & cc;
@@ -1201,7 +1475,7 @@ class Hawk {
                 }
             }
         }
-        return sn;
+        return (short) sn;
     }
 
     /**
@@ -1210,7 +1484,7 @@ class Hawk {
      * on error; an error is reported if the signature does not fit in the
      * provided buffer.
      */
-    public static boolean encodeSig(int logn, byte[] sig, short sigOffset, short sigLen, byte[] salt, short saltOffset, short saltLen, short[] s1, short s1Offset) {
+    public static boolean encodeSig(short logn, byte[] sig, short sigOffset, short sigLen, byte[] salt, short saltOffset, short saltLen, short[] s1, short s1Offset) {
         short n = (short) (1 << logn);
         byte low = (byte) ((logn == 10) ? 6 : 5);
 
@@ -1329,7 +1603,7 @@ class Hawk {
     /**
      * Sign method
      */
-    public short sign(short logn, int useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, short privLen, byte[] tmp, short tmpLen) {
+    public short sign(short logn, short useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, short privLen, byte[] tmp, short tmpLen) {
         // Ensure proper alignment for 64-bit access
         if (tmpLen < 7) {
             return 0;
@@ -1393,7 +1667,11 @@ class Hawk {
 
             if (useShake != 0) {
                 byte[] tbuf = new byte[4];
-                enc32le(tbuf, 0, attempt);
+                enc32le(
+                    tbuf,
+                    (short)0,
+                    (short)(attempt >>> 16),
+                    (short)attempt);
 
                 SHAKE256JC saltShake = new SHAKE256JC();
                 saltShake.update(hm, 0, hm.length);
@@ -1418,16 +1696,25 @@ class Hawk {
             extract_lowbit(logn, g2, g);
 
             basisM2Mul(logn,
-                    ww, t0Offset, ww, t1Offset, // t0, t1
-                    ww, h0Offset, ww, h1Offset, // h0, h1
-                    f2, 0, g2, 0, // f2, g2
-                    F2, 0, G2, 0, // F2, G2
-                    tmp, xxOffset); // tmp space
+                ww, (short)t0Offset,
+                ww, (short)t1Offset,
+                ww, (short)h0Offset,
+                ww, (short)h1Offset,
+                f2, (short)0,
+                g2, (short)0,
+                F2, (short)0,
+                G2, (short)0,
+                tmp, (short)xxOffset);
 
             // Sample x using Gaussian distribution
-            int xsn;
+            short xsn;
             byte[] tbuf = new byte[4];
-            enc32le(tbuf, 0, attempt + 1);
+            int att1 = attempt + 1;
+            enc32le(
+                tbuf,
+                (short)0,
+                (short)(att1 >>> 16),
+                (short)att1);
 
             SHAKE256JC gaussShake = new SHAKE256JC();
 
@@ -1435,7 +1722,7 @@ class Hawk {
             gaussShake.update(priv, 0, seedLen); // ?
             gaussShake.update(tbuf, 0, tbuf.length);
 
-            xsn = sigGauss(logn, gaussShake, x0, 0, ww, t0Offset);
+            xsn = sigGauss(logn, gaussShake, x0, (short) 0, ww, (short) t0Offset);
 
             // Reject if squared norm is too large
             if (xsn > maxXnorm) {
@@ -1448,30 +1735,35 @@ class Hawk {
             short[] w3 = new short[n];
 
             // w1 <- g*x0 in NTT domain
-            mq18433PolySetSmall(logn, w1, 0, g, 0);
-            mq18433PolySetSmall(logn, w2, 0, x0, 0);
-            mq18433NTT(logn, w1, 0);
-            mq18433NTT(logn, w2, 0);
+            mq18433PolySetSmall(logn, w1, (short) 0, g, (short) 0);
+            mq18433PolySetSmall(logn, w2, (short) 0, x0, (short) 0);
+            mq18433NTT(logn, w1, (short)0);
+            mq18433NTT(logn, w2, (short)0);
             for (int u = 0; u < n; u++) {
-                w1[u] = (short) mq18433MontyMul(w1[u] & 0xFFFF, w2[u] & 0xFFFF);
+                w1[u] = mq18433MontyMul(
+                       (short) (w1[u] & 0xFFFF),
+                        (short) (w2[u] & 0xFFFF));
             }
 
             // w3 <- f*x1 - g*x0, then INTT to get polynomial
-            mq18433PolySetSmall(logn, w2, 0, x0, n); // x1 = x0[n..2n-1]
-            mq18433PolySetSmall(logn, w3, 0, f, 0);
-            mq18433NTT(logn, w2, 0);
-            mq18433NTT(logn, w3, 0);
+            mq18433PolySetSmall(logn, w2, (short) 0, x0, n); // x1 = x0[n..2n-1]
+            mq18433PolySetSmall(logn, w3, (short) 0, f, (short)0);
+            mq18433NTT(logn, w2, (short) 0);
+            mq18433NTT(logn, w3, (short) 0);
             for (int u = 0; u < n; u++) {
-                w3[u] = (short) mq18433ToMonty(mq18433Sub(
-                        mq18433MontyMul(w2[u] & 0xFFFF, w3[u] & 0xFFFF),
-                        w1[u] & 0xFFFF));
+                w3[u] = mq18433ToMonty(
+            mq18433Sub(
+                mq18433MontyMul(
+                    w2[u],
+                    w3[u]),
+                w1[u]));
             }
-            mq18433INTT(logn, w3, 0);
-            mq18433PolySnorm(logn, w3, 0);
+            mq18433INTT(logn, w3, (short) 0);
+            mq18433PolySnorm(logn, w3, (short)0);
 
             short[] s1 = w3;
 
-            int ps = polySymBreak(logn, s1, 0);
+            int ps = polySymBreak(logn, s1, (short) 0);
             int lim = 1 << ((logn == 10) ? 10 : 9);
             short nm = (short) ~tbmask((short) (ps - 1));
 
@@ -1513,6 +1805,6 @@ class Hawk {
         sc.update(message, 0, messageLen);
 
         // Equivalent of hawkSignFinish
-        return sign(logn, 1, sig, sc, priv, privLen, tmp, tmpLen);
+        return sign(logn, (short) 1, sig, sc, priv, privLen, tmp, tmpLen);
     }
 }
