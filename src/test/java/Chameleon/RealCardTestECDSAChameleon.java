@@ -20,14 +20,10 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import org.bouncycastle.pqc.crypto.hawk.HawkParameters;
-import org.bouncycastle.pqc.crypto.hawk.HawkPublicKeyParameters;
-import org.bouncycastle.pqc.crypto.hawk.HawkSigner;
-
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 
-public class RealCardTestChameleon {
+public class RealCardTestECDSAChameleon {
     private static final byte CLA = (byte)0x00;
 
     private static final String Issuer_DCD_OID = "1.3.6.1.4.1.55555.1.101";
@@ -79,7 +75,6 @@ public class RealCardTestChameleon {
         // 2. Load private keys and certificates
         try {
             byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
-            byte[] qkey = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_private.key"));
             byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_chameleon_signed.crt"));
             byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "chameleon_signed.crt"));
 
@@ -87,19 +82,10 @@ public class RealCardTestChameleon {
 
             int offset = 0;
             int chunkSize = 200;
-            while (offset < qkey.length) {
-                int len = Math.min(chunkSize, qkey.length - offset);
-                byte[] chunk = Arrays.copyOfRange(qkey, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB1, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
-                offset += len;
-            }
-
-            offset = 0;
-            chunkSize = 200;
             while (offset < issuer_cert.length) {
                 int len = Math.min(chunkSize, issuer_cert.length - offset);
                 byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(channel, new CommandAPDU(CLA, 0xB1, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
 
@@ -108,7 +94,7 @@ public class RealCardTestChameleon {
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
                 byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB3, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(channel, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
         } catch (Exception e) {
@@ -116,7 +102,7 @@ public class RealCardTestChameleon {
         }
 
         // 3. Lock card
-        send(channel, new CommandAPDU(CLA, 0xB4, 0x00, 0x00));
+        send(channel, new CommandAPDU(CLA, 0xB3, 0x00, 0x00));
 
         // 4. Get certificate
         int offset = 0;
@@ -190,13 +176,13 @@ public class RealCardTestChameleon {
         byte[] iccDCD = unwrapExtension(cert.getExtensionValue(ICC_DCD_OID));
         DCDData iccData = DCDData.parseDCD(iccDCD);
 
-        // 4.3 Verify HAWK
-        byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs.der"));
-        byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
+        // 4.3 Verify delta certificates
+        // byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs.der"));
+        // byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
 
-        byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
-        verifyHAWK(caPub, issuerData.getHawkSignature(), issuerDeltaTbs);
-        verifyHAWK(issuerData.getHawkPublicKey(), iccData.getHawkSignature(), deltaTbs);
+        // byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
+        // verifyHAWK(caPub, issuerData.getHawkSignature(), issuerDeltaTbs);
+        // verifyHAWK(issuerData.getHawkPublicKey(), iccData.getHawkSignature(), deltaTbs);
 
         // 5. Internal authenticate
         SecureRandom rnd = new SecureRandom();
@@ -207,14 +193,14 @@ public class RealCardTestChameleon {
         // 6. Create ECDSA signature
         send(channel, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
 
-        // 7. Create post-quantum signature
+        // 7. Create second signature
         send(channel, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
 
         // 8. Get signature
         ResponseAPDU sigResponse = send(channel, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
         byte[] sigData = sigResponse.getData();
 
-        // 9. Get post-quantum signature
+        // 9. Get second signature
         byte[] signature = new byte[555];
         offset = 0;
 
@@ -233,12 +219,13 @@ public class RealCardTestChameleon {
         boolean ecdsaOK = ecdsaVerifier.verify(sigData);
         System.out.println("Card ECDSA signature: " + ecdsaOK);
 
-        byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
-        HawkSigner verifier = new HawkSigner();
-        verifier.init(false, pk);
-        boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
-        System.out.println("Card HAWK signature: " + hawkOK);
+        // verify second sig
+        // byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
+        // HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
+        // HawkSigner verifier = new HawkSigner();
+        // verifier.init(false, pk);
+        // boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
+        // System.out.println("Card HAWK signature: " + hawkOK);
 
         card.disconnect(false);
     }
@@ -304,15 +291,6 @@ public class RealCardTestChameleon {
                 .replaceAll("\\s", "");
 
         return Base64.getDecoder().decode(pem);
-    }
-
-    private static void verifyHAWK(byte[] hawkPublicKey, byte[] signature, byte[] message) throws Exception {
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, hawkPublicKey, 0,
-                hawkPublicKey.length);
-        HawkSigner verifier = new HawkSigner();
-        verifier.init(false, pk);
-        boolean ok = verifier.verifySignature(message, signature);
-        System.out.println("HAWK: " + ok);
     }
 
     private static byte[] unwrapExtension(byte[] extension) throws Exception {

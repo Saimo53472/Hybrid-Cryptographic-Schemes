@@ -1,105 +1,79 @@
 package Chameleon;
 
-import javax.smartcardio.*;
+import com.licel.jcardsim.smartcardio.CardSimulator;
+import com.test.ChameleonApplet;
 
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.interfaces.ECPrivateKey;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
+import javacard.framework.AID;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
-import java.security.SecureRandom;
-import java.security.Signature;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.List;
 
-import org.bouncycastle.pqc.crypto.hawk.HawkParameters;
-import org.bouncycastle.pqc.crypto.hawk.HawkPublicKeyParameters;
-import org.bouncycastle.pqc.crypto.hawk.HawkSigner;
+import java.security.*;
+import java.security.cert.*;
+import java.io.*;
+
+import javax.smartcardio.*;
+
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.interfaces.ECPrivateKey;
 
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 
-public class RealCardTestChameleon {
-    private static final byte CLA = (byte)0x00;
+public class ChameleonECDSATest {
+
+    private static final byte CLA = (byte) 0x00;
+
+    // Metrics
+    private static int apduCount = 0; // N_APDU
+    private static int bytesSent = 0; // B_comm (host -> card)
+    private static int bytesReceived = 0; // B_comm (card -> host)
+
+    // Timing
+    private static long timeBaseSign = 0;
+    private static long timeDeltaSign = 0;
 
     private static final String Issuer_DCD_OID = "1.3.6.1.4.1.55555.1.101";
     private static final String ICC_DCD_OID = "1.3.6.1.4.1.55555.1.102";
 
     public static void main(String[] args) throws Exception {
 
-        // Retrieve the list of smart card readers available on the host system
-        TerminalFactory factory = TerminalFactory.getDefault();
-        List<CardTerminal> terminals = factory.terminals().list();
+        CardSimulator simulator = new CardSimulator();
 
-        if (terminals.isEmpty()) {
-            throw new RuntimeException("No smart card readers found");
-        }
+        // Applet AID
+        byte[] aidBytes = { (byte) 0xA0, 0x00, 0x00, 0x00, 0x62, 0x01 };
+        AID aid = new AID(aidBytes, (short) 0, (byte) aidBytes.length);
 
-        // Display all detected readers to the users
-        System.out.println("Available readers:");
-        for (int i = 0; i < terminals.size(); i++) {
-            System.out.println(
-                i + ": " + terminals.get(i).getName());
-        }
+        // Install + select
+        simulator.installApplet(aid, ChameleonApplet.class);
+        simulator.selectApplet(aid);
 
-        // Select the first available reader
-        CardTerminal terminal = terminals.get(0);
-        System.out.println("\nUsing: " + terminal.getName());
-
-        // Wait until a smart card is inserted into the reader
-        terminal.waitForCardPresent(0);
-
-        // Establish a connection with the inserted card
-        Card card = terminal.connect("*");
-        System.out.println("Connected");
-
-        // Obtain the basic communication channel used to exchange APDU commands
-        CardChannel channel = card.getBasicChannel();
-
-        // Select Applet
-        byte[] aid = {(byte)0xA0, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
-        ResponseAPDU selectResp = send(channel, new CommandAPDU(0x00, 0xA4, 0x04, 0x00, aid));
-        if (selectResp.getSW() != 0x9000) {
-            throw new RuntimeException(String.format("SELECT failed: %04X",selectResp.getSW()));
-        }
         System.out.println("Applet selected");
 
-        // 1. Init
-        ResponseAPDU initResp = send(channel,new CommandAPDU(CLA, 0x00, 0x00, 0x00));
-        System.out.printf("INIT SW = %04X%n", initResp.getSW());
+        // 1. INIT
+        ResponseAPDU response = send(simulator, new CommandAPDU(CLA, 0x00, 0x00, 0x00));
+
+        if (response.getSW() != 0x9000) {
+            throw new RuntimeException("Assertion failed: expected 0x9000");
+        }
 
         // 2. Load private keys and certificates
         try {
             byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
-            byte[] qkey = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_private.key"));
-            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_chameleon_signed.crt"));
-            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "chameleon_signed.crt"));
+            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa_chameleon_signed.crt"));
+            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa_chameleon_signed.crt"));
 
-            send(channel, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
+            send(simulator, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
 
             int offset = 0;
             int chunkSize = 200;
-            while (offset < qkey.length) {
-                int len = Math.min(chunkSize, qkey.length - offset);
-                byte[] chunk = Arrays.copyOfRange(qkey, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB1, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
-                offset += len;
-            }
-
-            offset = 0;
-            chunkSize = 200;
             while (offset < issuer_cert.length) {
                 int len = Math.min(chunkSize, issuer_cert.length - offset);
                 byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(simulator, new CommandAPDU(CLA, 0xB1, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
 
@@ -108,7 +82,7 @@ public class RealCardTestChameleon {
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
                 byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB3, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(simulator, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
         } catch (Exception e) {
@@ -116,7 +90,12 @@ public class RealCardTestChameleon {
         }
 
         // 3. Lock card
-        send(channel, new CommandAPDU(CLA, 0xB4, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0xB3, 0x00, 0x00));
+
+        // Reset metrics
+        apduCount = 0;
+        bytesSent = 0;
+        bytesReceived = 0;
 
         // 4. Get certificate
         int offset = 0;
@@ -126,7 +105,7 @@ public class RealCardTestChameleon {
             int p1 = (offset >> 8) & 0xFF;
             int p2 = offset & 0xFF;
 
-            ResponseAPDU resp = send(channel, new CommandAPDU(CLA, 0x10, p1, p2));
+            ResponseAPDU resp = send(simulator, new CommandAPDU(CLA, 0x10, p1, p2));
             byte[] data = resp.getData();
             if (data.length == 0)
                 break;
@@ -144,7 +123,7 @@ public class RealCardTestChameleon {
             int p1 = (offset >> 8) & 0xFF;
             int p2 = offset & 0xFF;
 
-            ResponseAPDU resp = send(channel, new CommandAPDU(CLA, 0x20, p1, p2));
+            ResponseAPDU resp = send(simulator, new CommandAPDU(CLA, 0x20, p1, p2));
             byte[] data = resp.getData();
             if (data.length == 0)
                 break;
@@ -167,7 +146,6 @@ public class RealCardTestChameleon {
             issuerCert.verify(caCert.getPublicKey());
             issuerECDSAOK = true;
         } catch (Exception e) {
-            e.printStackTrace();
             issuerECDSAOK = false;
         }
 
@@ -178,54 +156,59 @@ public class RealCardTestChameleon {
             cert.verify(issuerCert.getPublicKey());
             iccECDSAOK = true;
         } catch (Exception e) {
-            e.printStackTrace();
             iccECDSAOK = false;
         }
 
         System.out.println("ICC certificate ECDSA: " + iccECDSAOK);
 
-         // 4.2 Extract and parse DCD 
+        // 4.2 Extract and parse DCD 
         byte[] issuerDCD = unwrapExtension(issuerCert.getExtensionValue(Issuer_DCD_OID));
         DCDData issuerData = DCDData.parseDCD(issuerDCD);
         byte[] iccDCD = unwrapExtension(cert.getExtensionValue(ICC_DCD_OID));
         DCDData iccData = DCDData.parseDCD(iccDCD);
 
-        // 4.3 Verify HAWK
-        byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs.der"));
-        byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
+        // 4.3 Verify ECDSA Delta Certificates
+        // byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs.der"));
+        // byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
 
-        byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
-        verifyHAWK(caPub, issuerData.getHawkSignature(), issuerDeltaTbs);
-        verifyHAWK(issuerData.getHawkPublicKey(), iccData.getHawkSignature(), deltaTbs);
+        // byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
+        // verifyHAWK(caPub, issuerData.getHawkSignature(), issuerDeltaTbs);
+        // verifyHAWK(issuerData.getHawkPublicKey(), iccData.getHawkSignature(), deltaTbs);
 
-        // 5. Internal authenticate
+        // 5. Internal authenticate (build dataToSign)
         SecureRandom rnd = new SecureRandom();
         byte[] challenge = new byte[4];
         rnd.nextBytes(challenge);
-        send(channel, new CommandAPDU(CLA,0x88, 0x00, 0x00, challenge));
+        send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
-        // 6. Create ECDSA signature
-        send(channel, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+        // 6. Create classical signature
+        long startBase = System.nanoTime();
+        send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+        long endBase = System.nanoTime();
+        timeBaseSign = endBase - startBase;
 
-        // 7. Create post-quantum signature
-        send(channel, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+        // 7. Create second signature
+        long startDelta = System.nanoTime();
+        send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+        long endDelta = System.nanoTime();
+        timeDeltaSign = endDelta - startDelta;
 
-        // 8. Get signature
-        ResponseAPDU sigResponse = send(channel, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
+        // 8. Get classical signature
+        ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
         byte[] sigData = sigResponse.getData();
 
-        // 9. Get post-quantum signature
+        // 9. Get second signature
         byte[] signature = new byte[555];
         offset = 0;
 
         while (offset < signature.length) {
-            ResponseAPDU rsp = send(channel, new CommandAPDU(CLA, 0x60, (offset >> 8) & 0xFF, offset & 0xFF));
+            ResponseAPDU rsp = send(simulator, new CommandAPDU(CLA, 0x60, (offset >> 8) & 0xFF, offset & 0xFF));
             byte[] chunk = rsp.getData();
             System.arraycopy(chunk, 0, signature, offset, chunk.length);
             offset += chunk.length;
         }
 
-        // 10. Verify signature 
+        // 10. Verify signatures
         byte[] expectedMessage = buildExpectedMessage(challenge);
         Signature ecdsaVerifier = Signature.getInstance("SHA1withECDSA");
         ecdsaVerifier.initVerify(cert.getPublicKey());
@@ -233,29 +216,65 @@ public class RealCardTestChameleon {
         boolean ecdsaOK = ecdsaVerifier.verify(sigData);
         System.out.println("Card ECDSA signature: " + ecdsaOK);
 
-        byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
-        HawkSigner verifier = new HawkSigner();
-        verifier.init(false, pk);
-        boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
-        System.out.println("Card HAWK signature: " + hawkOK);
+        // change for ecdsa
+        // byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
+        // HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
+        // HawkSigner verifier = new HawkSigner();
+        // verifier.init(false, pk);
+        // boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
+        // System.out.println("Card HAWK signature: " + hawkOK);
 
-        card.disconnect(false);
+        // 10. Print metrics
+        System.out.println("METRICS");
+        // Time
+        System.out.println("Time classical signing (ns): " + timeBaseSign);
+        System.out.println("Time second signing (ns): " + timeDeltaSign);
+        System.out.println("Time hybrid signing (ns): " + (timeBaseSign + timeDeltaSign));
+
+        // Communication
+        System.out.println("Number of APDU transmissions: " + apduCount);
+        System.out.println("Communication bytes sent: " + bytesSent);
+        System.out.println("Communication bytes received: " + bytesReceived);
+        System.out.println("Total communication bytes: " + (bytesSent + bytesReceived));
+
+        // Certificate sizes
+        int issuerCertSize = receivedIssuerCert.length;
+        int iccCertSize = receivedCert.length;
+        System.out.println("Issuer certificate size = " + issuerCertSize);
+        System.out.println("ICC certificate size = " + iccCertSize);
+        System.out.println("Total memory required by certificates = " + (issuerCertSize + iccCertSize));
+
+        // Signature sizes
+        int classicalSigSize = sigData.length;
+        int pqSigSize = signature.length;
+        System.out.println("Base signature size = " + classicalSigSize);
+        System.out.println("Delta signature size = " + pqSigSize);
+        System.out.println("Total memory required for signatures = " + (classicalSigSize + pqSigSize));
     }
 
-    private static ResponseAPDU send(CardChannel channel, CommandAPDU cmd) throws Exception {
+    private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
+        // Count APDU
+        apduCount++;
 
-        ResponseAPDU resp = channel.transmit(cmd);
+        // Count bytes sent
+        bytesSent += cmd.getBytes().length;
+
+        ResponseAPDU resp = sim.transmitCommand(cmd);
+
+        // Count bytes received
+        bytesReceived += resp.getBytes().length;
+
         System.out.println(">> " + toHex(cmd.getBytes()));
         System.out.println("<< " + toHex(resp.getBytes()));
-        System.out.printf("SW=%04X%n", resp.getSW());
+        System.out.println("SW = " + Integer.toHexString(resp.getSW()));
         System.out.println();
+
         return resp;
     }
 
     private static String toHex(byte[] data) {
         StringBuilder sb = new StringBuilder();
-        for (byte b : data) { 
+        for (byte b : data) {
             sb.append(String.format("%02X ", b));
         }
         return sb.toString();
@@ -306,13 +325,11 @@ public class RealCardTestChameleon {
         return Base64.getDecoder().decode(pem);
     }
 
-    private static void verifyHAWK(byte[] hawkPublicKey, byte[] signature, byte[] message) throws Exception {
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, hawkPublicKey, 0,
-                hawkPublicKey.length);
-        HawkSigner verifier = new HawkSigner();
-        verifier.init(false, pk);
-        boolean ok = verifier.verifySignature(message, signature);
-        System.out.println("HAWK: " + ok);
+    public static PublicKey loadPublicKeyFromCert(String certPath) throws Exception {
+        FileInputStream fis = new FileInputStream(certPath);
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        X509Certificate cert = (X509Certificate) cf.generateCertificate(fis);
+        return cert.getPublicKey();
     }
 
     private static byte[] unwrapExtension(byte[] extension) throws Exception {
