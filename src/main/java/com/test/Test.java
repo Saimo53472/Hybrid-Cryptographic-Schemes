@@ -11,9 +11,11 @@ public class Test extends Applet {
     }
 
     private static short foo() {
-        int x = 1;
-        int y = x + 1;
-        return (short)y;
+        short a = 1234;
+        short b = 5678;
+        short p1 = (short)(a * b);
+        short p = (short)((short)(a * b) >>> 8);
+        return p;
     }
 
     public void process(APDU apdu) {}
