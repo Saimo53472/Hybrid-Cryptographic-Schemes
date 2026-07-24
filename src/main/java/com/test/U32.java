@@ -63,6 +63,51 @@ final class U32 {
         return (short)(x.hi ^ x.lo);
     }
 
+    private static short uLessThan(
+        short aHi, short aLo,
+        short bHi, short bLo)
+    {
+        if (aHi != bHi) {
+            return (short)(((aHi ^ (short)0x8000)
+                    < (bHi ^ (short)0x8000)) ? 1 : 0);
+        }
+
+        return (short)(((aLo ^ (short)0x8000)
+                < (bLo ^ (short)0x8000)) ? 1 : 0);
+    }
+
+    static short ult(U32 a, U32 b)
+    {
+        return uLessThan(
+            a.hi, a.lo,
+            b.hi, b.lo);
+    }
+
+    static short msb(U32 a)
+    {
+        return (short)((a.hi >>> 15) & 1);
+    }
+
+    static void clearMsb(U32 a)
+    {
+        a.hi = (short)(a.hi & 0x7FFF);
+    }
+
+    static void select(
+        U32 x,
+        U32 y,
+        short mask,
+        U32 out)
+    {
+        out.hi =
+            (short)(x.hi
+            ^ (mask & (x.hi ^ y.hi)));
+
+        out.lo =
+            (short)(x.lo
+            ^ (mask & (x.lo ^ y.lo)));
+    }
+
     static void mul16(short a, short b, U32 out)
     {
         short al = (short)(a & 0x00FF);

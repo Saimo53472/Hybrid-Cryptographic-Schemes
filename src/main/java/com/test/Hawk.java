@@ -1203,8 +1203,8 @@ class Hawk {
      */
     public void mq18433PolySetSmall(short logn, short[] d, short dOffset, byte[] a, short aOffset) {
         short n = (short) (1 << logn);
-        for (int u = 0; u < n; u++) {
-            d[dOffset + u] = mq18433SetSmall(a[aOffset + u]);
+        for (short u = 0; u < n; u++) {
+            d[(short) (dOffset + u)] = mq18433SetSmall(a[(short) (aOffset + u)]);
         }
     }
 
@@ -1212,9 +1212,14 @@ class Hawk {
      * Modular subtraction: (x - y) mod Q,
      * result in [1..Q] where Q represents 0 mod Q.
      */
-    public short mq18433Sub(short x, short y) {
-        int d = (y & 0xFFFF) - (x & 0xFFFF);
-        d += Q & (d >> 16);
+    public short mq18433Sub(short x, short y)
+    {
+        short d = (short)(y - x);
+
+        short mask = (short)(d >> 15);
+
+        d = (short)(d + (Q & mask));
+
         return (short)(Q - d);
     }
 
@@ -1222,10 +1227,15 @@ class Hawk {
      * Modular addition: (x + y) mod Q,
      * result in [1..Q] where Q represents 0 mod Q.
      */
-    public short mq18433Add(short x, short y) {
-        int d = Q - ((x & 0xFFFF) + (y & 0xFFFF));
-        d += Q & (d >> 16);
-        return (short)(Q - d);
+    public short mq18433Add(short x, short y)
+    {
+        short s = (short)(x + y);
+
+        short d = (short)(s - Q);
+
+        short mask = (short)(d >> 15);
+
+        return (short)(d + (Q & mask));
     }
 
     /**
