@@ -308,7 +308,7 @@ public class ChameleonECDSAApplet extends Applet {
 
     // Generate ECDSA signature over the assembled authentication data
     private void createSignatureDelta(APDU apdu) {
-        classicalSignature.init(classicalPrivateKey, Signature.MODE_SIGN);
+        classicalSignature.init(secondPrivateKey, Signature.MODE_SIGN);
 
         deltaSigLen = classicalSignature.sign(
             dataToSign,

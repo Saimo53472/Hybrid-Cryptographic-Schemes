@@ -194,7 +194,6 @@ public class ChameleonECDSATest {
 
         System.out.println("ICC DCD ECDSA: " + iccDCDOK);
 
-
         // 5. Internal authenticate (build dataToSign)
         SecureRandom rnd = new SecureRandom();
         byte[] challenge = new byte[4];
@@ -218,15 +217,8 @@ public class ChameleonECDSATest {
         byte[] sigData = sigResponse.getData();
 
         // 9. Get second signature
-        byte[] signature = new byte[555];
-        offset = 0;
-
-        while (offset < signature.length) {
-            ResponseAPDU rsp = send(simulator, new CommandAPDU(CLA, 0x60, (offset >> 8) & 0xFF, offset & 0xFF));
-            byte[] chunk = rsp.getData();
-            System.arraycopy(chunk, 0, signature, offset, chunk.length);
-            offset += chunk.length;
-        }
+        ResponseAPDU sigResponse2 = send(simulator, new CommandAPDU(CLA, 0x60, 0x00, 0x00));
+        byte[] signature = sigResponse2.getData();
 
         // 10. Verify signatures
         byte[] expectedMessage = buildExpectedMessage(challenge);
@@ -237,14 +229,17 @@ public class ChameleonECDSATest {
         System.out.println("Card ECDSA signature: " + ecdsaOK);
 
         // change for ecdsa
-        // byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
-        // HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
-        // HawkSigner verifier = new HawkSigner();
-        // verifier.init(false, pk);
-        // boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
-        // System.out.println("Card HAWK signature: " + hawkOK);
+        X509Certificate delta = (X509Certificate) cf.generateCertificate(new FileInputStream("src/test/resources/certs/ecdsa2.crt"));
+        boolean secondOk;
+        try {
+            verifyECDSA(delta.getPublicKey(), signature, expectedMessage);
+            secondOk = true;
+        } catch (Exception e) {
+            secondOk = false;
+        }
+        System.out.println("Card DCD signature: " + secondOk);
 
-        // 10. Print metrics
+        // 11. Print metrics
         System.out.println("METRICS");
         // Time
         System.out.println("Time classical signing (ns): " + timeBaseSign);
