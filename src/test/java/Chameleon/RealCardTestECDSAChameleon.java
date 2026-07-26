@@ -4,6 +4,7 @@ import javax.smartcardio.*;
 
 import java.security.KeyFactory;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.interfaces.ECPrivateKey;
 import java.io.ByteArrayInputStream;
@@ -75,17 +76,19 @@ public class RealCardTestECDSAChameleon {
         // 2. Load private keys and certificates
         try {
             byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
-            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_chameleon_signed.crt"));
-            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "chameleon_signed.crt"));
+            byte[] key2 = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key2_pkcs8.pem"));
+            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa_signed.crt"));
+            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa_signed.crt"));
 
             send(channel, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
+            send(channel, new CommandAPDU(CLA, 0xB1, 0x00, 0x00, key2));
 
             int offset = 0;
             int chunkSize = 200;
             while (offset < issuer_cert.length) {
                 int len = Math.min(chunkSize, issuer_cert.length - offset);
                 byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB1, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(channel, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
 
@@ -94,7 +97,7 @@ public class RealCardTestECDSAChameleon {
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
                 byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(channel, new CommandAPDU(CLA, 0xB3, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
         } catch (Exception e) {
@@ -102,7 +105,7 @@ public class RealCardTestECDSAChameleon {
         }
 
         // 3. Lock card
-        send(channel, new CommandAPDU(CLA, 0xB3, 0x00, 0x00));
+        send(channel, new CommandAPDU(CLA, 0xB4, 0x00, 0x00));
 
         // 4. Get certificate
         int offset = 0;
@@ -153,7 +156,6 @@ public class RealCardTestECDSAChameleon {
             issuerCert.verify(caCert.getPublicKey());
             issuerECDSAOK = true;
         } catch (Exception e) {
-            e.printStackTrace();
             issuerECDSAOK = false;
         }
 
@@ -170,48 +172,57 @@ public class RealCardTestECDSAChameleon {
 
         System.out.println("ICC certificate ECDSA: " + iccECDSAOK);
 
-         // 4.2 Extract and parse DCD 
+        // 4.2 Extract and parse DCD 
         byte[] issuerDCD = unwrapExtension(issuerCert.getExtensionValue(Issuer_DCD_OID));
         DCDData issuerData = DCDData.parseDCD(issuerDCD);
         byte[] iccDCD = unwrapExtension(cert.getExtensionValue(ICC_DCD_OID));
         DCDData iccData = DCDData.parseDCD(iccDCD);
 
-        // 4.3 Verify delta certificates
-        // byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs.der"));
-        // byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
+        // 4.3 Verify ECDSA Delta Certificates
+        byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs2.der"));
+        byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs2.der"));
 
-        // byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
-        // verifyHAWK(caPub, issuerData.getHawkSignature(), issuerDeltaTbs);
-        // verifyHAWK(issuerData.getHawkPublicKey(), iccData.getHawkSignature(), deltaTbs);
+        boolean issuerDCDOK;
+        try {
+            verifyECDSA(caCert.getPublicKey(), issuerData.getSignature(), issuerDeltaTbs);
+            issuerDCDOK = true;
+        } catch (Exception e) {
+            issuerDCDOK = false;
+        }
 
-        // 5. Internal authenticate
+        System.out.println("Issuer DCD ECDSA: " + issuerDCDOK);
+
+        boolean iccDCDOK;
+        try {
+            verifyECDSA(issuerCert.getPublicKey(), iccData.getSignature(), deltaTbs);
+            iccDCDOK = true;
+        } catch (Exception e) {
+            iccDCDOK = false;
+        }
+
+        System.out.println("ICC DCD ECDSA: " + iccDCDOK);
+
+        // 5. Internal authenticate (build dataToSign)
         SecureRandom rnd = new SecureRandom();
         byte[] challenge = new byte[4];
         rnd.nextBytes(challenge);
-        send(channel, new CommandAPDU(CLA,0x88, 0x00, 0x00, challenge));
+        send(channel, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
-        // 6. Create ECDSA signature
+        // 6. Create classical signature
         send(channel, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
 
         // 7. Create second signature
         send(channel, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
 
-        // 8. Get signature
+        // 8. Get classical signature
         ResponseAPDU sigResponse = send(channel, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
         byte[] sigData = sigResponse.getData();
 
         // 9. Get second signature
-        byte[] signature = new byte[555];
-        offset = 0;
+        ResponseAPDU sigResponse2 = send(channel, new CommandAPDU(CLA, 0x60, 0x00, 0x00));
+        byte[] signature = sigResponse2.getData();
 
-        while (offset < signature.length) {
-            ResponseAPDU rsp = send(channel, new CommandAPDU(CLA, 0x60, (offset >> 8) & 0xFF, offset & 0xFF));
-            byte[] chunk = rsp.getData();
-            System.arraycopy(chunk, 0, signature, offset, chunk.length);
-            offset += chunk.length;
-        }
-
-        // 10. Verify signature 
+        // 10. Verify signatures
         byte[] expectedMessage = buildExpectedMessage(challenge);
         Signature ecdsaVerifier = Signature.getInstance("SHA1withECDSA");
         ecdsaVerifier.initVerify(cert.getPublicKey());
@@ -219,14 +230,16 @@ public class RealCardTestECDSAChameleon {
         boolean ecdsaOK = ecdsaVerifier.verify(sigData);
         System.out.println("Card ECDSA signature: " + ecdsaOK);
 
-        // verify second sig
-        // byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
-        // HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
-        // HawkSigner verifier = new HawkSigner();
-        // verifier.init(false, pk);
-        // boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
-        // System.out.println("Card HAWK signature: " + hawkOK);
-
+        // change for ecdsa
+        X509Certificate delta = (X509Certificate) cf.generateCertificate(new FileInputStream("src/test/resources/certs/ecdsa2.crt"));
+        boolean secondOk;
+        try {
+            verifyECDSA(delta.getPublicKey(), signature, expectedMessage);
+            secondOk = true;
+        } catch (Exception e) {
+            secondOk = false;
+        }
+        System.out.println("Card DCD signature: " + secondOk);
         card.disconnect(false);
     }
 
@@ -298,6 +311,18 @@ public class RealCardTestECDSAChameleon {
                 ASN1Primitive.fromByteArray(extension));
 
         return oct.getOctets();
+    }
+
+    public static boolean verifyECDSA(
+                PublicKey pk,
+                byte[] signature,
+                byte[] message)
+                throws Exception{
+
+        Signature verifier = Signature.getInstance("SHA1withECDSA");
+        verifier.initVerify(pk);
+        verifier.update(message);
+        return verifier.verify(signature);
     }
 
     private static byte[] buildExpectedMessage(byte[] challenge) {
