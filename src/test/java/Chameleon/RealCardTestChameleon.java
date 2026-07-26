@@ -195,8 +195,8 @@ public class RealCardTestChameleon {
         byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
 
         byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
-        verifyHAWK(caPub, issuerData.getHawkSignature(), issuerDeltaTbs);
-        verifyHAWK(issuerData.getHawkPublicKey(), iccData.getHawkSignature(), deltaTbs);
+        verifyHAWK(caPub, issuerData.getSignature(), issuerDeltaTbs);
+        verifyHAWK(issuerData.getPublicKey(), iccData.getSignature(), deltaTbs);
 
         // 5. Internal authenticate
         SecureRandom rnd = new SecureRandom();

@@ -1,6 +1,6 @@
 package Chameleon;
 
-import java.security.PublicKey;
+import java.security.*;
 import java.util.Arrays;
 
 import org.bouncycastle.pqc.crypto.hawk.HawkParameters;
@@ -85,7 +85,7 @@ public class DCDData {
 
         }
 
-    public byte[] getpublicKey() {
+    public byte[] getPublicKey() {
         return publicKey;
     }
 

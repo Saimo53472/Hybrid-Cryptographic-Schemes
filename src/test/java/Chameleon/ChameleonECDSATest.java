@@ -1,7 +1,7 @@
 package Chameleon;
 
 import com.licel.jcardsim.smartcardio.CardSimulator;
-import com.test.ChameleonApplet;
+import com.test.ChameleonECDSAApplet;
 
 import javacard.framework.AID;
 
@@ -48,7 +48,7 @@ public class ChameleonECDSATest {
         AID aid = new AID(aidBytes, (short) 0, (byte) aidBytes.length);
 
         // Install + select
-        simulator.installApplet(aid, ChameleonApplet.class);
+        simulator.installApplet(aid, ChameleonECDSAApplet.class);
         simulator.selectApplet(aid);
 
         System.out.println("Applet selected");
@@ -63,17 +63,19 @@ public class ChameleonECDSATest {
         // 2. Load private keys and certificates
         try {
             byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
-            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa_chameleon_signed.crt"));
-            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa_chameleon_signed.crt"));
+            byte[] key2 = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key2_pkcs8.pem"));
+            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa_signed.crt"));
+            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa_signed.crt"));
 
             send(simulator, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
+            send(simulator, new CommandAPDU(CLA, 0xB1, 0x00, 0x00, key2));
 
             int offset = 0;
             int chunkSize = 200;
             while (offset < issuer_cert.length) {
                 int len = Math.min(chunkSize, issuer_cert.length - offset);
                 byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
-                send(simulator, new CommandAPDU(CLA, 0xB1, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(simulator, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
 
@@ -82,7 +84,7 @@ public class ChameleonECDSATest {
             while (offset < cert.length) {
                 int len = Math.min(chunkSize, cert.length - offset);
                 byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
-                send(simulator, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                send(simulator, new CommandAPDU(CLA, 0xB3, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
                 offset += len;
             }
         } catch (Exception e) {
@@ -90,7 +92,7 @@ public class ChameleonECDSATest {
         }
 
         // 3. Lock card
-        send(simulator, new CommandAPDU(CLA, 0xB3, 0x00, 0x00));
+        send(simulator, new CommandAPDU(CLA, 0xB4, 0x00, 0x00));
 
         // Reset metrics
         apduCount = 0;
@@ -156,6 +158,7 @@ public class ChameleonECDSATest {
             cert.verify(issuerCert.getPublicKey());
             iccECDSAOK = true;
         } catch (Exception e) {
+            e.printStackTrace();
             iccECDSAOK = false;
         }
 
@@ -190,6 +193,7 @@ public class ChameleonECDSATest {
         }
 
         System.out.println("ICC DCD ECDSA: " + iccDCDOK);
+
 
         // 5. Internal authenticate (build dataToSign)
         SecureRandom rnd = new SecureRandom();

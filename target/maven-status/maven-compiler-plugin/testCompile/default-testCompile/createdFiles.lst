@@ -1,5 +1,6 @@
 org\bouncycastle\util\Integers.class
 org\bouncycastle\pqc\crypto\hawk\SmallPrime.class
+Chameleon\ChameleonECDSATest.class
 HawkSignCert.class
 org\bouncycastle\pqc\crypto\hawk\package-info.class
 Chameleon\DCDData.class
@@ -12,6 +13,7 @@ org\bouncycastle\pqc\crypto\hawk\HawkTest.class
 org\bouncycastle\pqc\crypto\hawk\Utils.class
 org\bouncycastle\util\Longs.class
 org\bouncycastle\pqc\crypto\hawk\HawkKeyPairGenerator.class
+Chameleon\RealCardTestECDSAChameleon.class
 org\bouncycastle\math\raw\Nat.class
 Chameleon\RealCardTestChameleon.class
 org\bouncycastle\pqc\crypto\hawk\HawkSigner.class

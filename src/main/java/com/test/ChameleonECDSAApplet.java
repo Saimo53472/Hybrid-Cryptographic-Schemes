@@ -15,9 +15,10 @@ public class ChameleonECDSAApplet extends Applet {
 
     // Personalization commands
     private static final byte INS_LOAD_PRIVKEY_BASE = (byte) 0xB0; // Load ICC ECDSA private key 
-    private static final byte INS_LOAD_ISSUER_CERT = (byte) 0xB1; // Load issuer certificate
-    private static final byte INS_LOAD_CERT = (byte) 0xB2; // Load ICC certificate
-    private static final byte INS_LOCK_CARD = (byte) 0xB3; // Lock card
+    private static final byte INS_LOAD_PRIVKEY_DELTA = (byte) 0xB1; // Load ICC ECDSA private key 
+    private static final byte INS_LOAD_ISSUER_CERT = (byte) 0xB2; // Load issuer certificate
+    private static final byte INS_LOAD_CERT = (byte) 0xB3; // Load ICC certificate
+    private static final byte INS_LOCK_CARD = (byte) 0xB4; // Lock card
 
     // Internal authenticate command
     private static final byte INS_INTERNAL_AUTHENTICATE = (byte) 0x88; // Create the data to be signed
@@ -32,6 +33,7 @@ public class ChameleonECDSAApplet extends Applet {
     private byte[] classicalSigBuffer;
 
     // Second ECDSA signature (hybrid mode)
+    private ECPrivateKey secondPrivateKey; // on card
     private byte[] deltaSigBuffer;
     private short deltaSigLen;
 
@@ -58,6 +60,7 @@ public class ChameleonECDSAApplet extends Applet {
 
         // Create empty EC private key object
         classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_192, false);
+        secondPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_192, false);
         classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA, false);
         classicalSigBuffer = new byte[128];
 
@@ -112,6 +115,10 @@ public class ChameleonECDSAApplet extends Applet {
 
             case INS_LOAD_PRIVKEY_BASE:
                 loadPrivateKeyBase(apdu);
+                return;
+
+            case INS_LOAD_PRIVKEY_DELTA:
+                loadPrivateKeyDelta(apdu);
                 return;
 
             case INS_LOAD_ISSUER_CERT:
@@ -169,6 +176,41 @@ public class ChameleonECDSAApplet extends Applet {
 
         lenn = gen.getR(tmp,(short)0);
         classicalPrivateKey.setR(tmp,(short)0,lenn);
+    }
+
+    private void loadPrivateKeyDelta(APDU apdu) {
+        // Private key may only be loaded during personalization
+        if (personalized)
+            ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
+
+        byte[] buf = apdu.getBuffer();
+        short len = apdu.setIncomingAndReceive();
+
+        // Load externally generated private scalar d
+        secondPrivateKey.setS(buf, (short) ISO7816.OFFSET_CDATA, len);
+        // Generate a temporary EC key pair.
+        kp.genKeyPair();
+
+        ECPrivateKey gen = (ECPrivateKey)kp.getPrivate();
+
+        byte[] tmp = new byte[80];
+        short lenn;
+
+        // Copy EC domain parameters from the generated key into the imported key object.
+        lenn = gen.getField(tmp,(short)0);
+        secondPrivateKey.setFieldFP(tmp,(short)0,lenn);
+
+        lenn = gen.getA(tmp,(short)0);
+        secondPrivateKey.setA(tmp,(short)0,lenn);
+
+        lenn = gen.getB(tmp,(short)0);
+        secondPrivateKey.setB(tmp,(short)0,lenn);
+
+        lenn = gen.getG(tmp,(short)0);
+        secondPrivateKey.setG(tmp,(short)0,lenn);
+
+        lenn = gen.getR(tmp,(short)0);
+        secondPrivateKey.setR(tmp,(short)0,lenn);
     }
 
     private void loadIssuerCertificate(APDU apdu) {
