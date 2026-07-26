@@ -66,6 +66,16 @@ openssl asn1parse \
   -out src/test/resources/certs/issuer_tbs.der
 ```
 
+REMOVE!
+openssl x509 \
+    -inform DER \
+    -in src/test/resources/certs/ecdsa2.der \
+    -pubkey -noout |
+openssl pkey \
+    -pubin \
+    -outform DER \
+    -out src/test/resources/keys/public_key2.der
+
 Run the python script
 ```
 python src/test/resources/certs/cert.py
@@ -76,20 +86,18 @@ Check the data for hawk is there
 openssl asn1parse -inform DER -in src/test/resources/certs/issuer_delta_tbs.der -i
 ```
 
-Check the signature is there
-```
-openssl asn1parse \
-  -inform DER \
-  -in src/test/resources/certs/issuer_delta_tbs.der \
-  -strparse 132 \
-  -dump
-```
-
 Run HawkSignCert.java to get the signature of the Delta Certificate data
 ```
  mvn clean test-compile 
  mvn exec:java "-Dexec.mainClass=HawkSignCert" "-Dexec.classpathScope=test"
 ```
+
+REMOVE
+openssl dgst \
+    -sha1 \
+    -sign src/test/resources/keys/issuer_ecdsa.key \
+    -out src/test/resources/sigs/signature2.bin \
+    src/test/resources/certs/delta_tbs2.der
 
 Create DCD
 ```

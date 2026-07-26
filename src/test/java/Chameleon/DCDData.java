@@ -1,5 +1,6 @@
 package Chameleon;
 
+import java.security.PublicKey;
 import java.util.Arrays;
 
 import org.bouncycastle.pqc.crypto.hawk.HawkParameters;
@@ -13,8 +14,8 @@ import com.licel.jcardsim.bouncycastle.asn1.ASN1Sequence;
 
 public class DCDData {
 
-    private byte[] hawkPublicKey;
-    private byte[] hawkSignature;
+    private byte[] publicKey;
+    private byte[] signature;
 
     public static DCDData parseDCD(byte[] dcdBytes)
             throws Exception {
@@ -28,12 +29,12 @@ public class DCDData {
         ASN1BitString keyBits = ASN1BitString.getInstance(
                 spki.getObjectAt(1));
 
-        byte[] hawkPublicKey = keyBits.getBytes();
-        if (hawkPublicKey.length == 1025 && hawkPublicKey[0] == 0x00) {
-            hawkPublicKey = Arrays.copyOfRange(
-                    hawkPublicKey,
+        byte[] publicKey = keyBits.getBytes();
+        if (publicKey.length == 1025 && publicKey[0] == 0x00) {
+            publicKey = Arrays.copyOfRange(
+                    publicKey,
                     1,
-                    hawkPublicKey.length);
+                    publicKey.length);
         }
 
         ASN1OctetString sig = ASN1OctetString.getInstance(
@@ -41,20 +42,20 @@ public class DCDData {
 
         DCDData result = new DCDData();
 
-        result.hawkPublicKey = hawkPublicKey;
-        result.hawkSignature = sig.getOctets();
+        result.publicKey = publicKey;
+        result.signature = sig.getOctets();
         return result;
     }
 
     public static void verifyHAWK(
-            byte[] hawkPublicKey,
+            byte[] publicKey,
             byte[] signature,
             byte[] message) throws Exception {
         HawkPublicKeyParameters pk = new HawkPublicKeyParameters(
                 HawkParameters.Hawk_512,
-                hawkPublicKey,
+                publicKey,
                 0,
-                hawkPublicKey.length);
+                publicKey.length);
 
         HawkSigner verifier = new HawkSigner();
         verifier.init(false, pk);
@@ -67,11 +68,28 @@ public class DCDData {
                 "HAWK signature: " + ok);
     }
 
-    public byte[] getHawkPublicKey() {
-        return hawkPublicKey;
+    public static boolean verifyECDSA(
+                PublicKey pk,
+                byte[] signature,
+                byte[] message)
+                throws Exception{
+
+        Signature verifier =
+                Signature.getInstance("SHA1withECDSA");
+
+        verifier.initVerify(pk);
+
+        verifier.update(message);
+
+        return verifier.verify(signature);
+
+        }
+
+    public byte[] getpublicKey() {
+        return publicKey;
     }
 
-    public byte[] getHawkSignature() {
-        return hawkSignature;
+    public byte[] getSignature() {
+        return signature;
     }
 }

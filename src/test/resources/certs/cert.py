@@ -4,9 +4,9 @@ from pyasn1.codec.der.encoder import encode
 
 
 # Files - change for issuer or ICC
-TBS_FILE = "src/test/resources/certs/tbs.der"
-HAWK_KEY_FILE = "src/test/resources/keys/hawk512_public.key"
-OUTPUT_FILE = "src/test/resources/certs/delta_tbs.der"
+TBS_FILE = "src/test/resources/certs/tbs2.der"
+HAWK_KEY_FILE = "src/test/resources/keys/public_key2.der"
+OUTPUT_FILE = "src/test/resources/certs/delta_tbs2.der"
 
 
 # Experimental HAWK-512 OID for PoC

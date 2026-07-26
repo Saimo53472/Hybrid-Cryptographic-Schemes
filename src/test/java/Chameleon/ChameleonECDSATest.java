@@ -168,12 +168,28 @@ public class ChameleonECDSATest {
         DCDData iccData = DCDData.parseDCD(iccDCD);
 
         // 4.3 Verify ECDSA Delta Certificates
-        // byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs.der"));
-        // byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
+        byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs2.der"));
+        byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs2.der"));
 
-        // byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
-        // verifyHAWK(caPub, issuerData.getHawkSignature(), issuerDeltaTbs);
-        // verifyHAWK(issuerData.getHawkPublicKey(), iccData.getHawkSignature(), deltaTbs);
+        boolean issuerDCDOK;
+        try {
+            verifyECDSA(caCert.getPublicKey(), issuerData.getSignature(), issuerDeltaTbs);
+            issuerDCDOK = true;
+        } catch (Exception e) {
+            issuerDCDOK = false;
+        }
+
+        System.out.println("Issuer DCD ECDSA: " + issuerDCDOK);
+
+        boolean iccDCDOK;
+        try {
+            verifyECDSA(issuerCert.getPublicKey(), iccData.getSignature(), deltaTbs);
+            iccDCDOK = true;
+        } catch (Exception e) {
+            iccDCDOK = false;
+        }
+
+        System.out.println("ICC DCD ECDSA: " + iccDCDOK);
 
         // 5. Internal authenticate (build dataToSign)
         SecureRandom rnd = new SecureRandom();
@@ -338,6 +354,18 @@ public class ChameleonECDSATest {
 
         return oct.getOctets();
     }
+
+    public static boolean verifyECDSA(
+                PublicKey pk,
+                byte[] signature,
+                byte[] message)
+                throws Exception{
+
+        Signature verifier = Signature.getInstance("SHA1withECDSA");
+        verifier.initVerify(pk);
+        verifier.update(message);
+        return verifier.verify(signature);
+        }
 
     private static byte[] buildExpectedMessage(byte[] challenge) {
         byte[] msg = new byte[255];

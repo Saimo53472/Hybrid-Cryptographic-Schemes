@@ -2,9 +2,9 @@ from pyasn1.type import univ
 from pyasn1.codec.der.encoder import encode
 
 
-OUTPUT = "src/test/resources/certs/dcd.der"
-PUBLIC_KEY_FILE = "src/test/resources/keys/hawk512_public.key"
-SIGNATURE_FILE = "src/test/resources/sigs/hawk_signature.bin"
+OUTPUT = "src/test/resources/certs/dcd2.der"
+PUBLIC_KEY_FILE = "src/test/resources/keys/public_key2.der"
+SIGNATURE_FILE = "src/test/resources/sigs/signature2.bin"
 
 HAWK_OID = "1.3.6.1.4.1.55555.1.512"
 

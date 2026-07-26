@@ -2,9 +2,9 @@ from asn1crypto import x509, core
 
 
 CERT_FILE = "src/test/resources/certs/ecdsa.der"
-DCD_FILE = "src/test/resources/certs/dcd.der"
+DCD_FILE = "src/test/resources/certs/dcd2.der"
 
-OUTPUT = "src/test/resources/certs/chameleon_cert.der"
+OUTPUT = "src/test/resources/certs/ecdsa_cert.der"
 
 
 # Experimental DCD extension OID

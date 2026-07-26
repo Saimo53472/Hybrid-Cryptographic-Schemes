@@ -1,10 +1,10 @@
 from asn1crypto import x509, core
 
 
-CERT_FILE = "src/test/resources/certs/chameleon_cert.der"
-SIG_FILE = "src/test/resources/sigs/ecdsa_new_signature.bin"
+CERT_FILE = "src/test/resources/certs/ecdsa_cert.der"
+SIG_FILE = "src/test/resources/sigs/ecdsa_new_signature2.bin"
 
-OUTPUT = "src/test/resources/certs/chameleon_signed.der"
+OUTPUT = "src/test/resources/certs/ecdsa_signed.der"
 
 
 with open(CERT_FILE, "rb") as f:
