@@ -1,4 +1,4 @@
-package SHAKE;
+package com.test;
 
 /**
  * Allocation-free Keccak-f[1600] permutation using 32-bit hi/lo lane pairs.

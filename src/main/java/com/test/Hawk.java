@@ -1,6 +1,5 @@
 package com.test;
 
-import SHAKE.SHAKE256JC;
 import javacard.framework.*;
 import javacard.security.*;
 
@@ -481,59 +480,6 @@ class Hawk {
     private static final short BYTES_64 = SIZE_64 / 8;
     private static final short BYTES_128 = SIZE_128 / 8;
 
-    // private static void mul64(
-    //     short aHi, short aLo,
-    //     short bHi, short bLo,
-    //     short[] out, short off)
-    // {
-    //     U32 p00 = new U32();
-    //     U32 p01 = new U32();
-    //     U32 p10 = new U32();
-    //     U32 p11 = new U32();
-
-    //     U32.mul16(aLo, bLo, p00);
-    //     U32.mul16(aLo, bHi, p01);
-    //     U32.mul16(aHi, bLo, p10);
-    //     U32.mul16(aHi, bHi, p11);
-
-    //     short r0 = p00.lo;
-
-    //     short t1 = (short)(p00.hi + p01.lo);
-    //     short carry1 = (short)((t1 < p00.hi) ? 1 : 0);
-
-    //     short old = t1;
-    //     t1 = (short)(t1 + p10.lo);
-    //     if (t1 < old) {
-    //         carry1++;
-    //     }
-
-    //     short r1 = t1;
-
-    //     short t2 = (short)(p01.hi + p10.hi);
-    //     short carry2 = (short)((t2 < p01.hi) ? 1 : 0);
-
-    //     old = t2;
-    //     t2 = (short)(t2 + p11.lo);
-    //     if (t2 < old) {
-    //         carry2++;
-    //     }
-
-    //     old = t2;
-    //     t2 = (short)(t2 + carry1);
-    //     if (t2 < old) {
-    //         carry2++;
-    //     }
-
-    //     short r2 = t2;
-
-    //     short r3 = (short)(p11.hi + carry2);
-
-    //     out[off]                 = r0;
-    //     out[(short)(off + 1)]    = r1;
-    //     out[(short)(off + 2)]    = r2;
-    //     out[(short)(off + 3)]    = r3;
-    // }
-
     /**
     * XOR of two 64-bit binary polynomials represented as byte arrays.
     */
@@ -557,6 +503,69 @@ class Hawk {
 
         enc32le(d, dOffset, loHi, loLo);
         enc32le(d, (short)(dOffset + 4), hiHi, hiLo);
+    }
+
+     /**
+    * Computes the 64-bit product of two 32-bit integers without using Java long arithmetic.
+    */
+    public static void mul64(
+    short aHi, short aLo,
+    short bHi, short bLo,
+    short[] out, short off)
+    {
+        U32 p00 = new U32();
+        U32 p01 = new U32();
+        U32 p10 = new U32();
+        U32 p11 = new U32();
+
+        mul16(aLo, bLo, p00);
+        mul16(aLo, bHi, p01);
+        mul16(aHi, bLo, p10);
+        mul16(aHi, bHi, p11);
+
+        short r0 = p00.lo;
+
+        short t1 = (short)(p00.hi + p01.lo);
+        short carry1 = uLessThan(
+            (short)0, t1,
+            (short)0, p00.hi);
+
+        short old = t1;
+        t1 = (short)(t1 + p10.lo);
+
+        if (uLessThan((short)0, t1, (short)0, old) != 0) {
+            carry1++;
+        }
+
+        short r1 = t1;
+
+        short t2 = (short)(p01.hi + p10.hi);
+        short carry2 = uLessThan(
+            (short)0, t2,
+            (short)0, p01.hi);
+
+        old = t2;
+        t2 = (short)(t2 + p11.lo);
+
+        if (uLessThan((short)0, t2, (short)0, old) != 0) {
+            carry2++;
+        }
+
+        old = t2;
+        t2 = (short)(t2 + carry1);
+
+        if (uLessThan((short)0, t2, (short)0, old) != 0) {
+            carry2++;
+        }
+
+        short r2 = t2;
+
+        short r3 = (short)(p11.hi + carry2);
+
+        out[off]               = r0;
+        out[(short)(off + 1)] = r1;
+        out[(short)(off + 2)] = r2;
+        out[(short)(off + 3)] = r3;
     }
 
     /**
@@ -598,11 +607,11 @@ class Hawk {
             y0.hi, y0.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z0hi, hiPart, z0hi);
         U32.xor(z0lo, loPart, z0lo);
 
@@ -611,11 +620,11 @@ class Hawk {
             y3.hi, y3.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z0hi, hiPart, z0hi);
         U32.xor(z0lo, loPart, z0lo);
 
@@ -624,11 +633,11 @@ class Hawk {
             y2.hi, y2.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z0hi, hiPart, z0hi);
         U32.xor(z0lo, loPart, z0lo);
 
@@ -637,11 +646,11 @@ class Hawk {
             y1.hi, y1.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z0hi, hiPart, z0hi);
         U32.xor(z0lo, loPart, z0lo);
 
@@ -653,11 +662,11 @@ class Hawk {
             y1.hi, y1.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z1hi, hiPart, z1hi);
         U32.xor(z1lo, loPart, z1lo);
 
@@ -666,11 +675,11 @@ class Hawk {
             y0.hi, y0.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z1hi, hiPart, z1hi);
         U32.xor(z1lo, loPart, z1lo);
 
@@ -679,11 +688,11 @@ class Hawk {
             y3.hi, y3.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z1hi, hiPart, z1hi);
         U32.xor(z1lo, loPart, z1lo);
 
@@ -692,11 +701,11 @@ class Hawk {
             y2.hi, y2.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z1hi, hiPart, z1hi);
         U32.xor(z1lo, loPart, z1lo);
 
@@ -708,11 +717,11 @@ class Hawk {
             y2.hi, y2.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z2hi, hiPart, z2hi);
         U32.xor(z2lo, loPart, z2lo);
 
@@ -721,11 +730,11 @@ class Hawk {
             y1.hi, y1.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z2hi, hiPart, z2hi);
         U32.xor(z2lo, loPart, z2lo);
 
@@ -734,11 +743,11 @@ class Hawk {
             y0.hi, y0.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z2hi, hiPart, z2hi);
         U32.xor(z2lo, loPart, z2lo);
 
@@ -747,11 +756,11 @@ class Hawk {
             y3.hi, y3.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z2hi, hiPart, z2hi);
         U32.xor(z2lo, loPart, z2lo);
 
@@ -763,11 +772,11 @@ class Hawk {
             y3.hi, y3.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z3hi, hiPart, z3hi);
         U32.xor(z3lo, loPart, z3lo);
 
@@ -776,11 +785,11 @@ class Hawk {
             y2.hi, y2.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z3hi, hiPart, z3hi);
         U32.xor(z3lo, loPart, z3lo);
 
@@ -789,11 +798,11 @@ class Hawk {
             y1.hi, y1.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z3hi, hiPart, z3hi);
         U32.xor(z3lo, loPart, z3lo);
 
@@ -802,11 +811,11 @@ class Hawk {
             y0.hi, y0.lo,
             mul, (short)0);
 
-        hiPart.hi = mul[1];
-        hiPart.lo = mul[0];
+        hiPart.hi = mul[3];
+        hiPart.lo = mul[2];
 
-        loPart.hi = mul[3];
-        loPart.lo = mul[2];
+        loPart.hi = mul[1];
+        loPart.lo = mul[0];
         U32.xor(z3hi, hiPart, z3hi);
         U32.xor(z3lo, loPart, z3lo);
 
@@ -1840,7 +1849,7 @@ class Hawk {
         shake256jc.doFinal(hm, (short) 0, (short) hm.length);
 
         // Main signing loop
-        for (int attempt = 0; attempt < 1000; attempt += 2) {
+        for (short attempt = 0; attempt < 1000; attempt += 2) {
             int t0Offset = 0;
             int t1Offset = t0Offset + (n >> 3);
             int h0Offset = t1Offset + (n >> 3);
@@ -1938,7 +1947,7 @@ class Hawk {
             mq18433PolySetSmall(logn, w3, (short) 0, f, (short)0);
             mq18433NTT(logn, w2, (short) 0);
             mq18433NTT(logn, w3, (short) 0);
-            for (int u = 0; u < n; u++) {
+            for (short u = 0; u < n; u++) {
                 w3[u] = mq18433ToMonty(
             mq18433Sub(
                 mq18433MontyMul(
@@ -1960,13 +1969,19 @@ class Hawk {
 
             // Per-coefficient bounds check
             int reject = 0;
-            for (int u = 0; u < n; u++) {
+            for (short u = 0; u < n; u++) {
                 int z = s1[u];
                 z = ((z ^ nm) - nm) + ((h1buf[u >> 3] >> (u & 7)) & 1);
                 int y = z >> 1;
 
                 // -1 if y < -lim or y >= lim, 0 otherwise
-                int outOfRange = ((y + lim) >> 31) | ((lim - 1 - y) >> 31);
+                short negLim = (short)-lim;
+
+                short outOfRange = 0;
+
+                if ((short)y < negLim || (short)y >= (short)lim) {
+                    outOfRange = (short)-1;
+                }
                 reject |= outOfRange;
                 s1[u] = (short) y;
             }
@@ -1994,45 +2009,5 @@ class Hawk {
 
         // Equivalent of hawkSignFinish
         return sign(logn, (short) 1, sig, sc, priv, privLen, tmp, tmpLen);
-    }
-
-       /**
-    * Computes the 64-bit product of two 32-bit integers without using Java long arithmetic.
-    */
-    private static void mul64(
-        short aHi, short aLo,
-        short bHi, short bLo,
-        short[] out, short off)
-    {
-        int a = ((aHi & 0xFFFF) << 16) | (aLo & 0xFFFF);
-        int b = ((bHi & 0xFFFF) << 16) | (bLo & 0xFFFF);
-
-        int a0 = a & 0xFFFF;
-        int a1 = a >>> 16;
-
-        int b0 = b & 0xFFFF;
-        int b1 = b >>> 16;
-
-        int p00 = a0 * b0;
-        int p01 = a0 * b1;
-        int p10 = a1 * b0;
-        int p11 = a1 * b1;
-
-        int middle = (p00 >>> 16)
-                + (p01 & 0xFFFF)
-                + (p10 & 0xFFFF);
-
-        int lo = (p00 & 0xFFFF)
-                | ((middle & 0xFFFF) << 16);
-
-        int hi = p11
-                + (p01 >>> 16)
-                + (p10 >>> 16)
-                + (middle >>> 16);
-
-        out[off] = (short)hi;
-        out[(short)(off + 1)] = (short)(hi >>> 16);
-        out[(short)(off + 2)] = (short)lo;
-        out[(short)(off + 3)] = (short)(lo >>> 16);
     }
 }

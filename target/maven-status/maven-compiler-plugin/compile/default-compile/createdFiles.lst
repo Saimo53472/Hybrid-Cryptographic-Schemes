@@ -4,5 +4,6 @@ com\test\U32.class
 SHAKE\KeccakF1600.class
 com\test\ChameleonECDSAApplet.class
 SHAKE\SHAKE256JC.class
+com\test\Test.class
 com\test\Hawk.class
 com\test\BaseApplet.class

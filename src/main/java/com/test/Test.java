@@ -1,24 +1,20 @@
-// package com.test;
+package com.test;
 
-// public class Test {
+public class Test {
 
-//     public static void main(String[] args) {
+    public static void main(String[] args) {
+        short[] mul = new short[4];
 
-//         U32 r = new U32();
+        U32.mul64(
+            (short)0xFFFF, (short)0xFFFF,
+            (short)0xFFFF, (short)0xFFFF,
+            mul, (short)0);
 
-//         U32.mul16((short)1, (short)1, r);
-//         System.out.println("1*1      : hi=" + r.hi + " lo=" + r.lo);
-
-//         U32.mul16((short)256, (short)256, r);
-//         System.out.println("256*256  : hi=" + r.hi + " lo=" + r.lo);
-
-//         U32.mul16((short)0, (short)12345, r);
-//         System.out.println("0*12345  : hi=" + r.hi + " lo=" + r.lo);
-
-//         U32.mul16((short)-1, (short)1, r);
-//         System.out.println("FFFF*1   : hi=" + r.hi + " lo=" + r.lo);
-
-//         U32.mul16((short)-1, (short)-1, r);
-//         System.out.println("FFFF^2   : hi=" + r.hi + " lo=" + r.lo);
-//     }
-// }
+        System.out.printf(
+    "hiPart=%04X %04X  loPart=%04X %04X\n",
+    mul[1] & 0xFFFF,
+    mul[0] & 0xFFFF,
+    mul[3] & 0xFFFF,
+    mul[2] & 0xFFFF);
+    }
+}

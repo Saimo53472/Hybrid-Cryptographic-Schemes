@@ -1,4 +1,4 @@
-package SHAKE;
+package com.test;
 
 /**
  * SHAKE256 sponge that uses KeccakF1600.permute(state, scratch).
