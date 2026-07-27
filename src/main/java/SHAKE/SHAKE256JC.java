@@ -118,7 +118,7 @@ public final class SHAKE256JC
      * Generate the requested number of output bytes without
      * resetting the sponge state.
      */
-    public int doOutput(byte[] out, short off, short len)
+    public short doOutput(byte[] out, short off, short len)
     {
         squeezeBytes(out, off, len);
         return len;
@@ -127,7 +127,7 @@ public final class SHAKE256JC
     /**
      * Generate output bytes and then reset the sponge so it can be reused for a new SHAKE computation.
      */
-    public int doFinal(byte[] out, short off, short len)
+    public short doFinal(byte[] out, short off, short len)
     {
         squeezeBytes(out, off, len);
         reset();

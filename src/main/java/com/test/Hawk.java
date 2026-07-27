@@ -1478,6 +1478,28 @@ class Hawk {
         return r;
     }
 
+    private static void dec64le(
+    byte[] src,
+    short off,
+    U64 out)
+    {
+        out.w0 = (short)(
+            (src[off] & 0xFF)
+            | ((src[(short)(off + 1)] & 0xFF) << 8));
+
+        out.w1 = (short)(
+            (src[(short)(off + 2)] & 0xFF)
+            | ((src[(short)(off + 3)] & 0xFF) << 8));
+
+        out.w2 = (short)(
+            (src[(short)(off + 4)] & 0xFF)
+            | ((src[(short)(off + 5)] & 0xFF) << 8));
+
+        out.w3 = (short)(
+            (src[(short)(off + 6)] & 0xFF)
+            | ((src[(short)(off + 7)] & 0xFF) << 8));
+    }
+
     /**
      * Generate x with the right Gaussian, for the specified parity bits.
      *
@@ -1516,84 +1538,126 @@ class Hawk {
                 sc.squeezeBytes(buffer, (short) 0, (short) 40);
                 for (short k = 0; k < 4; k++) {
                     int v = u + (j << 2) + k;
-                    short[] d32 = new short[4];
+                    U64 lo = new U64();
+                    dec64le(
+                        buffer,
+                        (short)(k << 3),
+                        lo);
 
-                    dec32le(tmp, (short)(k * 8), d32, (short)0);
-                    dec32le(tmp, (short)((k * 8) + 4), d32, (short)2);
+                    short hi =
+                        dec16le(
+                            buffer,
+                            (short)(32 + (k << 1)));
 
-                    int loLo = ((d32[0] & 0xFFFF) << 16)
-                            |  (d32[1] & 0xFFFF);
+                    short neg =
+                        (short)-U64.msb(lo);
 
-                    int loHi = ((d32[2] & 0xFFFF) << 16)
-                            |  (d32[3] & 0xFFFF);
+                    U64.clearMsb(lo);
 
-                    short hi = dec16le(tmp, (short) (32 + (k << 1)));
+                    hi = (short)(hi & 0x7FFF);
 
-                    /*
-                     * Extract sign bit.
-                     */
-                    int neg = -(loHi >>> 31);
-                    loHi &= 0x7FFFFFFF;
-                    hi &= 0x7FFF;
-                    int pbit = (t[tOffset + (v >>> 3)] >>> (v & 7)) & 1;
-                    int pOddw = -pbit;
-                    int r = 0;
+                    short pbit =
+                        (short)(
+                            (t[(short)(tOffset + (v >>> 3))]
+                                >>> (v & 7))
+                            & 1);
+
+                    short pOddw =
+                        (short)-pbit;
+
+                    short r = 0;
+
+                    U64 tlo0 = new U64();
+                    U64 tlo1 = new U64();
+                    U64 tlo  = new U64();
 
                     /*
                      * Main comparison loop.
                      */
                     for (short i = 0; i < hiLen; i += 2) {
-                        int mask = pOddw;
-                        int thi = (tabHi[i] & 0xFFFF) ^ (mask & ((tabHi[i] & 0xFFFF) ^ (tabHi[i + 1] & 0xFFFF)));
+                        short mask = pOddw;
 
-                        short[] tmp32 = new short[4];
-                        getInt32(tabLoHiHi, tabLoHiLo, i, tmp32, (short)0);
-                        getInt32(tabLoHiHi, tabLoHiLo, (short)(i + 1), tmp32, (short)2);
-                        int v0 = ((tmp32[0] & 0xFFFF) << 16) |  (tmp32[1] & 0xFFFF);
-                        int v1 = ((tmp32[2] & 0xFFFF) << 16)  |  (tmp32[3] & 0xFFFF);
-                        int tloHi = v0 ^ (mask & (v0 ^ v1));
+                        short thi =
+                            (short)(
+                                tabHi[i]
+                                ^ (mask
+                                    & (tabHi[i]
+                                        ^ tabHi[(short)(i + 1)]) ));
 
-                        short[] tmpp32 = new short[4];
-                        getInt32(tabLoLoHi, tabLoLoLo, i, tmpp32, (short)0);
-                        getInt32(tabLoLoHi, tabLoLoLo, (short)(i + 1), tmpp32, (short)2);
-                        int w0 = ((tmpp32[0] & 0xFFFF) << 16) |  (tmpp32[1] & 0xFFFF);
-                        int w1 = ((tmpp32[2] & 0xFFFF) << 16)  |  (tmpp32[3] & 0xFFFF);
-                        int tloLo = w0 ^ (mask & (w0 ^ w1));
-                        short borrow = uLessThan((short)(loLo >>> 16), (short)loLo, (short)(tloLo >>> 16), (short)tloLo);
-                        int diffHi = loHi - tloHi - borrow;
-                        int cc = diffHi >>> 31;
-                        int diffHi16 = hi - thi - cc;
-                        r += diffHi16 >>> 31;
+                        U64.getU64(
+                            tabLoHiHi,
+                            tabLoHiLo,
+                            tabLoLoHi,
+                            tabLoLoLo,
+                            i,
+                            tlo0);
+
+                        U64.getU64(
+                            tabLoHiHi,
+                            tabLoHiLo,
+                            tabLoLoHi,
+                            tabLoLoLo,
+                            (short)(i + 1),
+                            tlo1);
+
+                        U64.select(
+                            tlo0,
+                            tlo1,
+                            mask,
+                            tlo);
+
+                        short cc =
+                            U64.ult(lo, tlo);
+
+                        short diffHi16 =
+                            (short)(hi - thi - cc);
+
+                        r +=
+                            (short)((diffHi16 < 0)
+                                ? 1
+                                : 0);
                     }
 
                     /*
                      * Remaining entries.
                      */
-                    int hinz = (hi - 1) >>> 31;
-                    for (short i = hiLen; i < loLen; i += 2) {
-                        int mask = pOddw;
-                        short[] tmp32 = new short[4];
-                        getInt32(tabLoHiHi, tabLoHiLo, i, tmp32, (short)0);
-                        getInt32(tabLoHiHi, tabLoHiLo, (short)(i + 1), tmp32, (short)2);
-                        int v0 = ((tmp32[0] & 0xFFFF) << 16) |  (tmp32[1] & 0xFFFF);
-                        int v1 = ((tmp32[2] & 0xFFFF) << 16)  |  (tmp32[3] & 0xFFFF);
-                        int tloHi = v0 ^ (mask & (v0 ^ v1));
+                    short hinz =
+                        (short)((hi == 0) ? 1 : 0);
 
-                        short[] tmpp32 = new short[4];
-                        getInt32(tabLoLoHi, tabLoLoLo, i, tmpp32, (short)0);
-                        getInt32(tabLoLoHi, tabLoLoLo, (short)(i + 1), tmpp32, (short)2);
-                        int w0 = ((tmpp32[0] & 0xFFFF) << 16) |  (tmpp32[1] & 0xFFFF);
-                        int w1 = ((tmpp32[2] & 0xFFFF) << 16)  |  (tmpp32[3] & 0xFFFF);
-                        int tloLo = w0 ^ (mask & (w0 ^ w1));
-                        short borrow = uLessThan((short)(loLo >>> 16), (short)loLo, (short)(tloLo >>> 16), (short)tloLo);
-                        int diffHi = loHi - tloHi - borrow;
-                        int cc = diffHi >>> 31;
-                        r += hinz & cc;
+                    for (short i = hiLen; i < loLen; i += 2)
+                    {
+                        short mask = pOddw;
+
+                        U64.getU64(
+                            tabLoHiHi,
+                            tabLoHiLo,
+                            tabLoLoHi,
+                            tabLoLoLo,
+                            i,
+                            tlo0);
+
+                        U64.getU64(
+                            tabLoHiHi,
+                            tabLoHiLo,
+                            tabLoLoHi,
+                            tabLoLoLo,
+                            (short)(i + 1),
+                            tlo1);
+
+                        U64.select(
+                            tlo0,
+                            tlo1,
+                            mask,
+                            tlo);
+
+                        short cc =
+                            U64.ult(lo, tlo);
+
+                        r += (short)(hinz & cc);
                     }
-
-                    r = (r << 1) - pOddw;
-                    r = (r ^ neg) - neg;
-                    x[xOffset + v] = (byte) r;
+                    r = (short)((r << 1) - pOddw);
+                    r = (short)((r ^ neg) - neg);
+                    x[(short)(xOffset + v)] = (byte)r;
                     sn += r * r;
                 }
             }
@@ -1687,7 +1751,7 @@ class Hawk {
 
             w ^= mask;
 
-            short k = (short) ((w & 0xFFFF) >>> low);
+            short k = (short) (w >>> low);
 
             acc |= (1 << (accLen + k));
             accLen += (short) (1 + k);
@@ -1740,17 +1804,18 @@ class Hawk {
         int utmp2 = (utmp1 + 7) & ~7;
         tmpLen -= (int) (utmp2 - utmp1);
 
-        if (tmpLen < (6 << logn)) {
+        short minTmpLen = (short) (6 << logn);
+        if (tmpLen < minTmpLen) {
             return 0;
         }
 
-        int seedLen = 8 + (1 << (logn - 5));
-        int hpubLen = 1 << (logn - 4);
+        short seedLen = 24;
+        short hpubLen = 32;
 
         // Memory layout in tmp buffer
         byte[] g = new byte[n];
-        byte[] ww = new byte[2 * n];
-        byte[] x0 = new byte[2 * n];
+        byte[] ww = new byte[(short) (2 * n)];
+        byte[] x0 = new byte[(short) (2 * n)];
         byte[] f = new byte[n];
 
         // Re-expand the private key
@@ -1862,10 +1927,10 @@ class Hawk {
             mq18433PolySetSmall(logn, w2, (short) 0, x0, (short) 0);
             mq18433NTT(logn, w1, (short)0);
             mq18433NTT(logn, w2, (short)0);
-            for (int u = 0; u < n; u++) {
+            for (short u = 0; u < n; u++) {
                 w1[u] = mq18433MontyMul(
-                       (short) (w1[u] & 0xFFFF),
-                        (short) (w2[u] & 0xFFFF));
+                       (short) (w1[u]),
+                        (short) (w2[u]));
             }
 
             // w3 <- f*x1 - g*x0, then INTT to get polynomial

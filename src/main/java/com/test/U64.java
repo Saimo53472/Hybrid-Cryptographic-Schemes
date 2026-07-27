@@ -26,6 +26,20 @@ final class U64 {
         x.w0 = w0;
     }
 
+    static void getU64(
+        short[] hiHi,
+        short[] hiLo,
+        short[] loHi,
+        short[] loLo,
+        short i,
+        U64 out)
+    {
+        out.w3 = hiHi[i];
+        out.w2 = hiLo[i];
+        out.w1 = loHi[i];
+        out.w0 = loLo[i];
+    }
+
     static void copy(U64 dst, U64 src)
     {
         dst.w3 = src.w3;
@@ -110,51 +124,5 @@ final class U64 {
         }
 
         return uLessThan16(a.w0, b.w0);
-    }
-
-    private static short subBorrow16(
-    short a,
-    short b,
-    short borrowIn,
-    short[] result,
-    short resultOffset)
-    {
-        short bb = (short)(b + borrowIn);
-
-        short borrowOut =
-            uLessThan16(a, bb);
-
-        result[resultOffset] =
-            (short)(a - bb);
-
-        return borrowOut;
-    }
-
-    static short sub(
-    U64 a,
-    U64 b,
-    U64 out)
-    {
-        short borrow;
-
-        short bb;
-
-        bb = b.w0;
-        borrow = uLessThan16(a.w0, bb);
-        out.w0 = (short)(a.w0 - bb);
-
-        bb = (short)(b.w1 + borrow);
-        borrow = uLessThan16(a.w1, bb);
-        out.w1 = (short)(a.w1 - bb);
-
-        bb = (short)(b.w2 + borrow);
-        borrow = uLessThan16(a.w2, bb);
-        out.w2 = (short)(a.w2 - bb);
-
-        bb = (short)(b.w3 + borrow);
-        borrow = uLessThan16(a.w3, bb);
-        out.w3 = (short)(a.w3 - bb);
-
-        return borrow;
     }
 }
