@@ -1,22 +1,24 @@
-package com.test;
+// package com.test;
 
-import javacard.framework.*;
+// public class Test {
 
-public class Test extends Applet {
+//     public static void main(String[] args) {
 
-    protected Test() {}
+//         U32 r = new U32();
 
-    public static void install(byte[] b, short o, byte l) {
-        new Test().register();
-    }
+//         U32.mul16((short)1, (short)1, r);
+//         System.out.println("1*1      : hi=" + r.hi + " lo=" + r.lo);
 
-    private static short foo() {
-        short a = 1234;
-        short b = 5678;
-        short p1 = (short)(a * b);
-        short p = (short)((short)(a * b) >>> 8);
-        return p;
-    }
+//         U32.mul16((short)256, (short)256, r);
+//         System.out.println("256*256  : hi=" + r.hi + " lo=" + r.lo);
 
-    public void process(APDU apdu) {}
-}
+//         U32.mul16((short)0, (short)12345, r);
+//         System.out.println("0*12345  : hi=" + r.hi + " lo=" + r.lo);
+
+//         U32.mul16((short)-1, (short)1, r);
+//         System.out.println("FFFF*1   : hi=" + r.hi + " lo=" + r.lo);
+
+//         U32.mul16((short)-1, (short)-1, r);
+//         System.out.println("FFFF^2   : hi=" + r.hi + " lo=" + r.lo);
+//     }
+// }

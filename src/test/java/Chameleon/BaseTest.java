@@ -172,10 +172,23 @@ public class BaseTest {
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
         // 6. Create ECDSA signature
-        long startBase = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
-        long endBase = System.nanoTime();
-        timeBaseSign = endBase - startBase;
+
+        for (int i = 0; i < 1000; i++) {
+            send2(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+        }
+
+        long total = 0;
+
+        for (int i = 0; i < 1000; i++) {
+            long start = System.nanoTime();
+            send2(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+            long end = System.nanoTime();
+
+            total += (end - start);
+        }
+
+        double avg = total / 1000.0;
 
         // 8. Get signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
@@ -193,7 +206,7 @@ public class BaseTest {
         System.out.println("METRICS");
 
         // Time
-       System.out.println("Signing time ECDSA (ns): " + timeBaseSign);
+       System.out.println("Signing time ECDSA (ns): " + avg);
 
         // Communication
         System.out.println("Number of APDU transmissions: " + apduCount);
@@ -226,6 +239,11 @@ public class BaseTest {
         System.out.println("SW = " + Integer.toHexString(resp.getSW()));
         System.out.println();
 
+        return resp;
+    }
+
+    private static ResponseAPDU send2(CardSimulator sim, CommandAPDU cmd) {
+        ResponseAPDU resp = sim.transmitCommand(cmd);
         return resp;
     }
 

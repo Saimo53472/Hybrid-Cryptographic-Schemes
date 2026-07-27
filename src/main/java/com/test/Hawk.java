@@ -1238,25 +1238,62 @@ class Hawk {
         return (short)(d + (Q & mask));
     }
 
+     static void mul16(short a, short b, U32 out)
+    {
+        short al = (short)(a & 0xFF);
+        short ah = (short) ((short)(a >>> 8) & 0xFF);
+
+        short bl = (short)(b & 0xFF);
+        short bh = (short) ((short)(b >>> 8) & 0xFF);
+
+        int p0 = al * bl;
+        int p1 = al * bh;
+        int p2 = ah * bl;
+        int p3 = ah * bh;
+
+        int middle = (p0 >>> 8) + (p1 & 0xFF) + (p2 & 0xFF);
+
+        out.lo = (short)(
+            (p0 & 0xFF)
+            | ((middle & 0xFF) << 8));
+
+        out.hi = (short)(
+            p3
+            + (p1 >>> 8)
+            + (p2 >>> 8)
+            + (middle >>> 8));
+    }
+
     /**
      * Montgomery reduction.
      */
     public short mq18433MontyRed(short xHi, short xLo)
     {
-        int xx = ((xHi & 0xFFFF) << 16)
-            | (xLo & 0xFFFF);
+        U32 pLL = new U32();
+        U32 pLH = new U32();
+        U32 pHL = new U32();
+        U32 step2 = new U32();
 
-        int pLL = (xLo & 0xFFFF) * 18431;
-        int pLH = (xLo & 0xFFFF) * 60352;
-        int pHL = (xHi & 0xFFFF) * 18431;
+        mul16(xLo, (short)18431, pLL);
+        mul16(xLo, (short)60352, pLH);
+        mul16(xHi, (short)18431, pHL);
 
-        int word16 = ((pLL >>> 16) + pLH + pHL) & 0xFFFF;
-        int step2 = word16 * Q;
-        int result = (step2 >>> 16) + 1;
+        short word16 =
+            (short)(
+                pLL.hi
+                + pLH.lo
+                + pHL.lo);
 
-        int nonzero = -((xx | -xx) >>> 31);
+        mul16(word16, Q, step2);
 
-        return (short)(result & nonzero);
+        short result =
+            (short)(step2.hi + 1);
+
+        if (xHi == 0 && xLo == 0) {
+            return 0;
+        }
+
+        return result;
     }
 
     /**
@@ -1264,11 +1301,13 @@ class Hawk {
      */
     public short mq18433MontyMul(short x, short y)
     {
-        int product = (x & 0xFFFF) * (y & 0xFFFF);
+        U32 product = new U32();
+
+        mul16(x, y, product);
 
         return mq18433MontyRed(
-                (short)(product >>> 16),
-                (short)product);
+            product.hi,
+            product.lo);
     }
 
     /**
@@ -1276,11 +1315,13 @@ class Hawk {
      */
     public short mq18433ToMonty(short x)
     {
-        int product = (x & 0xFFFF) * R2;
+        U32 product = new U32();
+
+        mul16(x, R2, product);
 
         return mq18433MontyRed(
-                (short)(product >>> 16),
-                (short)product);
+            product.hi,
+            product.lo);
     }
 
      /**
@@ -1292,8 +1333,11 @@ class Hawk {
      */
     public short mq18433Half(short x)
     {
-        return (short)(((x & 0xFFFF)
-                + (Q & -((x & 0xFFFF) & 1))) >> 1);
+        if ((x & 1) != 0) {
+            x = (short)(x + Q);
+        }
+
+        return (short)((x >>> 1) & 0x7FFF);
     }
 
     /**
@@ -1306,20 +1350,20 @@ class Hawk {
 
         int t = 1 << logn;
 
-        for (int lm = 0; lm < logn; lm++) {
+        for (short lm = 0; lm < logn; lm++) {
             int m = 1 << lm;
             int ht = t >> 1;
             int v0 = 0;
 
-            for (int u = 0; u < m; u++) {
-                short s = (short)(GM[u + m] & 0xFFFF);
+            for (short u = 0; u < m; u++) {
+                short s = (short)(GM[(short) (u + m)]);
 
-                for (int v = 0; v < ht; v++) {
+                for (short v = 0; v < ht; v++) {
                     int k1 = aOffset + v0 + v;
                     int k2 = k1 + ht;
 
-                    short x1 = (short)(a[k1] & 0xFFFF);
-                    short x2 = (short)(a[k2] & 0xFFFF);
+                    short x1 = (short)(a[(short) k1]);
+                    short x2 = (short)(a[(short) k2]);
 
                     short x2Monty = mq18433MontyMul(x2, s);
 
@@ -1345,23 +1389,23 @@ class Hawk {
 
         int t = 1;
 
-        for (int lm = 0; lm < logn; lm++)
+        for (short lm = 0; lm < logn; lm++)
         {
             int hm = 1 << (logn - 1 - lm);
             int dt = t << 1;
             int v0 = 0;
 
-            for (int u = 0; u < hm; u++)
+            for (short u = 0; u < hm; u++)
             {
-                short s = (short)(iGM[u + hm] & 0xFFFF);
+                short s = (short)(iGM[(short) (u + hm)]);
 
-                for (int v = 0; v < t; v++)
+                for (short v = 0; v < t; v++)
                 {
                     int k1 = aOffset + v0 + v;
                     int k2 = k1 + t;
 
-                    short x1 = (short)(a[k1] & 0xFFFF);
-                    short x2 = (short)(a[k2] & 0xFFFF);
+                    short x1 = (short)(a[(short) k1]);
+                    short x2 = (short)(a[(short) k2]);
 
                     a[k1] = mq18433Half(
                                 mq18433Add(x1, x2));
@@ -1381,24 +1425,25 @@ class Hawk {
     /**
      * Convert a coefficient from the modular range [0, Q-1] to the centered signed range approximately [-Q/2, Q/2].
      */
-    public static short mq18433Snorm(short x) {
-        int xx = x & 0xFFFF;
+    public static short mq18433Snorm(short x)
+    {
+        if (x > (Q >> 1)) {
+            return (short)(x - Q);
+        }
 
-        int mask = ((Q >> 1) - xx) >> 31;
-        return (short)(xx - (Q & mask));
+        return x;
     }
 
     /**
      * Apply signed normalization to polynomial coefficients
      */
     public static void mq18433PolySnorm(short logn, short[] d, short dOffset) {
-        int n = 1 << logn;
+        short n = (short) (1 << logn);
 
-        for (int u = 0; u < n; u++) {
-            int k = dOffset + u;
+        for (short u = 0; u < n; u++) {
+            short k = (short) (dOffset + u);
 
-            d[k] = mq18433Snorm(
-                    (short)(d[k] & 0xFFFF));
+            d[k] = mq18433Snorm(d[k]);
         }
     }
 
@@ -1415,9 +1460,9 @@ class Hawk {
         short r = 0;
         short c = (short)0xFFFF;
 
-        for (int u = 0; u < n; u++) {
+        for (short u = 0; u < n; u++) {
 
-            short x = s[sOffset + u];
+            short x = s[(short) (sOffset + u)];
 
             short nz =
                 (short)(c & tbmask((short)(x | -x)));
@@ -1458,16 +1503,18 @@ class Hawk {
 
         int sn = 0;
 
-        for (int j = 0; j < 4; j++) {
+        for (short j = 0; j < 4; j++) {
             SHAKE256JC sc = new SHAKE256JC(shake);
 
             seed[40] = (byte)j;
             sc.update(seed, (short) 0, (short) 41);
             byte[] buffer = new byte[40];
 
-            for (int u = 0; u < (n << 1); u += 16) {
+            short limit = (short)(n << 1);
+
+            for (short u = 0; u < limit; u += 16) {
                 sc.squeezeBytes(buffer, (short) 0, (short) 40);
-                for (int k = 0; k < 4; k++) {
+                for (short k = 0; k < 4; k++) {
                     int v = u + (j << 2) + k;
                     short[] d32 = new short[4];
 

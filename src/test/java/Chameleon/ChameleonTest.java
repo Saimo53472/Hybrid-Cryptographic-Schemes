@@ -196,16 +196,42 @@ public class ChameleonTest {
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
         // 6. Create classical signature
-        long startBase = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
-        long endBase = System.nanoTime();
-        timeBaseSign = endBase - startBase;
+
+        // for (int i = 0; i < 1000; i++) {
+        //     send2(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+        // }
+
+        // long total = 0;
+
+        // for (int i = 0; i < 1000; i++) {
+        //     long start = System.nanoTime();
+        //     send2(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+        //     long end = System.nanoTime();
+
+        //     total += (end - start);
+        // }
+
+        // double avg = total / 1000.0;
 
         // 7. Create post-quantum signature
-        long startDelta = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
-        long endDelta = System.nanoTime();
-        timeDeltaSign = endDelta - startDelta;
+
+        // for (int i = 0; i < 1000; i++) {
+        //     send2(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+        // }
+
+        // total = 0;
+
+        // for (int i = 0; i < 1000; i++) {
+        //     long start = System.nanoTime();
+        //     send2(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+        //     long end = System.nanoTime();
+
+        //     total += (end - start);
+        // }
+
+        // double avg2 = total / 1000.0;
 
         // 8. Get classical signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
@@ -238,31 +264,31 @@ public class ChameleonTest {
         System.out.println("Card HAWK signature: " + hawkOK);
 
         // 10. Print metrics
-        System.out.println("METRICS");
+        // System.out.println("METRICS");
         // Time
-        System.out.println("Time classical signing (ns): " + timeBaseSign);
-        System.out.println("Time post-quantum signing (ns): " + timeDeltaSign);
-        System.out.println("Time hybrid signing (ns): " + (timeBaseSign + timeDeltaSign));
+        // System.out.println("Time classical signing (ns): " + avg);
+        // System.out.println("Time post-quantum signing (ns): " + avg2);
+        // System.out.println("Time hybrid signing (ns): " + (avg + avg2));
 
-        // Communication
-        System.out.println("Number of APDU transmissions: " + apduCount);
-        System.out.println("Communication bytes sent: " + bytesSent);
-        System.out.println("Communication bytes received: " + bytesReceived);
-        System.out.println("Total communication bytes: " + (bytesSent + bytesReceived));
+        // // Communication
+        // System.out.println("Number of APDU transmissions: " + apduCount);
+        // System.out.println("Communication bytes sent: " + bytesSent);
+        // System.out.println("Communication bytes received: " + bytesReceived);
+        // System.out.println("Total communication bytes: " + (bytesSent + bytesReceived));
 
-        // Certificate sizes
-        int issuerCertSize = receivedIssuerCert.length;
-        int iccCertSize = receivedCert.length;
-        System.out.println("Issuer certificate size = " + issuerCertSize);
-        System.out.println("ICC certificate size = " + iccCertSize);
-        System.out.println("Total memory required by certificates = " + (issuerCertSize + iccCertSize));
+        // // Certificate sizes
+        // int issuerCertSize = receivedIssuerCert.length;
+        // int iccCertSize = receivedCert.length;
+        // System.out.println("Issuer certificate size = " + issuerCertSize);
+        // System.out.println("ICC certificate size = " + iccCertSize);
+        // System.out.println("Total memory required by certificates = " + (issuerCertSize + iccCertSize));
 
-        // Signature sizes
-        int classicalSigSize = sigData.length;
-        int pqSigSize = signature.length;
-        System.out.println("Base signature size = " + classicalSigSize);
-        System.out.println("Delta signature size = " + pqSigSize);
-        System.out.println("Total memory required for signatures = " + (classicalSigSize + pqSigSize));
+        // // Signature sizes
+        // int classicalSigSize = sigData.length;
+        // int pqSigSize = signature.length;
+        // System.out.println("Base signature size = " + classicalSigSize);
+        // System.out.println("Delta signature size = " + pqSigSize);
+        // System.out.println("Total memory required for signatures = " + (classicalSigSize + pqSigSize));
     }
 
     private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
@@ -336,6 +362,11 @@ public class ChameleonTest {
                 .replaceAll("\\s", "");
 
         return Base64.getDecoder().decode(pem);
+    }
+
+    private static ResponseAPDU send2(CardSimulator sim, CommandAPDU cmd) {
+        ResponseAPDU resp = sim.transmitCommand(cmd);
+        return resp;
     }
 
     public static PublicKey loadPublicKeyFromCert(String certPath) throws Exception {

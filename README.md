@@ -7,6 +7,7 @@ $env:MAVEN_HOME = "C:\tools\apache-maven-3.9.16"
 $env:PATH = "$env:MAVEN_HOME\bin;$env:PATH"
 ```
 
+REMOVE
 The Java Card SDK does not provide Maven artifacts by default, so the API JAR must be installed manually into the local Maven repository.
 ```
 mvn install:install-file `
@@ -64,7 +65,9 @@ javac -source 1.5 -target 1.5 `
   src\main\java\com\test\ChameleonApplet.java `
   src\main\java\com\test\Hawk.java `
   src\main\java\SHAKE\SHAKE256JC.java `
-  src\main\java\SHAKE\KeccakF1600.java
+  src\main\java\SHAKE\KeccakF1600.java `
+  src\main\java\com\test\U32.java `
+  src\main\java\com\test\U64.java 
 ```
 
 Convert Class Files to CAP Format

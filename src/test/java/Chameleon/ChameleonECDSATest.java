@@ -201,16 +201,41 @@ public class ChameleonECDSATest {
         send(simulator, new CommandAPDU(CLA, 0x88, 0x00, 0x00, challenge));
 
         // 6. Create classical signature
-        long startBase = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
-        long endBase = System.nanoTime();
-        timeBaseSign = endBase - startBase;
+        for (int i = 0; i < 1000; i++) {
+            send2(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+        }
+
+        long total = 0;
+
+        for (int i = 0; i < 1000; i++) {
+            long start = System.nanoTime();
+            send2(simulator, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+            long end = System.nanoTime();
+
+            total += (end - start);
+        }
+
+        double avg = total / 1000.0;
 
         // 7. Create second signature
-        long startDelta = System.nanoTime();
         send(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
-        long endDelta = System.nanoTime();
-        timeDeltaSign = endDelta - startDelta;
+
+        for (int i = 0; i < 1000; i++) {
+            send2(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+        }
+
+        total = 0;
+
+        for (int i = 0; i < 1000; i++) {
+            long start = System.nanoTime();
+            send2(simulator, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+            long end = System.nanoTime();
+
+            total += (end - start);
+        }
+
+        double avg2 = total / 1000.0;
 
         // 8. Get classical signature
         ResponseAPDU sigResponse = send(simulator, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
@@ -242,9 +267,9 @@ public class ChameleonECDSATest {
         // 11. Print metrics
         System.out.println("METRICS");
         // Time
-        System.out.println("Time classical signing (ns): " + timeBaseSign);
-        System.out.println("Time second signing (ns): " + timeDeltaSign);
-        System.out.println("Time hybrid signing (ns): " + (timeBaseSign + timeDeltaSign));
+        System.out.println("Time classical signing (ns): " + avg);
+        System.out.println("Time second signing (ns): " + avg2);
+        System.out.println("Time hybrid signing (ns): " + (avg + avg2));
 
         // Communication
         System.out.println("Number of APDU transmissions: " + apduCount);
@@ -352,6 +377,11 @@ public class ChameleonECDSATest {
                 ASN1Primitive.fromByteArray(extension));
 
         return oct.getOctets();
+    }
+
+    private static ResponseAPDU send2(CardSimulator sim, CommandAPDU cmd) {
+        ResponseAPDU resp = sim.transmitCommand(cmd);
+        return resp;
     }
 
     public static boolean verifyECDSA(
