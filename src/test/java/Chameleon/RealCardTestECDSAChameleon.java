@@ -211,33 +211,20 @@ public class RealCardTestECDSAChameleon {
         // 6. Create classical signature
         send(channel, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
 
-        int runs = 100;
-        long totalNs = 0;
-
-        for (int i = 0; i < runs; i++) {
-            long start = System.nanoTime();
-            channel.transmit(new CommandAPDU(CLA, 0x30, 0x00, 0x00));
-            long end = System.nanoTime();
-            totalNs += (end - start);
-        }
-
-        double avgMs = (totalNs / (double) runs) / 1_000_000.0;
-        System.out.printf("Average signature generation time: %.3f ms%n", avgMs);
-
         // 7. Create second signature
         send(channel, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
 
-        long totalNs2 = 0;
+        int runs = 100;
+        long totalNs = 0;
         for (int i = 0; i < runs; i++) {
             long start = System.nanoTime();
+            channel.transmit(new CommandAPDU(CLA, 0x30, 0x00, 0x00));
             channel.transmit(new CommandAPDU(CLA, 0x40, 0x00, 0x00));
             long end = System.nanoTime();
-            totalNs2 += (end - start);
+            totalNs += (end - start);
         }
-
-        double avgMs2 = (totalNs2 / (double) runs) / 1_000_000.0;
-        System.out.printf("Average signature generation time: %.3f ms%n", avgMs2);
-        System.out.printf("Total:%.3f ms%n", avgMs + avgMs2);
+        double avgMs = (totalNs / (double) runs) / 1_000_000.0;
+        System.out.printf("Average signature generation time: %.3f ms%n", avgMs);
 
         // 8. Get classical signature
         ResponseAPDU sigResponse = send(channel, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
