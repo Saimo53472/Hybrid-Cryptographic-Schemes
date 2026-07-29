@@ -1,6 +1,6 @@
 package com.test;
 
-final class U32 {
+public final class U32 {
     short hi;
     short lo;
 

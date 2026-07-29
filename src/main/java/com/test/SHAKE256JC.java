@@ -1,5 +1,7 @@
 package com.test;
 
+import javacard.framework.ISOException;
+
 /**
  * SHAKE256 sponge that uses KeccakF1600.permute(state, scratch).
  */
@@ -9,14 +11,14 @@ public final class SHAKE256JC
     public static final short STATE_SIZE = 200;
 
     private final byte[] state;   // 200 bytes
-    private final int[] scratch;  // 120 ints for permutation
+    private final U64[] scratch;  // 120 ints for permutation
     private short ratePos;
     private boolean squeezing;
 
     public SHAKE256JC()
     {
         this.state = new byte[200];
-        this.scratch = new int[120];
+        this.scratch = new U64[25];
         this.ratePos = 0;
         this.squeezing = false;
     }
@@ -24,9 +26,9 @@ public final class SHAKE256JC
     public SHAKE256JC(SHAKE256JC shake256jc)
     {
         this.state = new byte[200];
-        this.scratch = new int[120];
+        this.scratch = new U64[25];
 
-        for(int i = 0; i < 200; i++) {
+        for(short i = 0; i < 200; i++) {
             this.state[i] = shake256jc.state[i];
         }
         this.ratePos = shake256jc.ratePos;
@@ -35,7 +37,7 @@ public final class SHAKE256JC
 
     public void reset()
     {
-        for (int i = 0; i < STATE_SIZE; i++) {
+        for (short i = 0; i < STATE_SIZE; i++) {
             state[i] = 0;
         }
         ratePos = 0;
@@ -48,14 +50,13 @@ public final class SHAKE256JC
      */
     public void absorbXor(byte[] in, short inOff, short len)
     {
-        if (squeezing) throw new IllegalStateException("already finalised for squeezing");
-        int i = inOff;
-        int remaining = len;
+        short i = inOff;
+        short remaining = len;
         while (remaining > 0)
         {
             int toXor = RATE_BYTES - ratePos;
             if (toXor > remaining) toXor = remaining;
-            for (int k = 0; k < toXor; k++) state[ratePos + k] ^= in[i + k];
+            for (short k = 0; k < toXor; k++) state[(short) (ratePos + k)] ^= in[(short) (i + k)];
             ratePos += toXor;
             i += toXor;
             remaining -= toXor;
@@ -94,15 +95,21 @@ public final class SHAKE256JC
         {
             int available = RATE_BYTES - ratePos;
             int toCopy = (available < remaining) ? available : remaining;
-            for (int k = 0; k < toCopy; k++) out[o + k] = state[ratePos + k];
+            for (short k = 0; k < toCopy; k++) out[(short) (o + k)] = state[(short) (ratePos + k)];
             o += toCopy;
             ratePos += toCopy;
             remaining -= toCopy;
+            // if (ratePos == RATE_BYTES)
+            // {
+            //     KeccakF1600.permute(state, scratch);
+            //     ratePos = 0;
+            // }
             if (ratePos == RATE_BYTES)
-            {
-                KeccakF1600.permute(state, scratch);
-                ratePos = 0;
-            }
+{
+    KeccakF1600.permute(state, scratch);
+
+    ratePos = 0;
+}
         }
     }
 

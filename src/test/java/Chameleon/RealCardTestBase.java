@@ -179,6 +179,19 @@ public class RealCardTestBase {
         // 6. Create ECDSA signature
         send(channel, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
 
+        int runs = 100;
+        long totalNs = 0;
+
+        for (int i = 0; i < runs; i++) {
+            long start = System.nanoTime();
+            channel.transmit(new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+            long end = System.nanoTime();
+            totalNs += (end - start);
+        }
+
+        double avgMs = (totalNs / (double) runs) / 1_000_000.0;
+        System.out.printf("Average signature generation time: %.3f ms%n", avgMs);
+
         // 8. Get signature
         ResponseAPDU sigResponse = send(channel, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
         byte[] sigData = sigResponse.getData();

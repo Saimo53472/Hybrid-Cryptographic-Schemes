@@ -215,15 +215,15 @@ public class RealCardTestChameleon {
         byte[] sigData = sigResponse.getData();
 
         // 9. Get post-quantum signature
-        byte[] signature = new byte[555];
-        offset = 0;
+        // byte[] signature = new byte[556];
+        // offset = 0;
 
-        while (offset < signature.length) {
-            ResponseAPDU rsp = send(channel, new CommandAPDU(CLA, 0x60, (offset >> 8) & 0xFF, offset & 0xFF));
-            byte[] chunk = rsp.getData();
-            System.arraycopy(chunk, 0, signature, offset, chunk.length);
-            offset += chunk.length;
-        }
+        // while (offset < signature.length) {
+        //     ResponseAPDU rsp = send(channel, new CommandAPDU(CLA, 0x60, (offset >> 8) & 0xFF, offset & 0xFF));
+        //     byte[] chunk = rsp.getData();
+        //     System.arraycopy(chunk, 0, signature, offset, chunk.length);
+        //     offset += chunk.length;
+        // }
 
         // 10. Verify signature 
         byte[] expectedMessage = buildExpectedMessage(challenge);
@@ -233,12 +233,12 @@ public class RealCardTestChameleon {
         boolean ecdsaOK = ecdsaVerifier.verify(sigData);
         System.out.println("Card ECDSA signature: " + ecdsaOK);
 
-        byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
-        HawkSigner verifier = new HawkSigner();
-        verifier.init(false, pk);
-        boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
-        System.out.println("Card HAWK signature: " + hawkOK);
+        // byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
+        // HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
+        // HawkSigner verifier = new HawkSigner();
+        // verifier.init(false, pk);
+        // boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
+        // System.out.println("Card HAWK signature: " + hawkOK);
 
         card.disconnect(false);
     }

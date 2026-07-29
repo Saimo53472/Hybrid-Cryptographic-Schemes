@@ -57,17 +57,17 @@ public class ChameleonApplet extends Applet {
     protected ChameleonApplet() {
         // Working buffers
         dataToSign = new byte[255];
-        certificate = new byte[2048];
-        issuerCertificate = new byte[2048];
+        certificate = new byte[2012];
+        issuerCertificate = new byte[2012];
 
         // Create empty EC private key object
         classicalPrivateKey = (ECPrivateKey) KeyBuilder.buildKey( KeyBuilder.TYPE_EC_FP_PRIVATE, KeyBuilder.LENGTH_EC_FP_192, false);
         classicalSignature = Signature.getInstance(Signature.ALG_ECDSA_SHA, false);
-        classicalSigBuffer = new byte[128];
+        classicalSigBuffer = new byte[64];
 
         // Create key and signature cotainers for
-        pqPrivateKey = new byte[200];
-        pqSignature = new byte[600];
+        pqPrivateKey = new byte[185]; 
+        pqSignature = new byte[556];
 
         personalized = false;
         register(); // Makes the applet selectable 
@@ -298,7 +298,8 @@ public class ChameleonApplet extends Applet {
         Hawk signer = new Hawk();
 
         // Temporary workspace
-        byte[] tmp = new byte[6*512 + 1024]; 
+        // byte[] tmp = new byte[6*512 + 1024]; 
+        byte[] tmp = new byte[640];
 
         int ret = signer.signMessage((short) 9, pqSignature, dataToSign, dataToSignLen, pqPrivateKey, (short) pqKeyLen, tmp, (short) tmp.length);
 

@@ -1,6 +1,6 @@
 package com.test;
 
-final class U64 {
+public final class U64 {
 
     short w3; // highest 16 bits
     short w2;
@@ -40,7 +40,7 @@ final class U64 {
         out.w0 = loLo[i];
     }
 
-    static void copy(U64 dst, U64 src)
+    static void copy(U64 src, U64 dst)
     {
         dst.w3 = src.w3;
         dst.w2 = src.w2;
@@ -70,6 +70,52 @@ final class U64 {
         out.w2 = (short)(a.w2 | b.w2);
         out.w1 = (short)(a.w1 | b.w1);
         out.w0 = (short)(a.w0 | b.w0);
+    }
+
+    public static void not(U64 src, U64 dst)
+    {
+        dst.w0 = (short)~src.w0;
+        dst.w1 = (short)~src.w1;
+        dst.w2 = (short)~src.w2;
+        dst.w3 = (short)~src.w3;
+    }
+
+    public static void rol1(U64 src, U64 dst)
+    {
+        short c0 = (short)((src.w0 < 0) ? 1 : 0);
+        short c1 = (short)((src.w1 < 0) ? 1 : 0);
+        short c2 = (short)((src.w2 < 0) ? 1 : 0);
+        short c3 = (short)((src.w3 < 0) ? 1 : 0);
+
+        dst.w0 = (short)(src.w0 << 1);
+        dst.w1 = (short)(src.w1 << 1);
+        dst.w2 = (short)(src.w2 << 1);
+        dst.w3 = (short)(src.w3 << 1);
+
+        dst.w1 |= c0;
+        dst.w2 |= c1;
+        dst.w3 |= c2;
+        dst.w0 |= c3;
+    }
+
+    public static void rol(U64 src, short count, U64 dst)
+    {
+        count &= 63;
+        if (count == 0) {
+            copy(src, dst);
+            return;
+        }
+
+        U64 tmpA = new U64();
+        U64 tmpB = new U64();
+        copy(src, tmpA);
+
+        while (count-- > 0) {
+            rol1(tmpA, tmpB);
+            copy(tmpB, tmpA);
+        }
+
+        copy(tmpA, dst);
     }
 
     static short msb(U64 a) {

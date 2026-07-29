@@ -1,5 +1,7 @@
 package com.test;
 
+import javacard.framework.ISOException;
+
 /**
  * Allocation-free Keccak-f[1600] permutation using 32-bit hi/lo lane pairs.
  */
@@ -13,180 +15,176 @@ public final class KeccakF1600
         18,  2, 61, 56, 14
     };
 
-    // Round constants split into hi / lo 32-bit parts.
-    private static final int[] RC_HI = new int[] {
-        0x00000000, 0x00000000, 0x80000000, 0x80000000,
-        0x00000000, 0x00000000, 0x80000000, 0x80000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x80000000, 0x80000000, 0x80000000,
-        0x80000000, 0x80000000, 0x00000000, 0x80000000,
-        0x80000000, 0x80000000, 0x00000000, 0x80000000
+    private static final short[] RC_W3 = {
+        (short)0x0000, (short)0x0000, (short)0x8000, (short)0x8000,
+        (short)0x0000, (short)0x0000, (short)0x8000, (short)0x8000,
+        (short)0x0000, (short)0x0000, (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x8000, (short)0x8000, (short)0x8000,
+        (short)0x8000, (short)0x8000, (short)0x0000, (short)0x8000,
+        (short)0x8000, (short)0x8000, (short)0x0000, (short)0x8000
     };
 
-    private static final int[] RC_LO = new int[] {
-        0x00000001, 0x00008082, 0x0000808A, 0x80008000,
-        0x0000808B, 0x80000001, 0x80008081, 0x00008009,
-        0x0000008A, 0x00000088, 0x80008009, 0x8000000A,
-        0x8000808B, 0x0000008B, 0x00008089, 0x00008003,
-        0x00008002, 0x00000080, 0x0000800A, 0x8000000A,
-        0x80008081, 0x00008080, 0x80000001, 0x80008008
+    private static final short[] RC_W2 = {
+        (short)0x0000, (short)0x0000, (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000, (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000, (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000, (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000, (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000, (short)0x0000, (short)0x0000
     };
+
+    private static final short[] RC_W1 = {
+        (short)0x0000, (short)0x0000, (short)0x0000, (short)0x8000,
+        (short)0x0000, (short)0x8000, (short)0x8000, (short)0x0000,
+        (short)0x0000, (short)0x0000, (short)0x8000, (short)0x8000,
+        (short)0x8000, (short)0x0000, (short)0x0000, (short)0x0000,
+        (short)0x0000, (short)0x0000, (short)0x0000, (short)0x8000,
+        (short)0x8000, (short)0x0000, (short)0x8000, (short)0x8000
+    };
+
+    private static final short[] RC_W0 = {
+        (short)0x0001, (short)0x8082, (short)0x808A, (short)0x8000,
+        (short)0x808B, (short)0x0001, (short)0x8081, (short)0x8009,
+        (short)0x008A, (short)0x0088, (short)0x8009, (short)0x000A,
+        (short)0x808B, (short)0x008B, (short)0x8089, (short)0x8003,
+        (short)0x8002, (short)0x0080, (short)0x800A, (short)0x000A,
+        (short)0x8081, (short)0x8080, (short)0x0001, (short)0x8008
+    };
+
+    private static short permCount = 0;
 
     public static void permute(byte[] state)
     {
-        int[] scratch = new int[120];
-        permute(state, scratch);
+        U64[] A = new U64[25];
+        permute(state, A);
     }
 
-    public static void permute(byte[] state, int[] scratch)
+    public static void permute(byte[] state, U64[] A)
     {
-        if (state == null || state.length != 200) throw new IllegalArgumentException("state must be 200 bytes");
-        if (scratch == null || scratch.length < 120) throw new IllegalArgumentException("scratch must be int[120] or larger");
+        permCount++;
+        for (short i = 0; i < 25; i++) {
+            A[i] = new U64();
+        }
 
-        final int base_hi   = 0;   // scratch[0..24]
-        final int base_lo   = 25;  // scratch[25..49]
-        final int base_C_hi = 50;  // scratch[50..54]
-        final int base_C_lo = 55;  // scratch[55..59]
-        final int base_D_hi = 60;  // scratch[60..64]
-        final int base_D_lo = 65;  // scratch[65..69]
-        final int base_B_hi = 70;  // scratch[70..94]
-        final int base_B_lo = 95;  // scratch[95..119]
-
-        // bytes -> hi/lo ints (little-endian lane encoding)
-        for (int i = 0; i < 25; i++)
-        {
-            int off = i * 8;
-            int low = (state[off] & 0xFF) | ((state[off + 1] & 0xFF) << 8)
-                    | ((state[off + 2] & 0xFF) << 16) | ((state[off + 3] & 0xFF) << 24);
-            int high = (state[off + 4] & 0xFF) | ((state[off + 5] & 0xFF) << 8)
-                     | ((state[off + 6] & 0xFF) << 16) | ((state[off + 7] & 0xFF) << 24);
-            scratch[base_lo + i] = low;
-            scratch[base_hi + i] = high;
+        for (short i = 0; i < 25; i++) {
+            short off = (short)(i << 3);
+            A[i].w0 = (short)((state[off] & 0xFF) | ((state[(short)(off + 1)] & 0xFF) << 8));
+            A[i].w1 = (short)((state[(short)(off + 2)] & 0xFF) | ((state[(short)(off + 3)] & 0xFF) << 8));
+            A[i].w2 = (short)((state[(short)(off + 4)] & 0xFF) | ((state[(short)(off + 5)] & 0xFF) << 8));
+            A[i].w3 = (short)((state[(short)(off + 6)] & 0xFF) | ((state[(short)(off + 7)] & 0xFF) << 8));
         }
 
         // 24 rounds
-        for (int round = 0; round < 24; round++)
+        U64[] B = new U64[25];
+        U64[] C = new U64[5];
+        U64[] D = new U64[5];
+
+        for (short i = 0; i < 25; i++) {
+            B[i] = new U64();
+        }
+
+        for (short i = 0; i < 5; i++) {
+            C[i] = new U64();
+            D[i] = new U64();
+        }
+
+        U64 tmp    = new U64();
+        U64 tmpNot = new U64();
+        U64 tmpAnd = new U64();
+
+        for (short round = 0; round < 24; round++)
         {
             // Theta: C[x] = xor of column lanes
-            for (int x = 0; x < 5; x++)
-            {
-                int c_hi = scratch[base_hi + x] ^ scratch[base_hi + x + 5] ^ scratch[base_hi + x + 10]
-                         ^ scratch[base_hi + x + 15] ^ scratch[base_hi + x + 20];
-                int c_lo = scratch[base_lo + x] ^ scratch[base_lo + x + 5] ^ scratch[base_lo + x + 10]
-                         ^ scratch[base_lo + x + 15] ^ scratch[base_lo + x + 20];
-                scratch[base_C_hi + x] = c_hi;
-                scratch[base_C_lo + x] = c_lo;
+            for (short x = 0; x < 5; x++) {
+                U64.copy(A[x], C[x]);
+                U64.xor(C[x], A[(short)(x + 5)],  C[x]);
+                U64.xor(C[x], A[(short)(x + 10)], C[x]);
+                U64.xor(C[x], A[(short)(x + 15)], C[x]);
+                U64.xor(C[x], A[(short)(x + 20)], C[x]);
             }
 
             // D[x] = C[x-1] ^ ROTL64(C[x+1], 1)
-            for (int x = 0; x < 5; x++)
+            for (short x = 0; x < 5; x++)
             {
-                int next = (x + 1) % 5;
-                int cnext_hi = scratch[base_C_hi + next];
-                int cnext_lo = scratch[base_C_lo + next];
-
-                // ROTL64 by 1 on (hi, lo)
-                int rot_lo = (cnext_lo << 1) | (cnext_hi >>> 31);
-                int rot_hi = (cnext_hi << 1) | (cnext_lo >>> 31);
-
-                scratch[base_D_hi + x] = scratch[base_C_hi + ((x + 4) % 5)] ^ rot_hi;
-                scratch[base_D_lo + x] = scratch[base_C_lo + ((x + 4) % 5)] ^ rot_lo;
+                short next = (short)(x + (short)1);
+                short prev = (short)(x + (short)4);
+                next = (short)(next % 5);
+                prev = (short)(prev % 5);
+                U64.rol1(C[next], tmp);
+                U64.xor(C[prev], tmp, D[x]);
             }
 
             // A[x,y] ^= D[x]
-            for (int x = 0; x < 5; x++)
+            for (short x = 0; x < 5; x++)
             {
-                for (int y = 0; y < 5; y++)
+                for (short y = 0; y < 5; y++)
                 {
-                    int idx = x + 5 * y;
-                    scratch[base_hi + idx] ^= scratch[base_D_hi + x];
-                    scratch[base_lo + idx] ^= scratch[base_D_lo + x];
+                    short idx = (short) (x + 5 * y);
+                    U64.xor(A[idx], D[x], A[idx]);
                 }
             }
 
             // Rho & Pi -> B
-            for (int x = 0; x < 5; x++)
+            for (short x = 0; x < 5; x++)
             {
-                for (int y = 0; y < 5; y++)
+                for (short y = 0; y < 5; y++)
                 {
-                    int idx = x + 5 * y;
-                    int offset = RHO_OFFSETS[idx] & 0xFF;
-                    int a_hi = scratch[base_hi + idx];
-                    int a_lo = scratch[base_lo + idx];
+                    short idx =
+                        (short)(x + 5 * y);
 
-                    int newHi, newLo;
-                    if (offset == 0)
-                    {
-                        newHi = a_hi;
-                        newLo = a_lo;
-                    }
-                    else if (offset < 32)
-                    {
-                        newLo = (a_lo << offset) | (a_hi >>> (32 - offset));
-                        newHi = (a_hi << offset) | (a_lo >>> (32 - offset));
-                    }
-                    else
-                    {
-                        int k = offset - 32;
-                        newLo = (a_hi << k) | (a_lo >>> (32 - k));
-                        newHi = (a_lo << k) | (a_hi >>> (32 - k));
-                    }
+                    short offset = (short)(RHO_OFFSETS[idx] & 0xFF);
 
-                    // int newX = (2 * x + 3 * y) % 5;
-                    // int dst = newX + 5 * y;
+                    short newX = y;
+                    short newY = (short) ((short)(2*x) + (short)(3*y));
+                    newY =(short)(newY % 5);
 
-                    int newX = y;
-                    int newY = (2 * x + 3 * y) % 5;
-                    int dst = newX + 5 * newY;
+                    short dst =
+                        (short)(newX + 5 * newY);
 
-                    scratch[base_B_hi + dst] = newHi;
-                    scratch[base_B_lo + dst] = newLo;
+                    U64.rol(A[idx], offset, B[dst]);
                 }
             }
 
             // Chi: A[x,y] = B[x,y] ^ ((~B[x+1,y]) & B[x+2,y])
-            for (int y = 0; y < 5; y++)
-            {
-                for (int x = 0; x < 5; x++)
-                {
-                    int idx = x + 5 * y;
-                    int idx1 = ((x + 1) % 5) + 5 * y;
-                    int idx2 = ((x + 2) % 5) + 5 * y;
+            for (short y = 0; y < 5; y++) {
+                for (short x = 0; x < 5; x++) {
+                    short idx = (short)(x + 5 * y);
 
-                    int b_hi = scratch[base_B_hi + idx];
-                    int b_lo = scratch[base_B_lo + idx];
-                    int b1_hi = scratch[base_B_hi + idx1];
-                    int b1_lo = scratch[base_B_lo + idx1];
-                    int b2_hi = scratch[base_B_hi + idx2];
-                    int b2_lo = scratch[base_B_lo + idx2];
+                    short idx1 =(short)((short) (x + 1) % 5);
+                    idx1 = (short) (idx1 + 5 * y);
+                    short idx2 =(short)((short) (x + 2) % 5);
+                    idx2 = (short) (idx2 + 5 * y);
 
-                    int not_b1_hi = ~b1_hi;
-                    int not_b1_lo = ~b1_lo;
-
-                    scratch[base_hi + idx] = b_hi ^ (not_b1_hi & b2_hi);
-                    scratch[base_lo + idx] = b_lo ^ (not_b1_lo & b2_lo);
+                    U64.not(B[idx1], tmpNot);
+                    U64.and(tmpNot, B[idx2], tmpAnd);
+                    U64.xor(B[idx], tmpAnd, A[idx]);
                 }
             }
 
             // Iota: XOR round constant
-            scratch[base_hi + 0] ^= RC_HI[round];
-            scratch[base_lo + 0] ^= RC_LO[round];
+            U64 rc = new U64();
+            rc.w3 = RC_W3[round];
+            rc.w2 = RC_W2[round];
+            rc.w1 = RC_W1[round];
+            rc.w0 = RC_W0[round];
+            U64.xor(A[0], rc, A[0]);
         }
 
         // write back hi/lo -> state bytes (little-endian)
-        for (int i = 0; i < 25; i++)
-        {
-            int off = i * 8;
-            int l = scratch[base_lo + i];
-            int h = scratch[base_hi + i];
-            state[off]     = (byte)(l & 0xFF);
-            state[off + 1] = (byte)((l >>> 8) & 0xFF);
-            state[off + 2] = (byte)((l >>> 16) & 0xFF);
-            state[off + 3] = (byte)((l >>> 24) & 0xFF);
-            state[off + 4] = (byte)(h & 0xFF);
-            state[off + 5] = (byte)((h >>> 8) & 0xFF);
-            state[off + 6] = (byte)((h >>> 16) & 0xFF);
-            state[off + 7] = (byte)((h >>> 24) & 0xFF);
+        for (short i = 0; i < 25; i++) {
+
+            short off = (short)(i << 3);
+            state[off] = (byte)A[i].w0;
+            state[(short)(off + 1)] = (byte)(A[i].w0 >>> 8);
+            state[(short)(off + 2)] = (byte)A[i].w1;
+            state[(short)(off + 3)] = (byte)(A[i].w1 >>> 8);
+            state[(short)(off + 4)] = (byte)A[i].w2;
+            state[(short)(off + 5)] = (byte)(A[i].w2 >>> 8);
+            state[(short)(off + 6)] = (byte)A[i].w3;
+            state[(short)(off + 7)] = (byte)(A[i].w3 >>> 8);
         }
+        if (permCount == 3) {
+    ISOException.throwIt((short)0x7F50);
+}
     }
 }

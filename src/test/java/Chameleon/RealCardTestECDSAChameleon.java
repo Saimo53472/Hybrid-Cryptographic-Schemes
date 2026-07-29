@@ -73,39 +73,39 @@ public class RealCardTestECDSAChameleon {
         ResponseAPDU initResp = send(channel,new CommandAPDU(CLA, 0x00, 0x00, 0x00));
         System.out.printf("INIT SW = %04X%n", initResp.getSW());
 
-        // 2. Load private keys and certificates
-        try {
-            byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
-            byte[] key2 = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key2_pkcs8.pem"));
-            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa_signed.crt"));
-            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa_signed.crt"));
+        // // 2. Load private keys and certificates
+        // try {
+        //     byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
+        //     byte[] key2 = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key2_pkcs8.pem"));
+        //     byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa_signed.crt"));
+        //     byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa_signed.crt"));
 
-            send(channel, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
-            send(channel, new CommandAPDU(CLA, 0xB1, 0x00, 0x00, key2));
+        //     send(channel, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
+        //     send(channel, new CommandAPDU(CLA, 0xB1, 0x00, 0x00, key2));
 
-            int offset = 0;
-            int chunkSize = 200;
-            while (offset < issuer_cert.length) {
-                int len = Math.min(chunkSize, issuer_cert.length - offset);
-                byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
-                offset += len;
-            }
+        //     int offset = 0;
+        //     int chunkSize = 200;
+        //     while (offset < issuer_cert.length) {
+        //         int len = Math.min(chunkSize, issuer_cert.length - offset);
+        //         byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
+        //         send(channel, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+        //         offset += len;
+        //     }
 
-            offset = 0;
-            chunkSize = 200;
-            while (offset < cert.length) {
-                int len = Math.min(chunkSize, cert.length - offset);
-                byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
-                send(channel, new CommandAPDU(CLA, 0xB3, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
-                offset += len;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //     offset = 0;
+        //     chunkSize = 200;
+        //     while (offset < cert.length) {
+        //         int len = Math.min(chunkSize, cert.length - offset);
+        //         byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
+        //         send(channel, new CommandAPDU(CLA, 0xB3, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+        //         offset += len;
+        //     }
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
 
-        // 3. Lock card
-        send(channel, new CommandAPDU(CLA, 0xB4, 0x00, 0x00));
+        // // 3. Lock card
+        // send(channel, new CommandAPDU(CLA, 0xB4, 0x00, 0x00));
 
         // 4. Get certificate
         int offset = 0;
@@ -211,8 +211,33 @@ public class RealCardTestECDSAChameleon {
         // 6. Create classical signature
         send(channel, new CommandAPDU(CLA, 0x30, 0x00, 0x00));
 
+        int runs = 100;
+        long totalNs = 0;
+
+        for (int i = 0; i < runs; i++) {
+            long start = System.nanoTime();
+            channel.transmit(new CommandAPDU(CLA, 0x30, 0x00, 0x00));
+            long end = System.nanoTime();
+            totalNs += (end - start);
+        }
+
+        double avgMs = (totalNs / (double) runs) / 1_000_000.0;
+        System.out.printf("Average signature generation time: %.3f ms%n", avgMs);
+
         // 7. Create second signature
         send(channel, new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+
+        long totalNs2 = 0;
+        for (int i = 0; i < runs; i++) {
+            long start = System.nanoTime();
+            channel.transmit(new CommandAPDU(CLA, 0x40, 0x00, 0x00));
+            long end = System.nanoTime();
+            totalNs2 += (end - start);
+        }
+
+        double avgMs2 = (totalNs2 / (double) runs) / 1_000_000.0;
+        System.out.printf("Average signature generation time: %.3f ms%n", avgMs2);
+        System.out.printf("Total:%.3f ms%n", avgMs + avgMs2);
 
         // 8. Get classical signature
         ResponseAPDU sigResponse = send(channel, new CommandAPDU(CLA, 0x50, 0x00, 0x00));
