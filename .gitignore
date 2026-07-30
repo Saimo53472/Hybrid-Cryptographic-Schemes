@@ -1,0 +1,14 @@
+# Local configuration
+config/local.ps1
+
+# VS Code
+.vscode/
+
+# Python
+.venv/
+venv/
+
+# Build outputs
+out/
+capout/
+target/
