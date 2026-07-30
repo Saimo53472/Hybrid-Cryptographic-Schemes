@@ -1,11 +1,14 @@
 param(
-    [string]$AppletClass = "com.test.ChameleonApplet",
+    [string]$Applet = "BaseApplet",
     [string]$PackageName = "com.test",
     [string]$AppletAID = "0xA0:0x01:0x01:0x01:0x01:0x01:0x01",
     [string]$PackageAID = "0xA0:0x01:0x01:0x01:0x01:0x01"
 )
 
 $ROOT = Split-Path -Parent $PSScriptRoot
+
+$AppletPath = "$ROOT\src\main\java\com\test\$Applet.java"
+$AppletClass = "com.test.$Applet"
 
 . "$ROOT\config\local.ps1"
 
@@ -28,7 +31,7 @@ New-Item -ItemType Directory "$ROOT\capout" -Force | Out-Null
 javac -source 1.5 -target 1.5 `
   -cp "$env:JC_HOME\lib\api.jar" `
   -d "$ROOT\out" `
-  "$ROOT\src\main\java\com\test\BaseApplet.java"
+  $AppletPath
 
 # Convert to CAP
 & "$env:JC_HOME\bin\converter.bat" `
