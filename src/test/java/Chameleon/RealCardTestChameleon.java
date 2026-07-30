@@ -244,7 +244,6 @@ public class RealCardTestChameleon {
     }
 
     private static ResponseAPDU send(CardChannel channel, CommandAPDU cmd) throws Exception {
-
         ResponseAPDU resp = channel.transmit(cmd);
         System.out.println(">> " + toHex(cmd.getBytes()));
         System.out.println("<< " + toHex(resp.getBytes()));
@@ -263,12 +262,10 @@ public class RealCardTestChameleon {
 
     private static byte[] loadECPrivateKey(Path path) throws Exception {
         byte[] keyBytes = Files.readAllBytes(path);
-
         String pem = new String(keyBytes);
 
         if (pem.contains("BEGIN")) {
-            pem = pem
-                    .replaceAll("-----BEGIN (.*)-----", "")
+            pem = pem.replaceAll("-----BEGIN (.*)-----", "")
                     .replaceAll("-----END (.*)-----", "")
                     .replaceAll("\\s", "");
 
@@ -277,7 +274,6 @@ public class RealCardTestChameleon {
 
         KeyFactory kf = KeyFactory.getInstance("EC");
         PrivateKey pk = kf.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
-
         ECPrivateKey ecKey = (ECPrivateKey) pk;
 
         byte[] d = ecKey.getS().toByteArray();
@@ -293,13 +289,9 @@ public class RealCardTestChameleon {
         return d;
     }
 
-    private static byte[] loadCertificate(Path pemPath)
-            throws Exception {
-
+    private static byte[] loadCertificate(Path pemPath) throws Exception {
         String pem = new String(Files.readAllBytes(pemPath));
-
-        pem = pem
-                .replace("-----BEGIN CERTIFICATE-----", "")
+        pem = pem.replace("-----BEGIN CERTIFICATE-----", "")
                 .replace("-----END CERTIFICATE-----", "")
                 .replaceAll("\\s", "");
 
@@ -307,8 +299,7 @@ public class RealCardTestChameleon {
     }
 
     private static void verifyHAWK(byte[] hawkPublicKey, byte[] signature, byte[] message) throws Exception {
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, hawkPublicKey, 0,
-                hawkPublicKey.length);
+        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, hawkPublicKey, 0, hawkPublicKey.length);
         HawkSigner verifier = new HawkSigner();
         verifier.init(false, pk);
         boolean ok = verifier.verifySignature(message, signature);
@@ -316,9 +307,7 @@ public class RealCardTestChameleon {
     }
 
     private static byte[] unwrapExtension(byte[] extension) throws Exception {
-        ASN1OctetString oct = ASN1OctetString.getInstance(
-                ASN1Primitive.fromByteArray(extension));
-
+        ASN1OctetString oct = ASN1OctetString.getInstance(ASN1Primitive.fromByteArray(extension));
         return oct.getOctets();
     }
 

@@ -364,22 +364,14 @@ class Hawk {
     public static short HAWK_SIG_SIZE(short logn) {
         return (short) (249 + 306 * (2 >> (10 - logn)) + 360 * (1 >> (10 - logn)));
     }
-
-    private static void getInt32(short[] hiArr, short[] loArr, short i, short[] out, short off) {
-        out[off] = hiArr[i];
-        out[(short)(off + 1)] = loArr[i];
-    }
-
     /**
      * Hamming weight of a byte (number of 1 bits)
      */
     private static byte popcount8(byte x) {
         short v = (short) (x & 0xFF);
-
         v = (short) ((v & 0x55) + ((v >>> 1) & 0x55));
         v = (short) ((v & 0x33) + ((v >>> 2) & 0x33));
         v = (short) ((v & 0x0F) + ((v >>> 4) & 0x0F));
-
         return (byte) v;
     }
 
@@ -477,7 +469,6 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     public static void enc32le(byte[] dst, short dstOffset, short hi, short lo) {
         dst[dstOffset] = (byte)lo;
         dst[(short)(dstOffset + 1)] = (byte)(lo >>> 8);
-
         dst[(short)(dstOffset + 2)] = (byte)hi;
         dst[(short)(dstOffset + 3)] = (byte)(hi >>> 8);
     }
@@ -498,17 +489,12 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     /*
      * Returns 1 iff a < b when interpreted as unsigned ints.
      */
-    private static short uLessThan(
-        short aHi, short aLo,
-        short bHi, short bLo)
+    private static short uLessThan(short aHi, short aLo, short bHi, short bLo)
     {
         if (aHi != bHi) {
-            return (short)(((aHi ^ (short)0x8000)
-                    < (bHi ^ (short)0x8000)) ? 1 : 0);
+            return (short)(((aHi ^ (short)0x8000) < (bHi ^ (short)0x8000)) ? 1 : 0);
         }
-
-        return (short)(((aLo ^ (short)0x8000)
-                < (bLo ^ (short)0x8000)) ? 1 : 0);
+        return (short)(((aLo ^ (short)0x8000) < (bLo ^ (short)0x8000)) ? 1 : 0);
     }
 
     /*
@@ -569,10 +555,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
      /**
     * Computes the 64-bit product of two 32-bit integers without using Java long arithmetic.
     */
-    public static void mul64(
-    short aHi, short aLo,
-    short bHi, short bLo,
-    short[] out, short off)
+    public static void mul64( short aHi, short aLo, short bHi, short bLo, short[] out, short off)
     {
         U32 p00 = new U32();
         U32 p01 = new U32();
@@ -587,9 +570,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         short r0 = p00.lo;
 
         short t1 = (short)(p00.hi + p01.lo);
-        short carry1 = uLessThan(
-            (short)0, t1,
-            (short)0, p00.hi);
+        short carry1 = uLessThan((short)0, t1, (short)0, p00.hi);
 
         short old = t1;
         t1 = (short)(t1 + p10.lo);
@@ -599,31 +580,24 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         }
 
         short r1 = t1;
-
         short t2 = (short)(p01.hi + p10.hi);
-        short carry2 = uLessThan(
-            (short)0, t2,
-            (short)0, p01.hi);
+        short carry2 = uLessThan((short)0, t2, (short)0, p01.hi);
 
         old = t2;
         t2 = (short)(t2 + p11.lo);
-
         if (uLessThan((short)0, t2, (short)0, old) != 0) {
             carry2++;
         }
 
         old = t2;
         t2 = (short)(t2 + carry1);
-
         if (uLessThan((short)0, t2, (short)0, old) != 0) {
             carry2++;
         }
 
         short r2 = t2;
-
         short r3 = (short)(p11.hi + carry2);
-
-        out[off]               = r0;
+        out[off] = r0;
         out[(short)(off + 1)] = r1;
         out[(short)(off + 2)] = r2;
         out[(short)(off + 3)] = r3;
@@ -676,10 +650,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z0hi, hiPart, z0hi);
         U32.xor(z0lo, loPart, z0lo);
 
-        mul64(
-            x1.hi, x1.lo,
-            y3.hi, y3.lo,
-            mul, (short)0);
+        mul64( x1.hi, x1.lo, y3.hi, y3.lo, mul, (short)0);
 
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
@@ -689,11 +660,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z0hi, hiPart, z0hi);
         U32.xor(z0lo, loPart, z0lo);
 
-        mul64(
-            x2.hi, x2.lo,
-            y2.hi, y2.lo,
-            mul, (short)0);
-
+        mul64( x2.hi, x2.lo, y2.hi, y2.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -702,11 +669,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z0hi, hiPart, z0hi);
         U32.xor(z0lo, loPart, z0lo);
 
-        mul64(
-            x3.hi, x3.lo,
-            y1.hi, y1.lo,
-            mul, (short)0);
-
+        mul64(x3.hi, x3.lo, y1.hi, y1.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -718,11 +681,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32 z1hi = new U32();
         U32 z1lo = new U32();
 
-        mul64(
-            x0.hi, x0.lo,
-            y1.hi, y1.lo,
-            mul, (short)0);
-
+        mul64(x0.hi, x0.lo, y1.hi, y1.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -731,11 +690,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z1hi, hiPart, z1hi);
         U32.xor(z1lo, loPart, z1lo);
 
-        mul64(
-            x1.hi, x1.lo,
-            y0.hi, y0.lo,
-            mul, (short)0);
-
+        mul64(x1.hi, x1.lo, y0.hi, y0.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -744,11 +699,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z1hi, hiPart, z1hi);
         U32.xor(z1lo, loPart, z1lo);
 
-        mul64(
-            x2.hi, x2.lo,
-            y3.hi, y3.lo,
-            mul, (short)0);
-
+        mul64(x2.hi, x2.lo, y3.hi, y3.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -757,11 +708,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z1hi, hiPart, z1hi);
         U32.xor(z1lo, loPart, z1lo);
 
-        mul64(
-            x3.hi, x3.lo,
-            y2.hi, y2.lo,
-            mul, (short)0);
-
+        mul64(x3.hi, x3.lo, y2.hi, y2.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -773,11 +720,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32 z2hi = new U32();
         U32 z2lo = new U32();
 
-        mul64(
-            x0.hi, x0.lo,
-            y2.hi, y2.lo,
-            mul, (short)0);
-
+        mul64(x0.hi, x0.lo, y2.hi, y2.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -786,11 +729,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z2hi, hiPart, z2hi);
         U32.xor(z2lo, loPart, z2lo);
 
-        mul64(
-            x1.hi, x1.lo,
-            y1.hi, y1.lo,
-            mul, (short)0);
-
+        mul64(x1.hi, x1.lo, y1.hi, y1.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -799,11 +738,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z2hi, hiPart, z2hi);
         U32.xor(z2lo, loPart, z2lo);
 
-        mul64(
-            x2.hi, x2.lo,
-            y0.hi, y0.lo,
-            mul, (short)0);
-
+        mul64(x2.hi, x2.lo, y0.hi, y0.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -812,11 +747,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z2hi, hiPart, z2hi);
         U32.xor(z2lo, loPart, z2lo);
 
-        mul64(
-            x3.hi, x3.lo,
-            y3.hi, y3.lo,
-            mul, (short)0);
-
+        mul64(x3.hi, x3.lo, y3.hi, y3.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -828,11 +759,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32 z3hi = new U32();
         U32 z3lo = new U32();
 
-        mul64(
-            x0.hi, x0.lo,
-            y3.hi, y3.lo,
-            mul, (short)0);
-
+        mul64(x0.hi, x0.lo, y3.hi, y3.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -841,11 +768,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z3hi, hiPart, z3hi);
         U32.xor(z3lo, loPart, z3lo);
 
-        mul64(
-            x1.hi, x1.lo,
-            y2.hi, y2.lo,
-            mul, (short)0);
-
+        mul64(x1.hi, x1.lo, y2.hi, y2.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -854,11 +777,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z3hi, hiPart, z3hi);
         U32.xor(z3lo, loPart, z3lo);
 
-        mul64(
-            x2.hi, x2.lo,
-            y1.hi, y1.lo,
-            mul, (short)0);
-
+        mul64(x2.hi, x2.lo, y1.hi, y1.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -867,11 +786,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         U32.xor(z3hi, hiPart, z3hi);
         U32.xor(z3lo, loPart, z3lo);
 
-        mul64(
-            x3.hi, x3.lo,
-            y0.hi, y0.lo,
-            mul, (short)0);
-
+        mul64(x3.hi, x3.lo, y0.hi, y0.lo, mul, (short)0);
         hiPart.hi = mul[3];
         hiPart.lo = mul[2];
 
@@ -914,11 +829,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
      * Multiply-and-accumulate operation for 64-bit binary polynomials.
      * Uses a Karatsuba-style decomposition to avoid 64-bit arithmetic.
      */
-    public static void bpMuladd64(
-        byte[] d, short dOffset,
-        byte[] a, short aOffset,
-        byte[] b, short bOffset,
-        byte[] tmp, short tmpOffset)
+    public static void bpMuladd64(byte[] d, short dOffset, byte[] a, short aOffset, byte[] b, short bOffset, byte[] tmp, short tmpOffset)
     {
         short[] t = new short[8];
 
@@ -1057,10 +968,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
      * Binary polynomial multiplication and accumulation for 256-bit polynomials.
      * Uses Karatsuba algorithm with 128-bit halves.
      */
-    public static void bpMuladd256(byte[] d, short dOffset,
-            byte[] a, short aOffset,
-            byte[] b, short bOffset,
-            byte[] tmp, short tmpOffset) {
+    public static void bpMuladd256(byte[] d, short dOffset, byte[] a, short aOffset, byte[] b, short bOffset, byte[] tmp, short tmpOffset) {
         final short byteLen = 32;
         final short halfByteLen = 16;
 
@@ -1092,31 +1000,18 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     /**
      * Generic XOR for any size.
      */
-    private static void bpXor(
-        short bitSize,
-        byte[] d, short dOffset,
-        byte[] a, short aOffset,
-        byte[] b, short bOffset)
+    private static void bpXor(short bitSize, byte[] d, short dOffset, byte[] a, short aOffset, byte[] b, short bOffset)
     {
         short byteSize = (short)(bitSize >> 3);
-
         for (short u = 0; u < byteSize; u++) {
-            d[(short)(dOffset + u)] =
-                (byte)(a[(short)(aOffset + u)]
-                    ^ b[(short)(bOffset + u)]);
+            d[(short)(dOffset + u)] = (byte)(a[(short)(aOffset + u)] ^ b[(short)(bOffset + u)]);
         }
     }
 
     /**
      * Generic binary polynomial multiplication using Karatsuba algorithm
      */
-    private static void bpMulmod(
-            short n,
-            short hn,
-            byte[] d, short dOffset,
-            byte[] a, short aOffset,
-            byte[] b, short bOffset,
-            byte[] tmp, short tmpOffset)
+    private static void bpMulmod(short n, short hn, byte[] d, short dOffset, byte[] a, short aOffset, byte[] b, short bOffset, byte[] tmp, short tmpOffset)
     {
         short byteLen = (short)(n / 8);
         short halfByteLen = (short)(hn / 8);
@@ -1125,72 +1020,23 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         short t2Offset = (short)(t1Offset + byteLen);
 
         // t1 <- (a0 + a1)*(b0 + b1)
-
-        bpXor(hn,
-                d, dOffset,
-                a, aOffset,
-                a, (short)(aOffset + halfByteLen));
-
-        bpXor(hn,
-                d, (short)(dOffset + halfByteLen),
-                b, bOffset,
-                b, (short)(bOffset + halfByteLen));
-
-        bpXor(n,
-                tmp, t1Offset,
-                d, dOffset,
-                d, (short)(dOffset + halfByteLen));
-
-        Util.arrayFillNonAtomic(
-                tmp,
-                t1Offset,
-                byteLen,
-                (byte)0);
-
-        bpMuladd256(
-                tmp, t1Offset,
-                d, dOffset,
-                d, (short)(dOffset + halfByteLen),
-                tmp, t2Offset);
+        bpXor(hn, d, dOffset, a, aOffset, a, (short)(aOffset + halfByteLen));
+        bpXor(hn, d, (short)(dOffset + halfByteLen), b, bOffset, b, (short)(bOffset + halfByteLen));
+        bpXor(n, tmp, t1Offset, d, dOffset, d, (short)(dOffset + halfByteLen));
+        Util.arrayFillNonAtomic(tmp, t1Offset, byteLen, (byte)0);
+        bpMuladd256( tmp, t1Offset, d, dOffset, d, (short)(dOffset + halfByteLen), tmp, t2Offset);
 
         // d <- a0*b0 + a1*b1
-
-        Util.arrayFillNonAtomic(
-                d,
-                dOffset,
-                byteLen,
-                (byte)0);
-
-        bpMuladd256(
-                d, dOffset,
-                a, aOffset,
-                b, bOffset,
-                tmp, t2Offset);
-
-        bpMuladd256(
-                d, dOffset,
-                a, (short)(aOffset + halfByteLen),
-                b, (short)(bOffset + halfByteLen),
-                tmp, t2Offset);
+        Util.arrayFillNonAtomic(d, dOffset, byteLen, (byte)0);
+        bpMuladd256(d, dOffset, a, aOffset, b, bOffset, tmp, t2Offset);
+        bpMuladd256(d, dOffset, a, (short)(aOffset + halfByteLen), b, (short)(bOffset + halfByteLen), tmp, t2Offset);
 
         // t1 <- t1 + d = a0*b1 + a1*b0
-
-        bpXor(n,
-                tmp, t1Offset,
-                tmp, t1Offset,
-                d, dOffset);
+        bpXor(n, tmp, t1Offset, tmp, t1Offset, d, dOffset);
 
         // d <- d + rotate_{n/2}(t1)
-
-        bpXor(hn,
-                d, dOffset,
-                d, dOffset,
-                tmp, (short)(t1Offset + halfByteLen));
-
-        bpXor(hn,
-                d, (short)(dOffset + halfByteLen),
-                d, (short)(dOffset + halfByteLen),
-                tmp, t1Offset);
+        bpXor(hn, d, dOffset, d, dOffset, tmp, (short)(t1Offset + halfByteLen));
+        bpXor(hn, d, (short)(dOffset + halfByteLen), d, (short)(dOffset + halfByteLen), tmp, t1Offset);
     }
 
     /**
@@ -1214,43 +1060,12 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         short w1Offset = tmpOffset;
         short w2Offset = (short)(w1Offset + byteLen);
 
-        bpMulmod(
-                (short)512, (short)256,
-                t0, t0Offset,
-                h0, h0Offset,
-                f2, f2Offset,
-                tmp, w2Offset);
-
-        bpMulmod(
-                (short)512, (short)256,
-                tmp, w1Offset,
-                h1, h1Offset,
-                F2, F2Offset,
-                tmp, w2Offset);
-
-        bpXor512(
-                t0, t0Offset,
-                t0, t0Offset,
-                tmp, w1Offset);
-
-        bpMulmod(
-                (short)512, (short)256,
-                t1, t1Offset,
-                h0, h0Offset,
-                g2, g2Offset,
-                tmp, w2Offset);
-
-        bpMulmod(
-                (short)512, (short)256,
-                tmp, w1Offset,
-                h1, h1Offset,
-                G2, G2Offset,
-                tmp, w2Offset);
-
-        bpXor512(
-                t1, t1Offset,
-                t1, t1Offset,
-                tmp, w1Offset);
+        bpMulmod((short)512, (short)256, t0, t0Offset, h0, h0Offset, f2, f2Offset, tmp, w2Offset);
+        bpMulmod((short)512, (short)256, tmp, w1Offset, h1, h1Offset, F2, F2Offset, tmp, w2Offset);
+        bpXor512(t0, t0Offset, t0, t0Offset, tmp, w1Offset);
+        bpMulmod((short)512, (short)256, t1, t1Offset, h0, h0Offset, g2, g2Offset, tmp, w2Offset);
+        bpMulmod((short)512, (short)256, tmp, w1Offset, h1, h1Offset, G2, G2Offset, tmp, w2Offset);
+        bpXor512(t1, t1Offset, t1, t1Offset, tmp, w1Offset);
     }
 
     /**
@@ -1285,11 +1100,8 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     public short mq18433Sub(short x, short y)
     {
         short d = (short)(y - x);
-
         short mask = (short)(d >> 15);
-
         d = (short)(d + (Q & mask));
-
         return (short)(Q - d);
     }
 
@@ -1300,11 +1112,8 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     public short mq18433Add(short x, short y)
     {
         short s = (short)(x + y);
-
         short d = (short)(s - Q);
-
         short mask = (short)(d >> 15);
-
         return (short)(d + (Q & mask));
     }
 
@@ -1322,16 +1131,8 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         int p3 = ah * bh;
 
         int middle = (p0 >>> 8) + (p1 & 0xFF) + (p2 & 0xFF);
-
-        out.lo = (short)(
-            (p0 & 0xFF)
-            | ((middle & 0xFF) << 8));
-
-        out.hi = (short)(
-            p3
-            + (p1 >>> 8)
-            + (p2 >>> 8)
-            + (middle >>> 8));
+        out.lo = (short)((p0 & 0xFF) | ((middle & 0xFF) << 8));
+        out.hi = (short)(p3 + (p1 >>> 8) + (p2 >>> 8) + (middle >>> 8));
     }
 
     /**
@@ -1348,17 +1149,9 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         mul16(xLo, (short)60352, pLH);
         mul16(xHi, (short)18431, pHL);
 
-        short word16 =
-            (short)(
-                pLL.hi
-                + pLH.lo
-                + pHL.lo);
-
+        short word16 = (short)(pLL.hi + pLH.lo + pHL.lo);
         mul16(word16, Q, step2);
-
-        short result =
-            (short)(step2.hi + 1);
-
+        short result = (short)(step2.hi + 1);
         if (xHi == 0 && xLo == 0) {
             return 0;
         }
@@ -1372,12 +1165,8 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     public short mq18433MontyMul(short x, short y)
     {
         U32 product = new U32();
-
         mul16(x, y, product);
-
-        return mq18433MontyRed(
-            product.hi,
-            product.lo);
+        return mq18433MontyRed(product.hi, product.lo);
     }
 
     /**
@@ -1386,12 +1175,8 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     public short mq18433ToMonty(short x)
     {
         U32 product = new U32();
-
         mul16(x, R2, product);
-
-        return mq18433MontyRed(
-            product.hi,
-            product.lo);
+        return mq18433MontyRed(product.hi,product.lo);
     }
 
      /**
@@ -1406,7 +1191,6 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         if ((x & 1) != 0) {
             x = (short)(x + Q);
         }
-
         return (short)((x >>> 1) & 0x7FFF);
     }
 
@@ -1419,7 +1203,6 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         }
 
         int t = 1 << logn;
-
         for (short lm = 0; lm < logn; lm++) {
             int m = 1 << lm;
             int ht = t >> 1;
@@ -1477,12 +1260,9 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
                     short x1 = (short)(a[(short) k1]);
                     short x2 = (short)(a[(short) k2]);
 
-                    a[k1] = mq18433Half(
-                                mq18433Add(x1, x2));
+                    a[k1] = mq18433Half(mq18433Add(x1, x2));
 
-                    a[k2] = mq18433MontyMul(
-                                s,
-                                mq18433Sub(x1, x2));
+                    a[k2] = mq18433MontyMul(s, mq18433Sub(x1, x2));
                 }
 
                 v0 += dt;
@@ -1509,10 +1289,8 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
      */
     public static void mq18433PolySnorm(short logn, short[] d, short dOffset) {
         short n = (short) (1 << logn);
-
         for (short u = 0; u < n; u++) {
             short k = (short) (dOffset + u);
-
             d[k] = mq18433Snorm(d[k]);
         }
     }
@@ -1526,48 +1304,26 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     public static short polySymBreak(short logn, short[] s, short sOffset)
     {
         int n = 1 << logn;
-
         short r = 0;
         short c = (short)0xFFFF;
 
         for (short u = 0; u < n; u++) {
 
             short x = s[(short) (sOffset + u)];
-
-            short nz =
-                (short)(c & tbmask((short)(x | -x)));
-
+            short nz = (short)(c & tbmask((short)(x | -x)));
             c = (short)(c & ~nz);
-
-            r = (short)(
-                    r |
-                    (nz & (short)(tbmask(x) | 1))
-                );
+            r = (short)(r | (nz & (short)(tbmask(x) | 1)));
         }
 
         return r;
     }
 
-    private static void dec64le(
-    byte[] src,
-    short off,
-    U64 out)
+    private static void dec64le(byte[] src, short off, U64 out)
     {
-        out.w0 = (short)(
-            (src[off] & 0xFF)
-            | ((src[(short)(off + 1)] & 0xFF) << 8));
-
-        out.w1 = (short)(
-            (src[(short)(off + 2)] & 0xFF)
-            | ((src[(short)(off + 3)] & 0xFF) << 8));
-
-        out.w2 = (short)(
-            (src[(short)(off + 4)] & 0xFF)
-            | ((src[(short)(off + 5)] & 0xFF) << 8));
-
-        out.w3 = (short)(
-            (src[(short)(off + 6)] & 0xFF)
-            | ((src[(short)(off + 7)] & 0xFF) << 8));
+        out.w0 = (short)((src[off] & 0xFF) | ((src[(short)(off + 1)] & 0xFF) << 8));
+        out.w1 = (short)((src[(short)(off + 2)] & 0xFF) | ((src[(short)(off + 3)] & 0xFF) << 8));
+        out.w2 = (short)((src[(short)(off + 4)] & 0xFF) | ((src[(short)(off + 5)] & 0xFF) << 8));
+        out.w3 = (short)((src[(short)(off + 6)] & 0xFF) | ((src[(short)(off + 7)] & 0xFF) << 8));
     }
 
     /**
@@ -1609,34 +1365,15 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
                 for (short k = 0; k < 4; k++) {
                     int v = u + (j << 2) + k;
                     U64 lo = new U64();
-                    dec64le(
-                        buffer,
-                        (short)(k << 3),
-                        lo);
-
-                    short hi =
-                        dec16le(
-                            buffer,
-                            (short)(32 + (k << 1)));
-
-                    short neg =
-                        (short)-U64.msb(lo);
-
+                    dec64le(buffer,(short)(k << 3), lo);
+                    short hi = dec16le(buffer,(short)(32 + (k << 1)));
+                    short neg = (short)-U64.msb(lo);
                     U64.clearMsb(lo);
-
                     hi = (short)(hi & 0x7FFF);
+                    short pbit =(short)((t[(short)(tOffset + (v >>> 3))] >>> (v & 7)) & 1);
 
-                    short pbit =
-                        (short)(
-                            (t[(short)(tOffset + (v >>> 3))]
-                                >>> (v & 7))
-                            & 1);
-
-                    short pOddw =
-                        (short)-pbit;
-
+                    short pOddw = (short)-pbit;
                     short r = 0;
-
                     U64 tlo0 = new U64();
                     U64 tlo1 = new U64();
                     U64 tlo  = new U64();
@@ -1646,83 +1383,26 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
                      */
                     for (short i = 0; i < hiLen; i += 2) {
                         short mask = pOddw;
-
-                        short thi =
-                            (short)(
-                                tabHi[i]
-                                ^ (mask
-                                    & (tabHi[i]
-                                        ^ tabHi[(short)(i + 1)]) ));
-
-                        U64.getU64(
-                            tabLoHiHi,
-                            tabLoHiLo,
-                            tabLoLoHi,
-                            tabLoLoLo,
-                            i,
-                            tlo0);
-
-                        U64.getU64(
-                            tabLoHiHi,
-                            tabLoHiLo,
-                            tabLoLoHi,
-                            tabLoLoLo,
-                            (short)(i + 1),
-                            tlo1);
-
-                        U64.select(
-                            tlo0,
-                            tlo1,
-                            mask,
-                            tlo);
-
-                        short cc =
-                            U64.ult(lo, tlo);
-
-                        short diffHi16 =
-                            (short)(hi - thi - cc);
-
-                        r +=
-                            (short)((diffHi16 < 0)
-                                ? 1
-                                : 0);
+                        short thi = (short)(tabHi[i] ^ (mask & (tabHi[i] ^ tabHi[(short)(i + 1)]) ));
+                        U64.getU64(tabLoHiHi, tabLoHiLo, tabLoLoHi, tabLoLoLo, i, tlo0);
+                        U64.getU64( tabLoHiHi, tabLoHiLo, tabLoLoHi, tabLoLoLo, (short)(i + 1), tlo1);
+                        U64.select(tlo0, tlo1, mask, tlo);
+                        short cc = U64.ult(lo, tlo);
+                        short diffHi16 = (short)(hi - thi - cc);
+                        r += (short)((diffHi16 < 0) ? 1 : 0);
                     }
 
                     /*
                      * Remaining entries.
                      */
-                    short hinz =
-                        (short)((hi == 0) ? 1 : 0);
-
+                    short hinz = (short)((hi == 0) ? 1 : 0);
                     for (short i = hiLen; i < loLen; i += 2)
                     {
                         short mask = pOddw;
-
-                        U64.getU64(
-                            tabLoHiHi,
-                            tabLoHiLo,
-                            tabLoLoHi,
-                            tabLoLoLo,
-                            i,
-                            tlo0);
-
-                        U64.getU64(
-                            tabLoHiHi,
-                            tabLoHiLo,
-                            tabLoLoHi,
-                            tabLoLoLo,
-                            (short)(i + 1),
-                            tlo1);
-
-                        U64.select(
-                            tlo0,
-                            tlo1,
-                            mask,
-                            tlo);
-
-                        short cc =
-                            U64.ult(lo, tlo);
-
+                        U64.getU64(tabLoHiHi, tabLoHiLo, tabLoLoHi, tabLoLoLo, i, tlo0);
+                        U64.getU64(tabLoHiHi, tabLoHiLo, tabLoLoHi, tabLoLoLo, (short)(i + 1), tlo1);
+                        U64.select(tlo0, tlo1, mask, tlo);
+                        short cc = U64.ult(lo, tlo);
                         r += (short)(hinz & cc);
                     }
                     r = (short)((r << 1) - pOddw);
@@ -1765,9 +1445,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         short v;
 
         for (u = 0; u < n; u += 8) {
-
             byte x = 0;
-
             for (v = 0; v < 8; v++) {
                 short coeff = s1[(short) (s1Offset + u + v)];
                 byte signBit = (byte) ((coeff >> 15) & 1);
@@ -1790,20 +1468,15 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
 
             short w = s1[(short) (s1Offset + u)];
             short mask = tbmask(w);
-
             w ^= mask; // abs(w)
-
             acc8 |= (w & lowMask) << accBits;
             accBits += low;
 
             while (accBits >= 8) {
-
                 if (remainingLen <= 0) {
                     return false;
                 }
-
                 sig[bufOffset++] = (byte) (acc8 & 0xFF);
-
                 acc8 >>>= 8;
                 accBits -= 8;
                 remainingLen--;
@@ -1827,14 +1500,11 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
             accLen += (short) (1 + k);
 
             while (accLen >= 8) {
-
                 if (remainingLen <= 0) {
                     return false;
                 }
-
                 sig[bufOffset++] = (byte) acc;
                 remainingLen--;
-
                 acc >>>= 8;
                 accLen -= 8;
             }
@@ -1842,18 +1512,15 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
 
         // Flush remaining bits
         if (accLen > 0) {
-
             if (remainingLen <= 0) {
                 return false;
             }
-
             sig[bufOffset++] = (byte) acc;
             remainingLen--;
         }
 
         // 5. Zero padding
         Util.arrayFillNonAtomic(sig, bufOffset, remainingLen, (byte) 0);
-
         return true;
     }
 
@@ -1902,7 +1569,6 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     //     G2 = new byte[n >> 3];
     //     hpub = new byte[hpubLen];
     //     Util.arrayCopy(priv, (short) seedLen, F2, (short) 0, (short) (n >> 3));
-    //     // ISOException.throwIt((short)0x6102);
     //     Util.arrayCopy(priv, (short) (seedLen + (n >> 3)), G2, (short) 0, (short) (n >> 3));
     //     Util.arrayCopy(priv, (short) (seedLen + 2 * (n >> 3)), hpub, (short) 0, (short) hpubLen);
 
@@ -1927,11 +1593,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
 
     //         if (useShake != 0) {
     //             byte[] tbuf = new byte[4];
-    //             enc32le(
-    //                 tbuf,
-    //                 (short)0,
-    //                 (short)(attempt >>> 16),
-    //                 (short)attempt);
+    //             enc32le(tbuf, (short)0, (short)(attempt >>> 16), (short)attempt);
 
     //             SHAKE256JC saltShake = new SHAKE256JC();
     //             saltShake.update(hm, (short) 0, (short) hm.length);
@@ -1969,11 +1631,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     //         short xsn;
     //         byte[] tbuf = new byte[4];
     //         int att1 = attempt + 1;
-    //         enc32le(
-    //             tbuf,
-    //             (short)0,
-    //             (short)(att1 >>> 16),
-    //             (short)att1);
+    //         enc32le(tbuf, (short)0, (short)(att1 >>> 16), (short)att1);
 
     //         SHAKE256JC gaussShake = new SHAKE256JC();
 
@@ -1999,9 +1657,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     //         mq18433NTT(logn, w1, (short)0);
     //         mq18433NTT(logn, w2, (short)0);
     //         for (short u = 0; u < n; u++) {
-    //             w1[u] = mq18433MontyMul(
-    //                    (short) (w1[u]),
-    //                     (short) (w2[u]));
+    //             w1[u] = mq18433MontyMul((short) (w1[u]), (short) (w2[u]));
     //         }
 
     //         // w3 <- f*x1 - g*x0, then INTT to get polynomial
@@ -2010,12 +1666,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     //         mq18433NTT(logn, w2, (short) 0);
     //         mq18433NTT(logn, w3, (short) 0);
     //         for (short u = 0; u < n; u++) {
-    //             w3[u] = mq18433ToMonty(
-    //         mq18433Sub(
-    //             mq18433MontyMul(
-    //                 w2[u],
-    //                 w3[u]),
-    //             w1[u]));
+    //             w3[u] = mq18433ToMonty(mq18433Sub(mq18433MontyMul(w2[u], w3[u]), w1[u]));
     //         }
     //         mq18433INTT(logn, w3, (short) 0);
     //         mq18433PolySnorm(logn, w3, (short)0);

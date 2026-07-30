@@ -384,12 +384,7 @@ public class ChameleonECDSATest {
         return resp;
     }
 
-    public static boolean verifyECDSA(
-                PublicKey pk,
-                byte[] signature,
-                byte[] message)
-                throws Exception{
-
+    public static boolean verifyECDSA( PublicKey pk, byte[] signature, byte[] message) throws Exception{
         Signature verifier = Signature.getInstance("SHA1withECDSA");
         verifier.initVerify(pk);
         verifier.update(message);

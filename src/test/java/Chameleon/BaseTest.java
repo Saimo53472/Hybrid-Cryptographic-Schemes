@@ -257,9 +257,7 @@ public class BaseTest {
     
     private static byte[] loadECPrivateKey(Path path) throws Exception {
         byte[] keyBytes = Files.readAllBytes(path);
-
         String pem = new String(keyBytes);
-
         if (pem.contains("BEGIN")) {
             pem = pem
                     .replaceAll("-----BEGIN (.*)-----", "")
@@ -287,11 +285,8 @@ public class BaseTest {
         return d;
     }
 
-    private static byte[] loadCertificate(Path pemPath)
-            throws Exception {
-
+    private static byte[] loadCertificate(Path pemPath) throws Exception {
         String pem = new String(Files.readAllBytes(pemPath));
-
         pem = pem
                 .replace("-----BEGIN CERTIFICATE-----", "")
                 .replace("-----END CERTIFICATE-----", "")

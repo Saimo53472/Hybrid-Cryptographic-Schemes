@@ -351,22 +351,14 @@ public class ChameleonTest {
         return d;
     }
 
-    private static byte[] loadCertificate(Path pemPath)
-            throws Exception {
-
+    private static byte[] loadCertificate(Path pemPath) throws Exception {
         String pem = new String(Files.readAllBytes(pemPath));
-
         pem = pem
                 .replace("-----BEGIN CERTIFICATE-----", "")
                 .replace("-----END CERTIFICATE-----", "")
                 .replaceAll("\\s", "");
 
         return Base64.getDecoder().decode(pem);
-    }
-
-    private static ResponseAPDU send2(CardSimulator sim, CommandAPDU cmd) {
-        ResponseAPDU resp = sim.transmitCommand(cmd);
-        return resp;
     }
 
     public static PublicKey loadPublicKeyFromCert(String certPath) throws Exception {
@@ -377,8 +369,7 @@ public class ChameleonTest {
     }
 
     private static void verifyHAWK(byte[] hawkPublicKey, byte[] signature, byte[] message) throws Exception {
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, hawkPublicKey, 0,
-                hawkPublicKey.length);
+        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, hawkPublicKey, 0, hawkPublicKey.length);
         HawkSigner verifier = new HawkSigner();
         verifier.init(false, pk);
         boolean ok = verifier.verifySignature(message, signature);

@@ -63,17 +63,13 @@ public final class U32 {
         return (short)(x.hi ^ x.lo);
     }
 
-    private static short uLessThan(
-        short aHi, short aLo,
-        short bHi, short bLo)
+    private static short uLessThan( short aHi, short aLo, short bHi, short bLo)
     {
         if (aHi != bHi) {
-            return (short)(((aHi ^ (short)0x8000)
-                    < (bHi ^ (short)0x8000)) ? 1 : 0);
+            return (short)(((aHi ^ (short)0x8000) < (bHi ^ (short)0x8000)) ? 1 : 0);
         }
 
-        return (short)(((aLo ^ (short)0x8000)
-                < (bLo ^ (short)0x8000)) ? 1 : 0);
+        return (short)(((aLo ^ (short)0x8000) < (bLo ^ (short)0x8000)) ? 1 : 0);
     }
 
     static short ult(U32 a, U32 b)
@@ -93,19 +89,10 @@ public final class U32 {
         a.hi = (short)(a.hi & 0x7FFF);
     }
 
-    static void select(
-        U32 x,
-        U32 y,
-        short mask,
-        U32 out)
+    static void select( U32 x, U32 y, short mask, U32 out)
     {
-        out.hi =
-            (short)(x.hi
-            ^ (mask & (x.hi ^ y.hi)));
-
-        out.lo =
-            (short)(x.lo
-            ^ (mask & (x.lo ^ y.lo)));
+        out.hi = (short)(x.hi ^ (mask & (x.hi ^ y.hi)));
+        out.lo = (short)(x.lo ^ (mask & (x.lo ^ y.lo)));
     }
 
     static void mul16(short a, short b, U32 out)
@@ -122,22 +109,11 @@ public final class U32 {
         int p3 = ah * bh;
 
         int middle = (p0 >>> 8) + (p1 & 0xFF) + (p2 & 0xFF);
-
-        out.lo = (short)(
-            (p0 & 0xFF)
-            | ((middle & 0xFF) << 8));
-
-        out.hi = (short)(
-            p3
-            + (p1 >>> 8)
-            + (p2 >>> 8)
-            + (middle >>> 8));
+        out.lo = (short)( (p0 & 0xFF) | ((middle & 0xFF) << 8));
+        out.hi = (short)(p3 + (p1 >>> 8) + (p2 >>> 8) + (middle >>> 8));
     }
 
-    public static void mul64(
-    short aHi, short aLo,
-    short bHi, short bLo,
-    short[] out, short off)
+    public static void mul64(short aHi, short aLo, short bHi, short bLo, short[] out, short off)
     {
         U32 p00 = new U32();
         U32 p01 = new U32();
@@ -164,7 +140,6 @@ public final class U32 {
         }
 
         short r1 = t1;
-
         short t2 = (short)(p01.hi + p10.hi);
         short carry2 = uLessThan(
             (short)0, t2,
@@ -185,10 +160,8 @@ public final class U32 {
         }
 
         short r2 = t2;
-
         short r3 = (short)(p11.hi + carry2);
-
-        out[off]               = r0;
+        out[off] = r0;
         out[(short)(off + 1)] = r1;
         out[(short)(off + 2)] = r2;
         out[(short)(off + 3)] = r3;

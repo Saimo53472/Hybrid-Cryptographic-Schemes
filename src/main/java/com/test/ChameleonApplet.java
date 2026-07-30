@@ -296,13 +296,8 @@ public class ChameleonApplet extends Applet {
 
         // Hawk-512 signer
         Hawk signer = new Hawk();
-
-        // Temporary workspace
-        // byte[] tmp = new byte[6*512 + 1024]; 
         byte[] tmp = new byte[640];
-
         int ret = signer.signMessage((short) 9, pqSignature, dataToSign, dataToSignLen, pqPrivateKey, (short) pqKeyLen, tmp, (short) tmp.length);
-
         if (ret == 0) {
             ISOException.throwIt(ISO7816.SW_UNKNOWN);
         }
@@ -319,12 +314,7 @@ public class ChameleonApplet extends Applet {
         }
 
         byte[] buf = apdu.getBuffer();
-
-        short offset = (short) (
-            ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
-            (buf[ISO7816.OFFSET_P2] & 0xFF)
-        );
-
+        short offset = (short) (((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) | (buf[ISO7816.OFFSET_P2] & 0xFF));
         if (offset >= issuerCertLen) {
             ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
         }
@@ -344,11 +334,7 @@ public class ChameleonApplet extends Applet {
         }
 
         byte[] buf = apdu.getBuffer();
-
-        short offset = (short) (
-            ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
-            (buf[ISO7816.OFFSET_P2] & 0xFF)
-        );
+        short offset = (short) (((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |  (buf[ISO7816.OFFSET_P2] & 0xFF));
 
         if (offset >= certLen) {
             ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
@@ -372,10 +358,7 @@ public class ChameleonApplet extends Applet {
     // Return the generated HAWK signature to the terminal
     private void sendSignatureDelta(APDU apdu) {
         byte[] buf = apdu.getBuffer();
-
-        short offset = (short)(
-                ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8)
-            |  (buf[ISO7816.OFFSET_P2] & 0xFF));
+        short offset = (short)(((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |  (buf[ISO7816.OFFSET_P2] & 0xFF));
 
         if (offset >= pqSignatureLen) {
             ISOException.throwIt(ISO7816.SW_WRONG_P1P2);

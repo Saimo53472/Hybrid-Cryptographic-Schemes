@@ -1,7 +1,6 @@
 from pyasn1.type import univ
 from pyasn1.codec.der.encoder import encode
 
-
 OUTPUT = "src/test/resources/certs/dcd2.der"
 PUBLIC_KEY_FILE = "src/test/resources/keys/public_key2.der"
 SIGNATURE_FILE = "src/test/resources/sigs/signature2.bin"
@@ -14,29 +13,17 @@ with open(PUBLIC_KEY_FILE, "rb") as f:
 with open(SIGNATURE_FILE, "rb") as f:
     signature = f.read()
 
-
 print("Public key:", len(public_key))
 print("Signature:", len(signature))
 
 # AlgorithmIdentifier
 algorithm_identifier = univ.Sequence()
-algorithm_identifier.setComponentByPosition(
-    0,
-    univ.ObjectIdentifier(HAWK_OID)
-)
+algorithm_identifier.setComponentByPosition(0, univ.ObjectIdentifier(HAWK_OID))
 
 # SubjectPublicKeyInfo
 spki = univ.Sequence()
-spki.setComponentByPosition(
-    0,
-    algorithm_identifier
-)
-spki.setComponentByPosition(
-    1,
-    univ.BitString(
-        hexValue="00" + public_key.hex()
-    )
-)
+spki.setComponentByPosition(0, algorithm_identifier)
+spki.setComponentByPosition(1, univ.BitString(hexValue="00" + public_key.hex()))
 
 # DCD
 #
@@ -46,18 +33,9 @@ spki.setComponentByPosition(
 #     OCTET STRING
 # }
 dcd = univ.Sequence()
-dcd.setComponentByPosition(
-    0,
-    spki
-)
-dcd.setComponentByPosition(
-    1,
-    algorithm_identifier
-)
-dcd.setComponentByPosition(
-    2,
-    univ.OctetString(signature)
-)
+dcd.setComponentByPosition(0, spki)
+dcd.setComponentByPosition(1, algorithm_identifier)
+dcd.setComponentByPosition(2, univ.OctetString(signature))
 
 # Write DER
 with open(OUTPUT, "wb") as f:

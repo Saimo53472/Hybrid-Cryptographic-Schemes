@@ -315,18 +315,11 @@ public class ChameleonECDSAApplet extends Applet {
     // Return certificate data in chunks.
     // The host repeatedly requests blocks until the entire certificate has been transferred.
     private void sendIssuerCertificate(APDU apdu) {
-
         if (issuerCertLen == 0) {
             ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
         }
-
         byte[] buf = apdu.getBuffer();
-
-        short offset = (short) (
-            ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
-            (buf[ISO7816.OFFSET_P2] & 0xFF)
-        );
-
+        short offset = (short)(((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |  (buf[ISO7816.OFFSET_P2] & 0xFF));
         if (offset >= issuerCertLen) {
             ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
         }
@@ -346,12 +339,7 @@ public class ChameleonECDSAApplet extends Applet {
         }
 
         byte[] buf = apdu.getBuffer();
-
-        short offset = (short) (
-            ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
-            (buf[ISO7816.OFFSET_P2] & 0xFF)
-        );
-
+        short offset = (short)(((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |  (buf[ISO7816.OFFSET_P2] & 0xFF));
         if (offset >= certLen) {
             ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
         }

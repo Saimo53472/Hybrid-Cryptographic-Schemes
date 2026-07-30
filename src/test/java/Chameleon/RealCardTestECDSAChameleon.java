@@ -73,39 +73,39 @@ public class RealCardTestECDSAChameleon {
         ResponseAPDU initResp = send(channel,new CommandAPDU(CLA, 0x00, 0x00, 0x00));
         System.out.printf("INIT SW = %04X%n", initResp.getSW());
 
-        // // 2. Load private keys and certificates
-        // try {
-        //     byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
-        //     byte[] key2 = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key2_pkcs8.pem"));
-        //     byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa_signed.crt"));
-        //     byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa_signed.crt"));
+        // 2. Load private keys and certificates
+        try {
+            byte[] key = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key_pkcs8.pem"));
+            byte[] key2 = loadECPrivateKey(Paths.get("src", "test", "resources", "keys", "key2_pkcs8.pem"));
+            byte[] issuer_cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "issuer_ecdsa_signed.crt"));
+            byte[] cert = loadCertificate(Paths.get("src", "test", "resources", "certs", "ecdsa_signed.crt"));
 
-        //     send(channel, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
-        //     send(channel, new CommandAPDU(CLA, 0xB1, 0x00, 0x00, key2));
+            send(channel, new CommandAPDU(CLA, 0xB0, 0x00, 0x00, key));
+            send(channel, new CommandAPDU(CLA, 0xB1, 0x00, 0x00, key2));
 
-        //     int offset = 0;
-        //     int chunkSize = 200;
-        //     while (offset < issuer_cert.length) {
-        //         int len = Math.min(chunkSize, issuer_cert.length - offset);
-        //         byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
-        //         send(channel, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
-        //         offset += len;
-        //     }
+            int offset = 0;
+            int chunkSize = 200;
+            while (offset < issuer_cert.length) {
+                int len = Math.min(chunkSize, issuer_cert.length - offset);
+                byte[] chunk = Arrays.copyOfRange(issuer_cert, offset, offset + len);
+                send(channel, new CommandAPDU(CLA, 0xB2, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                offset += len;
+            }
 
-        //     offset = 0;
-        //     chunkSize = 200;
-        //     while (offset < cert.length) {
-        //         int len = Math.min(chunkSize, cert.length - offset);
-        //         byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
-        //         send(channel, new CommandAPDU(CLA, 0xB3, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
-        //         offset += len;
-        //     }
-        // } catch (Exception e) {
-        //     e.printStackTrace();
-        // }
+            offset = 0;
+            chunkSize = 200;
+            while (offset < cert.length) {
+                int len = Math.min(chunkSize, cert.length - offset);
+                byte[] chunk = Arrays.copyOfRange(cert, offset, offset + len);
+                send(channel, new CommandAPDU(CLA, 0xB3, offset == 0 ? 0x00 : 0x01, 0x00, chunk));
+                offset += len;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        // // 3. Lock card
-        // send(channel, new CommandAPDU(CLA, 0xB4, 0x00, 0x00));
+        // 3. Lock card
+        send(channel, new CommandAPDU(CLA, 0xB4, 0x00, 0x00));
 
         // 4. Get certificate
         int offset = 0;
@@ -242,7 +242,6 @@ public class RealCardTestECDSAChameleon {
         boolean ecdsaOK = ecdsaVerifier.verify(sigData);
         System.out.println("Card ECDSA signature: " + ecdsaOK);
 
-        // change for ecdsa
         X509Certificate delta = (X509Certificate) cf.generateCertificate(new FileInputStream("src/test/resources/certs/ecdsa2.crt"));
         boolean secondOk;
         try {
@@ -256,7 +255,6 @@ public class RealCardTestECDSAChameleon {
     }
 
     private static ResponseAPDU send(CardChannel channel, CommandAPDU cmd) throws Exception {
-
         ResponseAPDU resp = channel.transmit(cmd);
         System.out.println(">> " + toHex(cmd.getBytes()));
         System.out.println("<< " + toHex(resp.getBytes()));
@@ -275,12 +273,10 @@ public class RealCardTestECDSAChameleon {
 
     private static byte[] loadECPrivateKey(Path path) throws Exception {
         byte[] keyBytes = Files.readAllBytes(path);
-
         String pem = new String(keyBytes);
 
         if (pem.contains("BEGIN")) {
-            pem = pem
-                    .replaceAll("-----BEGIN (.*)-----", "")
+            pem = pem.replaceAll("-----BEGIN (.*)-----", "")
                     .replaceAll("-----END (.*)-----", "")
                     .replaceAll("\\s", "");
 
@@ -291,7 +287,6 @@ public class RealCardTestECDSAChameleon {
         PrivateKey pk = kf.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
 
         ECPrivateKey ecKey = (ECPrivateKey) pk;
-
         byte[] d = ecKey.getS().toByteArray();
 
         if (d.length > 24) {
@@ -305,13 +300,9 @@ public class RealCardTestECDSAChameleon {
         return d;
     }
 
-    private static byte[] loadCertificate(Path pemPath)
-            throws Exception {
-
+    private static byte[] loadCertificate(Path pemPath) throws Exception {
         String pem = new String(Files.readAllBytes(pemPath));
-
-        pem = pem
-                .replace("-----BEGIN CERTIFICATE-----", "")
+        pem = pem.replace("-----BEGIN CERTIFICATE-----", "")
                 .replace("-----END CERTIFICATE-----", "")
                 .replaceAll("\\s", "");
 
@@ -319,18 +310,11 @@ public class RealCardTestECDSAChameleon {
     }
 
     private static byte[] unwrapExtension(byte[] extension) throws Exception {
-        ASN1OctetString oct = ASN1OctetString.getInstance(
-                ASN1Primitive.fromByteArray(extension));
-
+        ASN1OctetString oct = ASN1OctetString.getInstance(ASN1Primitive.fromByteArray(extension));
         return oct.getOctets();
     }
 
-    public static boolean verifyECDSA(
-                PublicKey pk,
-                byte[] signature,
-                byte[] message)
-                throws Exception{
-
+    public static boolean verifyECDSA(PublicKey pk, byte[] signature, byte[] message) throws Exception{
         Signature verifier = Signature.getInstance("SHA1withECDSA");
         verifier.initVerify(pk);
         verifier.update(message);

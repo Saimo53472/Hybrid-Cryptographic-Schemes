@@ -208,7 +208,6 @@ public class RealCardTestBase {
     }
 
     private static ResponseAPDU send(CardChannel channel, CommandAPDU cmd) throws Exception {
-
         ResponseAPDU resp = channel.transmit(cmd);
         System.out.println(">> " + toHex(cmd.getBytes()));
         System.out.println("<< " + toHex(resp.getBytes()));
@@ -227,12 +226,9 @@ public class RealCardTestBase {
 
     private static byte[] loadECPrivateKey(Path path) throws Exception {
         byte[] keyBytes = Files.readAllBytes(path);
-
         String pem = new String(keyBytes);
-
         if (pem.contains("BEGIN")) {
-            pem = pem
-                    .replaceAll("-----BEGIN (.*)-----", "")
+            pem = pem.replaceAll("-----BEGIN (.*)-----", "")
                     .replaceAll("-----END (.*)-----", "")
                     .replaceAll("\\s", "");
 
@@ -241,9 +237,7 @@ public class RealCardTestBase {
 
         KeyFactory kf = KeyFactory.getInstance("EC");
         PrivateKey pk = kf.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
-
         ECPrivateKey ecKey = (ECPrivateKey) pk;
-
         byte[] d = ecKey.getS().toByteArray();
 
         if (d.length > 24) {
@@ -257,13 +251,9 @@ public class RealCardTestBase {
         return d;
     }
 
-    private static byte[] loadCertificate(Path pemPath)
-            throws Exception {
-
+    private static byte[] loadCertificate(Path pemPath) throws Exception {
         String pem = new String(Files.readAllBytes(pemPath));
-
-        pem = pem
-                .replace("-----BEGIN CERTIFICATE-----", "")
+        pem = pem.replace("-----BEGIN CERTIFICATE-----", "")
                 .replace("-----END CERTIFICATE-----", "")
                 .replaceAll("\\s", "");
 

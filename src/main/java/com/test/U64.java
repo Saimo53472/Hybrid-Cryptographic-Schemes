@@ -1,7 +1,6 @@
 package com.test;
 
 public final class U64 {
-
     short w3; // highest 16 bits
     short w2;
     short w1;
@@ -16,9 +15,7 @@ public final class U64 {
         this.w0 = w0;
     }
 
-    static void set(U64 x,
-        short w3, short w2,
-        short w1, short w0)
+    static void set(U64 x, short w3, short w2, short w1, short w0)
     {
         x.w3 = w3;
         x.w2 = w2;
@@ -26,13 +23,7 @@ public final class U64 {
         x.w0 = w0;
     }
 
-    static void getU64(
-        short[] hiHi,
-        short[] hiLo,
-        short[] loHi,
-        short[] loLo,
-        short i,
-        U64 out)
+    static void getU64(short[] hiHi, short[] hiLo, short[] loHi, short[] loLo, short i, U64 out)
     {
         out.w3 = hiHi[i];
         out.w2 = hiLo[i];
@@ -126,33 +117,17 @@ public final class U64 {
         a.w3 = (short)(a.w3 & 0x7FFF);
     }
 
-    static void select(
-    U64 x,
-    U64 y,
-    short mask,
-    U64 out)
+    static void select(U64 x, U64 y, short mask, U64 out)
     {
-        out.w3 =
-            (short)(x.w3
-            ^ (mask & (x.w3 ^ y.w3)));
-
-        out.w2 =
-            (short)(x.w2
-            ^ (mask & (x.w2 ^ y.w2)));
-
-        out.w1 =
-            (short)(x.w1
-            ^ (mask & (x.w1 ^ y.w1)));
-
-        out.w0 =
-            (short)(x.w0
-            ^ (mask & (x.w0 ^ y.w0)));
+        out.w3 = (short)(x.w3 ^ (mask & (x.w3 ^ y.w3)));
+        out.w2 = (short)(x.w2 ^ (mask & (x.w2 ^ y.w2)));
+        out.w1 = (short)(x.w1  ^ (mask & (x.w1 ^ y.w1)));
+        out.w0 = (short)(x.w0 ^ (mask & (x.w0 ^ y.w0)));
     }
 
     private static short uLessThan16(short a, short b)
     {
-        return (short)(((a ^ (short)0x8000)
-            < (b ^ (short)0x8000)) ? 1 : 0);
+        return (short)(((a ^ (short)0x8000) < (b ^ (short)0x8000)) ? 1 : 0);
     }
 
     static short ult(U64 a, U64 b)

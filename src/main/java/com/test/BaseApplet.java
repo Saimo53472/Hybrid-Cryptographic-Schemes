@@ -257,12 +257,7 @@ public class BaseApplet extends Applet {
         }
 
         byte[] buf = apdu.getBuffer();
-
-        short offset = (short) (
-            ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
-            (buf[ISO7816.OFFSET_P2] & 0xFF)
-        );
-
+        short offset = (short)(((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |  (buf[ISO7816.OFFSET_P2] & 0xFF));
         if (offset >= issuerCertLen) {
             ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
         }
@@ -282,11 +277,7 @@ public class BaseApplet extends Applet {
         }
 
         byte[] buf = apdu.getBuffer();
-
-        short offset = (short) (
-            ((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |
-            (buf[ISO7816.OFFSET_P2] & 0xFF)
-        );
+        short offset = (short)(((buf[ISO7816.OFFSET_P1] & 0xFF) << 8) |  (buf[ISO7816.OFFSET_P2] & 0xFF));
 
         if (offset >= certLen) {
             ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
