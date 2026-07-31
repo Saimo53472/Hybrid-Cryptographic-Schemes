@@ -1,6 +1,6 @@
 param(
-    [string]$AppletAID = "0xA0:0x01:0x01:0x01:0x01:0x01:0x01",
-    [string]$PackageAID = "0xA0:0x01:0x01:0x01:0x01:0x01"
+    [string]$AppletAID = "A0010101010101",
+    [string]$PackageAID = "A00101010101"
 )
 
 $ROOT = Split-Path -Parent $PSScriptRoot

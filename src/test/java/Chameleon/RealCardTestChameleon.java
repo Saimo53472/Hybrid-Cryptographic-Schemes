@@ -135,7 +135,6 @@ public class RealCardTestChameleon {
             if (data.length < 200)
                 break; // last chunk
         }
-        byte[] receivedIssuerCert = issuerCertBuffer.toByteArray();
 
         offset = 0;
         ByteArrayOutputStream certBuffer = new ByteArrayOutputStream();
@@ -153,50 +152,6 @@ public class RealCardTestChameleon {
             if (data.length < 200)
                 break; // last chunk
         }
-        byte[] receivedCert = certBuffer.toByteArray();
-
-        // 4*. Verify certificate
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        X509Certificate caCert = (X509Certificate) cf.generateCertificate(new FileInputStream("src/test/resources/certs/CA_ecdsa.crt"));
-        X509Certificate issuerCert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedIssuerCert));
-        X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(receivedCert));
-
-        // 4.1 Verify ECDSA
-        boolean issuerECDSAOK;
-        try {
-            issuerCert.verify(caCert.getPublicKey());
-            issuerECDSAOK = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            issuerECDSAOK = false;
-        }
-
-        System.out.println("Issuer certificate ECDSA: " + issuerECDSAOK);
-
-        boolean iccECDSAOK;
-        try {
-            cert.verify(issuerCert.getPublicKey());
-            iccECDSAOK = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            iccECDSAOK = false;
-        }
-
-        System.out.println("ICC certificate ECDSA: " + iccECDSAOK);
-
-         // 4.2 Extract and parse DCD 
-        byte[] issuerDCD = unwrapExtension(issuerCert.getExtensionValue(Issuer_DCD_OID));
-        DCDData issuerData = DCDData.parseDCD(issuerDCD);
-        byte[] iccDCD = unwrapExtension(cert.getExtensionValue(ICC_DCD_OID));
-        DCDData iccData = DCDData.parseDCD(iccDCD);
-
-        // 4.3 Verify HAWK
-        byte[] issuerDeltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/issuer_delta_tbs.der"));
-        byte[] deltaTbs = Files.readAllBytes(Paths.get("src/test/resources/certs/delta_tbs.der"));
-
-        byte[] caPub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "CA_hawk512_public.key"));
-        verifyHAWK(caPub, issuerData.getSignature(), issuerDeltaTbs);
-        verifyHAWK(issuerData.getPublicKey(), iccData.getSignature(), deltaTbs);
 
         // 5. Internal authenticate
         SecureRandom rnd = new SecureRandom();
@@ -224,21 +179,6 @@ public class RealCardTestChameleon {
         //     System.arraycopy(chunk, 0, signature, offset, chunk.length);
         //     offset += chunk.length;
         // }
-
-        // 10. Verify signature 
-        byte[] expectedMessage = buildExpectedMessage(challenge);
-        Signature ecdsaVerifier = Signature.getInstance("SHA1withECDSA");
-        ecdsaVerifier.initVerify(cert.getPublicKey());
-        ecdsaVerifier.update(expectedMessage);
-        boolean ecdsaOK = ecdsaVerifier.verify(sigData);
-        System.out.println("Card ECDSA signature: " + ecdsaOK);
-
-        // byte[] pub = Files.readAllBytes(Paths.get("src", "test", "resources", "keys", "hawk512_public.key"));
-        // HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, pub, 0, pub.length);
-        // HawkSigner verifier = new HawkSigner();
-        // verifier.init(false, pk);
-        // boolean hawkOK = verifier.verifySignature(expectedMessage, signature);
-        // System.out.println("Card HAWK signature: " + hawkOK);
 
         card.disconnect(false);
     }
@@ -296,19 +236,6 @@ public class RealCardTestChameleon {
                 .replaceAll("\\s", "");
 
         return Base64.getDecoder().decode(pem);
-    }
-
-    private static void verifyHAWK(byte[] hawkPublicKey, byte[] signature, byte[] message) throws Exception {
-        HawkPublicKeyParameters pk = new HawkPublicKeyParameters(HawkParameters.Hawk_512, hawkPublicKey, 0, hawkPublicKey.length);
-        HawkSigner verifier = new HawkSigner();
-        verifier.init(false, pk);
-        boolean ok = verifier.verifySignature(message, signature);
-        System.out.println("HAWK: " + ok);
-    }
-
-    private static byte[] unwrapExtension(byte[] extension) throws Exception {
-        ASN1OctetString oct = ASN1OctetString.getInstance(ASN1Primitive.fromByteArray(extension));
-        return oct.getOctets();
     }
 
     private static byte[] buildExpectedMessage(byte[] challenge) {

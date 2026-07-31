@@ -46,10 +46,19 @@ Run verification for the Chameleon scheme.
 .\scripts\run-verify.ps1
 ```
 
+## Compile Applet
+```powershell
+.\scripts\compile-applet.ps1 -Applet <applet>
+```
+### Available Applets
+- `BaseApplet`
+- `ChameleonECDSAApplet`
+- `ChameleonApplet`
+
 ## Build CAP Files
 Generate Java Card CAP files.
 ```powershell
-.\scripts\build-cap.ps1 - Applet <applet> 
+.\scripts\build-cap.ps1 -Applet <applet> 
 ```
 ### Available Applets
 - `BaseApplet`

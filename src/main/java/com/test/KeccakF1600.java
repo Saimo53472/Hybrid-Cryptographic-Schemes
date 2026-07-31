@@ -172,6 +172,9 @@ public final class KeccakF1600
 
         // write back hi/lo -> state bytes (little-endian)
         for (short i = 0; i < 25; i++) {
+            if (permCount == 3) {
+    ISOException.throwIt((short)0x7F00);
+}
 
 //             short off = (short)(i << 3);
 
