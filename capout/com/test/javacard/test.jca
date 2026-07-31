@@ -1,5 +1,5 @@
 // converted by version 1.3
-// on Thu Jul 30 17:26:30 CEST 2026
+// on Fri Jul 31 12:11:17 CEST 2026
 
 .package com/test {
 	.aid 0xA0:0x1:0x1:0x1:0x1:0x1;
@@ -12,7 +12,7 @@
 	}
 
 	.applet {
-		0xA0:0x1:0x1:0x1:0x1:0x1:0x1 BaseApplet;
+		0xA0:0x1:0x1:0x1:0x1:0x1:0x1 ChameleonApplet;
 	}
 
 	.constantPool {
@@ -41,91 +41,401 @@
 		// 11
 		instanceFieldRef short BaseApplet/dataToSignLen;
 		// 12
-		staticMethodRef 0.3.0()V;		// javacard/framework/Applet.<init>()V
+		instanceFieldRef short ChameleonApplet/pqKeyLen;
 		// 13
-		classRef 1.16;		// javacard/security/KeyPair
+		instanceFieldRef 1.16 ChameleonApplet/kp;
 		// 14
-		virtualMethodRef 0.3.1()V;		// register()V
+		instanceFieldRef byte[] ChameleonApplet/dataToSign;
 		// 15
-		classRef BaseApplet;
+		instanceFieldRef byte[] ChameleonApplet/certificate;
 		// 16
-		staticMethodRef BaseApplet/<init>()V;
+		instanceFieldRef byte[] ChameleonApplet/issuerCertificate;
 		// 17
-		virtualMethodRef 0.10.1()[B;		// getBuffer()[B
+		instanceFieldRef 1.18 ChameleonApplet/classicalPrivateKey;
 		// 18
+		instanceFieldRef 1.15 ChameleonApplet/classicalSignature;
+		// 19
+		instanceFieldRef byte[] ChameleonApplet/classicalSigBuffer;
+		// 20
+		instanceFieldRef byte[] ChameleonApplet/pqPrivateKey;
+		// 21
+		instanceFieldRef byte[] ChameleonApplet/pqSignature;
+		// 22
+		instanceFieldRef boolean ChameleonApplet/personalized;
+		// 23
+		instanceFieldRef short ChameleonApplet/issuerCertLen;
+		// 24
+		instanceFieldRef short ChameleonApplet/certLen;
+		// 25
+		instanceFieldRef short ChameleonApplet/classicalSigLen;
+		// 26
+		instanceFieldRef short ChameleonApplet/pqSignatureLen;
+		// 27
+		instanceFieldRef short ChameleonApplet/dataToSignLen;
+		// 28
+		instanceFieldRef short Hawk/logn;
+		// 29
+		instanceFieldRef short Hawk/n;
+		// 30
+		instanceFieldRef short Hawk/saltLen;
+		// 31
+		instanceFieldRef short Hawk/maxXnorm;
+		// 32
+		instanceFieldRef 1.14 Hawk/random;
+		// 33
+		instanceFieldRef short U32/lo;
+		// 34
+		instanceFieldRef short U32/hi;
+		// 35
+		instanceFieldRef short U64/w0;
+		// 36
+		instanceFieldRef short U64/w1;
+		// 37
+		instanceFieldRef short U64/w2;
+		// 38
+		instanceFieldRef short U64/w3;
+		// 39
+		instanceFieldRef byte[] SHAKE256JC/state;
+		// 40
+		instanceFieldRef U64[] SHAKE256JC/scratch;
+		// 41
+		instanceFieldRef short SHAKE256JC/ratePos;
+		// 42
+		instanceFieldRef boolean SHAKE256JC/squeezing;
+		// 43
+		classRef 1.16;		// javacard/security/KeyPair
+		// 44
+		virtualMethodRef 0.3.1()V;		// register()V
+		// 45
+		classRef BaseApplet;
+		// 46
+		staticMethodRef BaseApplet/<init>()V;
+		// 47
+		virtualMethodRef 0.10.1()[B;		// getBuffer()[B
+		// 48
 		staticMethodRef BaseApplet/initSession(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 19
+		// 49
 		staticMethodRef BaseApplet/sendIssuerCertificate(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 20
+		// 50
 		staticMethodRef BaseApplet/sendCertificate(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 21
+		// 51
 		staticMethodRef BaseApplet/createSignatureBase(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 22
+		// 52
 		staticMethodRef BaseApplet/sendSignatureBase(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 23
+		// 53
+		virtualMethodRef 0.3.1()V;		// register()V
+		// 54
+		classRef ChameleonApplet;
+		// 55
+		staticMethodRef ChameleonApplet/<init>()V;
+		// 56
+		staticMethodRef ChameleonApplet/initSession(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 57
+		staticMethodRef ChameleonApplet/sendIssuerCertificate(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 58
+		staticMethodRef ChameleonApplet/sendCertificate(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 59
+		staticMethodRef ChameleonApplet/createSignatureBase(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 60
+		staticMethodRef ChameleonApplet/createSignatureDelta(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 61
+		staticMethodRef ChameleonApplet/sendSignatureBase(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 62
+		staticMethodRef ChameleonApplet/sendSignatureDelta(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 63
+		staticMethodRef ChameleonApplet/loadPrivateKeyBase(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 64
+		staticMethodRef ChameleonApplet/loadPrivateKeyDelta(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 65
+		staticMethodRef ChameleonApplet/loadIssuerCertificate(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 66
+		staticMethodRef ChameleonApplet/loadCertificate(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 67
+		staticMethodRef ChameleonApplet/lockCard()V;
+		// 68
+		staticMethodRef ChameleonApplet/internalAuthenticate(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 69
 		staticMethodRef BaseApplet/loadPrivateKeyBase(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 24
+		// 70
 		staticMethodRef BaseApplet/loadIssuerCertificate(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 25
+		// 71
 		staticMethodRef BaseApplet/loadCertificate(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 26
+		// 72
 		staticMethodRef BaseApplet/lockCard()V;
-		// 27
+		// 73
 		staticMethodRef BaseApplet/internalAuthenticate(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 28
+		// 74
+		classRef Hawk;
+		// 75
+		staticMethodRef Hawk/<init>()V;
+		// 76
+		virtualMethodRef Hawk/signMessage(S[B[BS[BS[BS)S;
+		// 77
+		staticMethodRef Hawk/HAWK_SIG_SIZE(S)S;
+		// 78
+		staticMethodRef 2.0.0()V;		// java/lang/Object.<init>()V
+		// 79
 		staticMethodRef 0.7.1(S)V;		// javacard/framework/ISOException.throwIt(S)V
-		// 29
+		// 80
 		virtualMethodRef 0.10.6()S;		// setIncomingAndReceive()S
-		// 30
+		// 81
 		virtualMethodRef 1.16.1()V;		// genKeyPair()V
-		// 31
+		// 82
 		virtualMethodRef 1.16.2()Ljavacard/security/PrivateKey;;		// getPrivate()Ljavacard/security/PrivateKey;
 			.descriptor	Ljavacard/security/PrivateKey;	1.2;
 
-		// 32
+		// 83
+		staticMethodRef 1.14.0(B)Ljavacard/security/RandomData;;		// javacard/security/RandomData.getInstance(B)Ljavacard/security/RandomData;
+			.descriptor	Ljavacard/security/RandomData;	1.14;
+
+		// 84
 		staticMethodRef 1.13.0(BSZ)Ljavacard/security/Key;;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
 			.descriptor	Ljavacard/security/Key;	1.0;
 
-		// 33
+		// 85
+		classRef 2.1;		// java/lang/Throwable
+		// 86
+		classRef SHAKE256JC;
+		// 87
+		staticMethodRef SHAKE256JC/<init>()V;
+		// 88
+		virtualMethodRef SHAKE256JC/update([BSS)V;
+		// 89
+		virtualMethodRef SHAKE256JC/doOutput([BSS)S;
+		// 90
+		staticMethodRef Hawk/popcount8(B)B;
+		// 91
+		staticMethodRef Hawk/dec32le([BS[SS)V;
+		// 92
+		staticMethodRef Hawk/enc32le([BSSS)V;
+		// 93
+		classRef U32;
+		// 94
+		staticMethodRef U32/<init>()V;
+		// 95
+		staticMethodRef Hawk/mul16(SSLcom/test/U32;)V;
+		// 96
 		staticMethodRef 0.16.1([BS[BSS)S;		// javacard/framework/Util.arrayCopy([BS[BSS)S
-		// 34
+		// 97
 		classRef 1.18;		// javacard/security/ECPrivateKey
-		// 35
+		// 98
+		staticMethodRef Hawk/uLessThan(SSSS)S;
+		// 99
+		staticMethodRef U32/<init>(SS)V;
+		// 100
+		staticMethodRef U32/andMask(Lcom/test/U32;SLcom/test/U32;)V;
+		// 101
+		staticMethodRef Hawk/mul64(SSSS[SS)V;
+		// 102
+		staticMethodRef U32/xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V;
+		// 103
+		staticMethodRef U32/or(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V;
+		// 104
+		staticMethodRef Hawk/bpMul32(SSSS[SS)V;
+		// 105
+		staticMethodRef U32/set(Lcom/test/U32;SS)V;
+		// 106
+		staticMethodRef Hawk/bpXor64([BS[BS[BS)V;
+		// 107
+		staticMethodRef Hawk/bpXor128([BS[BS[BS)V;
+		// 108
+		staticMethodRef Hawk/bpMuladd64([BS[BS[BS[BS)V;
+		// 109
+		staticMethodRef Hawk/bpXor256([BS[BS[BS)V;
+		// 110
+		staticMethodRef Hawk/bpMuladd128([BS[BS[BS[BS)V;
+		// 111
+		staticMethodRef Hawk/bpXor(S[BS[BS[BS)V;
+		// 112
+		staticMethodRef 0.16.3([BSSB)S;		// javacard/framework/Util.arrayFillNonAtomic([BSSB)S
+		// 113
+		staticMethodRef Hawk/bpMuladd256([BS[BS[BS[BS)V;
+		// 114
+		staticMethodRef Hawk/bpMulmod(SS[BS[BS[BS[BS)V;
+		// 115
+		staticMethodRef Hawk/bpXor512([BS[BS[BS)V;
+		// 116
+		virtualMethodRef Hawk/mq18433SetSmall(B)S;
+		// 117
+		virtualMethodRef Hawk/mq18433MontyRed(SS)S;
+		// 118
+		staticFieldRef short[] Hawk/GM;
+		// 119
+		virtualMethodRef Hawk/mq18433MontyMul(SS)S;
+		// 120
+		virtualMethodRef Hawk/mq18433Add(SS)S;
+		// 121
+		virtualMethodRef Hawk/mq18433Sub(SS)S;
+		// 122
+		staticFieldRef short[] Hawk/iGM;
+		// 123
+		virtualMethodRef Hawk/mq18433Half(S)S;
+		// 124
+		staticMethodRef Hawk/mq18433Snorm(S)S;
+		// 125
+		staticMethodRef Hawk/tbmask(S)S;
+		// 126
 		staticMethodRef 1.16.0(BS)V;		// javacard/security/KeyPair.<init>(BS)V
-		// 36
+		// 127
 		staticMethodRef 1.15.0(BZ)Ljavacard/security/Signature;;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
 			.descriptor	Ljavacard/security/Signature;	1.15;
 
-		// 37
+		// 128
 		virtualMethodRef 1.15.3(Ljavacard/security/Key;B)V;		// init(Ljavacard/security/Key;B)V
 			.descriptor	Ljavacard/security/Key;	1.0;
 
-		// 38
+		// 129
 		virtualMethodRef 1.15.5([BSS[BS)S;		// sign([BSS[BS)S
-		// 39
+		// 130
+		staticFieldRef short[] Hawk/SIG_GAUSS_HI_HAWK_512;
+		// 131
+		staticFieldRef short[] Hawk/SIG_GAUSS_LO_HI_HI_HAWK_512;
+		// 132
+		staticFieldRef short[] Hawk/SIG_GAUSS_LO_HI_LO_HAWK_512;
+		// 133
+		staticFieldRef short[] Hawk/SIG_GAUSS_LO_LO_HI_HAWK_512;
+		// 134
+		staticFieldRef short[] Hawk/SIG_GAUSS_LO_LO_LO_HAWK_512;
+		// 135
+		virtualMethodRef 1.14.1([BSS)V;		// generateData([BSS)V
+		// 136
+		staticMethodRef SHAKE256JC/<init>(Lcom/test/SHAKE256JC;)V;
+		// 137
+		classRef U64;
+		// 138
+		staticMethodRef U64/<init>()V;
+		// 139
+		staticMethodRef Hawk/dec64le([BSLcom/test/U64;)V;
+		// 140
+		staticMethodRef Hawk/dec16le([BS)S;
+		// 141
+		staticMethodRef U64/msb(Lcom/test/U64;)S;
+		// 142
+		staticMethodRef U64/clearMsb(Lcom/test/U64;)V;
+		// 143
+		staticMethodRef U64/getU64([S[S[S[SSLcom/test/U64;)V;
+		// 144
+		staticMethodRef U64/select(Lcom/test/U64;Lcom/test/U64;SLcom/test/U64;)V;
+		// 145
+		staticMethodRef U64/ult(Lcom/test/U64;Lcom/test/U64;)S;
+		// 146
+		staticMethodRef 0.16.2([BS[BSS)S;		// javacard/framework/Util.arrayCopyNonAtomic([BS[BSS)S
+		// 147
+		virtualMethodRef Hawk/regen_fg([BS[BS[B)V;
+		// 148
+		virtualMethodRef SHAKE256JC/doFinal([BSS)S;
+		// 149
+		staticMethodRef Hawk/extract_lowbit(S[B[B)V;
+		// 150
+		staticMethodRef Hawk/basisM2Mul(S[BS[BS[BS[BS[BS[BS[BS[BS[BS)V;
+		// 151
+		virtualMethodRef Hawk/sigGauss(SLcom/test/SHAKE256JC;[BS[BS)S;
+		// 152
+		virtualMethodRef Hawk/mq18433PolySetSmall(S[SS[BS)V;
+		// 153
+		virtualMethodRef Hawk/mq18433NTT(S[SS)V;
+		// 154
+		virtualMethodRef Hawk/mq18433ToMonty(S)S;
+		// 155
+		virtualMethodRef Hawk/mq18433INTT(S[SS)V;
+		// 156
+		staticMethodRef Hawk/mq18433PolySnorm(S[SS)V;
+		// 157
+		staticMethodRef Hawk/polySymBreak(S[SS)S;
+		// 158
+		staticMethodRef Hawk/encodeSig(S[BSS[BSS[SS)Z;
+		// 159
+		virtualMethodRef Hawk/sign(SS[BLcom/test/SHAKE256JC;[BS[BS)S;
+		// 160
+		staticMethodRef KeccakF1600/permute([B[Lcom/test/U64;)V;
+		// 161
+		staticFieldRef short KeccakF1600/permCount;
+		// 162
+		staticMethodRef U64/copy(Lcom/test/U64;Lcom/test/U64;)V;
+		// 163
+		staticMethodRef U64/xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V;
+		// 164
+		staticMethodRef U64/rol1(Lcom/test/U64;Lcom/test/U64;)V;
+		// 165
+		staticFieldRef byte[] KeccakF1600/RHO_OFFSETS;
+		// 166
+		staticMethodRef U64/rol(Lcom/test/U64;SLcom/test/U64;)V;
+		// 167
+		staticMethodRef U64/not(Lcom/test/U64;Lcom/test/U64;)V;
+		// 168
+		staticMethodRef U64/and(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V;
+		// 169
+		staticFieldRef short[] KeccakF1600/RC_W3;
+		// 170
+		staticFieldRef short[] KeccakF1600/RC_W2;
+		// 171
+		staticFieldRef short[] KeccakF1600/RC_W1;
+		// 172
+		staticFieldRef short[] KeccakF1600/RC_W0;
+		// 173
 		virtualMethodRef 0.10.7()S;		// setOutgoing()S
-		// 40
+		// 174
 		virtualMethodRef 0.10.9(S)V;		// setOutgoingLength(S)V
-		// 41
+		// 175
 		virtualMethodRef 0.10.5([BSS)V;		// sendBytesLong([BSS)V
+		// 176
+		staticMethodRef 0.3.0()V;		// javacard/framework/Applet.<init>()V
+		// 177
+		virtualMethodRef SHAKE256JC/finalizeSqueeze()V;
+		// 178
+		virtualMethodRef SHAKE256JC/absorbXor([BSS)V;
+		// 179
+		virtualMethodRef SHAKE256JC/squeezeBytes([BSS)V;
+		// 180
+		virtualMethodRef SHAKE256JC/reset()V;
+		// 181
+		staticMethodRef U32/uLessThan(SSSS)S;
+		// 182
+		staticMethodRef U32/mul16(SSLcom/test/U32;)V;
+		// 183
+		staticMethodRef U64/uLessThan16(SS)S;
 	}
 
 	.class public BaseApplet 0 extends 0.3 {		// extends javacard/framework/Applet
@@ -174,13 +484,13 @@
 			.locals 0;
 
 				L0:	aload_0;
-					invokespecial 12;		// javacard/framework/Applet.<init>()V
+					invokespecial 176;		// javacard/framework/Applet.<init>()V
 					aload_0;
-					new 13;		// javacard/security/KeyPair
+					new 43;		// javacard/security/KeyPair
 					dup;
 					sconst_5;
 					sspush 192;
-					invokespecial 35;		// javacard/security/KeyPair.<init>(BS)V
+					invokespecial 126;		// javacard/security/KeyPair.<init>(BS)V
 					putfield_a 0;		// reference com/test/BaseApplet.kp
 					aload_0;
 					sspush 255;
@@ -202,19 +512,19 @@
 					bspush 12;
 					sspush 192;
 					sconst_0;
-					invokestatic 32;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
-					checkcast 0 34;		// T_CLASSORINTERFACE javacard/security/ECPrivateKey
+					invokestatic 84;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
+					checkcast 0 97;		// T_CLASSORINTERFACE javacard/security/ECPrivateKey
 					putfield_a 5;		// reference com/test/BaseApplet.classicalPrivateKey
 					aload_0;
 					bspush 17;
 					sconst_0;
-					invokestatic 36;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
+					invokestatic 127;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
 					putfield_a 6;		// reference com/test/BaseApplet.classicalSignature
 					aload_0;
 					sconst_0;
 					putfield_b 7;		// boolean com/test/BaseApplet.personalized
 					aload_0;
-					invokevirtual 14;		// register()V
+					invokevirtual 44;		// register()V
 					return;
 		}
 
@@ -222,9 +532,9 @@
 			.stack 2;
 			.locals 0;
 
-				L0:	new 15;		// com/test/BaseApplet
+				L0:	new 45;		// com/test/BaseApplet
 					dup;
-					invokespecial 16;		// com/test/BaseApplet.<init>()V
+					invokespecial 46;		// com/test/BaseApplet.<init>()V
 					pop;
 					return;
 		}
@@ -236,7 +546,7 @@
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
 				L0:	aload_1;
-					invokevirtual 17;		// getBuffer()[B
+					invokevirtual 47;		// getBuffer()[B
 					astore_2;
 					aload_2;
 					sconst_0;
@@ -254,45 +564,45 @@
 					slookupswitch L14 10 -120 L13 -80 L9 -79 L10 -78 L11 -77 L12 16 L4 32 L5 48 L6 64 L7 80 L8;
 				L4:	aload_0;
 					aload_1;
-					invokespecial 18;		// com/test/BaseApplet.initSession(Ljavacard/framework/APDU;)V
+					invokespecial 48;		// com/test/BaseApplet.initSession(Ljavacard/framework/APDU;)V
 					return;
 				L5:	aload_0;
 					aload_1;
-					invokespecial 19;		// com/test/BaseApplet.sendIssuerCertificate(Ljavacard/framework/APDU;)V
+					invokespecial 49;		// com/test/BaseApplet.sendIssuerCertificate(Ljavacard/framework/APDU;)V
 					return;
 				L6:	aload_0;
 					aload_1;
-					invokespecial 20;		// com/test/BaseApplet.sendCertificate(Ljavacard/framework/APDU;)V
+					invokespecial 50;		// com/test/BaseApplet.sendCertificate(Ljavacard/framework/APDU;)V
 					return;
 				L7:	aload_0;
 					aload_1;
-					invokespecial 21;		// com/test/BaseApplet.createSignatureBase(Ljavacard/framework/APDU;)V
+					invokespecial 51;		// com/test/BaseApplet.createSignatureBase(Ljavacard/framework/APDU;)V
 					return;
 				L8:	aload_0;
 					aload_1;
-					invokespecial 22;		// com/test/BaseApplet.sendSignatureBase(Ljavacard/framework/APDU;)V
+					invokespecial 52;		// com/test/BaseApplet.sendSignatureBase(Ljavacard/framework/APDU;)V
 					return;
 				L9:	aload_0;
 					aload_1;
-					invokespecial 23;		// com/test/BaseApplet.loadPrivateKeyBase(Ljavacard/framework/APDU;)V
+					invokespecial 69;		// com/test/BaseApplet.loadPrivateKeyBase(Ljavacard/framework/APDU;)V
 					return;
 				L10:	aload_0;
 					aload_1;
-					invokespecial 24;		// com/test/BaseApplet.loadIssuerCertificate(Ljavacard/framework/APDU;)V
+					invokespecial 70;		// com/test/BaseApplet.loadIssuerCertificate(Ljavacard/framework/APDU;)V
 					return;
 				L11:	aload_0;
 					aload_1;
-					invokespecial 25;		// com/test/BaseApplet.loadCertificate(Ljavacard/framework/APDU;)V
+					invokespecial 71;		// com/test/BaseApplet.loadCertificate(Ljavacard/framework/APDU;)V
 					return;
 				L12:	aload_0;
-					invokespecial 26;		// com/test/BaseApplet.lockCard()V
+					invokespecial 72;		// com/test/BaseApplet.lockCard()V
 					return;
 				L13:	aload_0;
 					aload_1;
-					invokespecial 27;		// com/test/BaseApplet.internalAuthenticate(Ljavacard/framework/APDU;)V
+					invokespecial 73;		// com/test/BaseApplet.internalAuthenticate(Ljavacard/framework/APDU;)V
 					return;
 				L14:	sspush 27904;
-					invokestatic 28;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
 					return;
 		}
 
@@ -305,23 +615,23 @@
 				L0:	getfield_b_this 7;		// boolean com/test/BaseApplet.personalized
 					ifeq L2;
 				L1:	sspush 27010;
-					invokestatic 28;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
 				L2:	aload_1;
-					invokevirtual 17;		// getBuffer()[B
+					invokevirtual 47;		// getBuffer()[B
 					astore_2;
 					aload_1;
-					invokevirtual 29;		// setIncomingAndReceive()S
+					invokevirtual 80;		// setIncomingAndReceive()S
 					sstore_3;
 					getfield_a_this 5;		// reference com/test/BaseApplet.classicalPrivateKey
 					aload_2;
 					sconst_5;
 					sload_3;
-					invokeinterface 4 34 18;		// javacard/security/ECPrivateKey
+					invokeinterface 4 97 18;		// javacard/security/ECPrivateKey
 					getfield_a_this 0;		// reference com/test/BaseApplet.kp
-					invokevirtual 30;		// genKeyPair()V
+					invokevirtual 81;		// genKeyPair()V
 					getfield_a_this 0;		// reference com/test/BaseApplet.kp
-					invokevirtual 31;		// getPrivate()Ljavacard/security/PrivateKey;
-					checkcast 0 34;		// T_CLASSORINTERFACE javacard/security/ECPrivateKey
+					invokevirtual 82;		// getPrivate()Ljavacard/security/PrivateKey;
+					checkcast 0 97;		// T_CLASSORINTERFACE javacard/security/ECPrivateKey
 					astore 4;
 					bspush 80;
 					newarray 11;
@@ -329,53 +639,53 @@
 					aload 4;
 					aload 5;
 					sconst_0;
-					invokeinterface 3 34 12;		// javacard/security/ECPrivateKey
+					invokeinterface 3 97 12;		// javacard/security/ECPrivateKey
 					sstore 6;
 					getfield_a_this 5;		// reference com/test/BaseApplet.classicalPrivateKey
 					aload 5;
 					sconst_0;
 					sload 6;
-					invokeinterface 4 34 4;		// javacard/security/ECPrivateKey
+					invokeinterface 4 97 4;		// javacard/security/ECPrivateKey
 					aload 4;
 					aload 5;
 					sconst_0;
-					invokeinterface 3 34 13;		// javacard/security/ECPrivateKey
+					invokeinterface 3 97 13;		// javacard/security/ECPrivateKey
 					sstore 6;
 					getfield_a_this 5;		// reference com/test/BaseApplet.classicalPrivateKey
 					aload 5;
 					sconst_0;
 					sload 6;
-					invokeinterface 4 34 7;		// javacard/security/ECPrivateKey
+					invokeinterface 4 97 7;		// javacard/security/ECPrivateKey
 					aload 4;
 					aload 5;
 					sconst_0;
-					invokeinterface 3 34 14;		// javacard/security/ECPrivateKey
+					invokeinterface 3 97 14;		// javacard/security/ECPrivateKey
 					sstore 6;
 					getfield_a_this 5;		// reference com/test/BaseApplet.classicalPrivateKey
 					aload 5;
 					sconst_0;
 					sload 6;
-					invokeinterface 4 34 8;		// javacard/security/ECPrivateKey
+					invokeinterface 4 97 8;		// javacard/security/ECPrivateKey
 					aload 4;
 					aload 5;
 					sconst_0;
-					invokeinterface 3 34 15;		// javacard/security/ECPrivateKey
+					invokeinterface 3 97 15;		// javacard/security/ECPrivateKey
 					sstore 6;
 					getfield_a_this 5;		// reference com/test/BaseApplet.classicalPrivateKey
 					aload 5;
 					sconst_0;
 					sload 6;
-					invokeinterface 4 34 9;		// javacard/security/ECPrivateKey
+					invokeinterface 4 97 9;		// javacard/security/ECPrivateKey
 					aload 4;
 					aload 5;
 					sconst_0;
-					invokeinterface 3 34 16;		// javacard/security/ECPrivateKey
+					invokeinterface 3 97 16;		// javacard/security/ECPrivateKey
 					sstore 6;
 					getfield_a_this 5;		// reference com/test/BaseApplet.classicalPrivateKey
 					aload 5;
 					sconst_0;
 					sload 6;
-					invokeinterface 4 34 10;		// javacard/security/ECPrivateKey
+					invokeinterface 4 97 10;		// javacard/security/ECPrivateKey
 					return;
 		}
 
@@ -388,12 +698,12 @@
 				L0:	getfield_b_this 7;		// boolean com/test/BaseApplet.personalized
 					ifeq L2;
 				L1:	sspush 27010;
-					invokestatic 28;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
 				L2:	aload_1;
-					invokevirtual 17;		// getBuffer()[B
+					invokevirtual 47;		// getBuffer()[B
 					astore_2;
 					aload_1;
-					invokevirtual 29;		// setIncomingAndReceive()S
+					invokevirtual 80;		// setIncomingAndReceive()S
 					sstore_3;
 					aload_2;
 					sconst_2;
@@ -407,7 +717,7 @@
 					getfield_a_this 3;		// reference com/test/BaseApplet.issuerCertificate
 					getfield_s_this 8;		// short com/test/BaseApplet.issuerCertLen
 					sload_3;
-					invokestatic 33;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
 					pop;
 					aload_0;
 					dup;
@@ -427,12 +737,12 @@
 				L0:	getfield_b_this 7;		// boolean com/test/BaseApplet.personalized
 					ifeq L2;
 				L1:	sspush 27010;
-					invokestatic 28;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
 				L2:	aload_1;
-					invokevirtual 17;		// getBuffer()[B
+					invokevirtual 47;		// getBuffer()[B
 					astore_2;
 					aload_1;
-					invokevirtual 29;		// setIncomingAndReceive()S
+					invokevirtual 80;		// setIncomingAndReceive()S
 					sstore_3;
 					aload_2;
 					sconst_2;
@@ -446,7 +756,7 @@
 					getfield_a_this 2;		// reference com/test/BaseApplet.certificate
 					getfield_s_this 9;		// short com/test/BaseApplet.certLen
 					sload_3;
-					invokestatic 33;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
 					pop;
 					aload_0;
 					dup;
@@ -489,7 +799,7 @@
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
 				L0:	aload_1;
-					invokevirtual 17;		// getBuffer()[B
+					invokevirtual 47;		// getBuffer()[B
 					astore_2;
 					getfield_a_this 1;		// reference com/test/BaseApplet.dataToSign
 					astore_3;
@@ -557,7 +867,7 @@
 					sload 4;
 					aload 6;
 					arraylength;
-					invokestatic 33;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
 					pop;
 					sload 4;
 					aload 6;
@@ -587,7 +897,7 @@
 					aload_3;
 					sload 4;
 					sload 5;
-					invokestatic 33;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
 					pop;
 					sload 4;
 					sload 5;
@@ -608,7 +918,7 @@
 				L0:	getfield_a_this 6;		// reference com/test/BaseApplet.classicalSignature
 					getfield_a_this 5;		// reference com/test/BaseApplet.classicalPrivateKey
 					sconst_1;
-					invokevirtual 37;		// init(Ljavacard/security/Key;B)V
+					invokevirtual 128;		// init(Ljavacard/security/Key;B)V
 					aload_0;
 					getfield_a_this 6;		// reference com/test/BaseApplet.classicalSignature
 					getfield_a_this 1;		// reference com/test/BaseApplet.dataToSign
@@ -616,7 +926,7 @@
 					getfield_s_this 11;		// short com/test/BaseApplet.dataToSignLen
 					getfield_a_this 4;		// reference com/test/BaseApplet.signatureBuffer
 					sconst_0;
-					invokevirtual 38;		// sign([BSS[BS)S
+					invokevirtual 129;		// sign([BSS[BS)S
 					putfield_s 10;		// short com/test/BaseApplet.signatureLen
 					return;
 		}
@@ -630,9 +940,9 @@
 				L0:	getfield_s_this 8;		// short com/test/BaseApplet.issuerCertLen
 					ifne L2;
 				L1:	sspush 27013;
-					invokestatic 28;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
 				L2:	aload_1;
-					invokevirtual 17;		// getBuffer()[B
+					invokevirtual 47;		// getBuffer()[B
 					astore_2;
 					aload_2;
 					sconst_2;
@@ -652,7 +962,7 @@
 					getfield_s_this 8;		// short com/test/BaseApplet.issuerCertLen
 					if_scmplt L4;
 				L3:	sspush 27392;
-					invokestatic 28;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
 				L4:	getfield_s_this 8;		// short com/test/BaseApplet.issuerCertLen
 					sload_3;
 					ssub;
@@ -665,16 +975,16 @@
 				L6:	sload 4;
 				L7:	sstore 5;
 					aload_1;
-					invokevirtual 39;		// setOutgoing()S
+					invokevirtual 173;		// setOutgoing()S
 					pop;
 					aload_1;
 					sload 5;
-					invokevirtual 40;		// setOutgoingLength(S)V
+					invokevirtual 174;		// setOutgoingLength(S)V
 					aload_1;
 					getfield_a_this 3;		// reference com/test/BaseApplet.issuerCertificate
 					sload_3;
 					sload 5;
-					invokevirtual 41;		// sendBytesLong([BSS)V
+					invokevirtual 175;		// sendBytesLong([BSS)V
 					return;
 		}
 
@@ -687,9 +997,9 @@
 				L0:	getfield_s_this 9;		// short com/test/BaseApplet.certLen
 					ifne L2;
 				L1:	sspush 27013;
-					invokestatic 28;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
 				L2:	aload_1;
-					invokevirtual 17;		// getBuffer()[B
+					invokevirtual 47;		// getBuffer()[B
 					astore_2;
 					aload_2;
 					sconst_2;
@@ -709,7 +1019,7 @@
 					getfield_s_this 9;		// short com/test/BaseApplet.certLen
 					if_scmplt L4;
 				L3:	sspush 27392;
-					invokestatic 28;		// javacard/framework/ISOException.throwIt(S)V
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
 				L4:	getfield_s_this 9;		// short com/test/BaseApplet.certLen
 					sload_3;
 					ssub;
@@ -722,16 +1032,16 @@
 				L6:	sload 4;
 				L7:	sstore 5;
 					aload_1;
-					invokevirtual 39;		// setOutgoing()S
+					invokevirtual 173;		// setOutgoing()S
 					pop;
 					aload_1;
 					sload 5;
-					invokevirtual 40;		// setOutgoingLength(S)V
+					invokevirtual 174;		// setOutgoingLength(S)V
 					aload_1;
 					getfield_a_this 2;		// reference com/test/BaseApplet.certificate
 					sload_3;
 					sload 5;
-					invokevirtual 41;		// sendBytesLong([BSS)V
+					invokevirtual 175;		// sendBytesLong([BSS)V
 					return;
 		}
 
@@ -742,17 +1052,7104 @@
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
 				L0:	aload_1;
-					invokevirtual 39;		// setOutgoing()S
+					invokevirtual 173;		// setOutgoing()S
 					pop;
 					aload_1;
 					getfield_s_this 10;		// short com/test/BaseApplet.signatureLen
-					invokevirtual 40;		// setOutgoingLength(S)V
+					invokevirtual 174;		// setOutgoingLength(S)V
 					aload_1;
 					getfield_a_this 4;		// reference com/test/BaseApplet.signatureBuffer
 					sconst_0;
 					getfield_s_this 10;		// short com/test/BaseApplet.signatureLen
-					invokevirtual 41;		// sendBytesLong([BSS)V
+					invokevirtual 175;		// sendBytesLong([BSS)V
 					return;
+		}
+
+	}
+
+	.class public ChameleonApplet 1 extends 0.3 {		// extends javacard/framework/Applet
+
+		.fields {
+			private byte[] dataToSign 0;		// [B
+			private 1.18 classicalPrivateKey 1;		// Ljavacard/security/ECPrivateKey;
+			private 1.15 classicalSignature 2;		// Ljavacard/security/Signature;
+			private byte[] classicalSigBuffer 3;		// [B
+			private byte[] pqPrivateKey 4;		// [B
+			private byte[] pqSignature 5;		// [B
+			private byte[] issuerCertificate 6;		// [B
+			private byte[] certificate 7;		// [B
+			 1.16 kp 8;		// Ljavacard/security/KeyPair;
+			private short dataToSignLen 9;		// S
+			private short classicalSigLen 10;		// S
+			private short pqSignatureLen 11;		// S
+			private short pqKeyLen 12;		// S
+			private short issuerCertLen 13;		// S
+			private short certLen 14;		// S
+			private boolean personalized 15;		// Z
+			private static final byte INS_INIT = 0;		// B
+			private static final byte INS_GET_ISSUER_CERT = 16;		// B
+			private static final byte INS_GET_CERT = 32;		// B
+			private static final byte INS_SIGN_BASE = 48;		// B
+			private static final byte INS_SIGN_DELTA = 64;		// B
+			private static final byte INS_GET_SIG_BASE = 80;		// B
+			private static final byte INS_GET_SIG_DELTA = 96;		// B
+			private static final byte INS_LOAD_PRIVKEY_BASE = -80;		// B
+			private static final byte INS_LOAD_PRIVKEY_DELTA = -79;		// B
+			private static final byte INS_LOAD_ISSUER_CERT = -78;		// B
+			private static final byte INS_LOAD_CERT = -77;		// B
+			private static final byte INS_LOCK_CARD = -76;		// B
+			private static final byte INS_INTERNAL_AUTHENTICATE = -120;		// B
+		}
+
+		.publicMethodTable 7 {
+			equals(Ljava/lang/Object;)Z;
+			register()V;
+			register([BSB)V;
+			selectingApplet()Z;
+			deselect()V;
+			getShareableInterfaceObject(Ljavacard/framework/AID;B)Ljavacard/framework/Shareable;;
+			select()Z;
+			process(Ljavacard/framework/APDU;)V;
+		}
+
+		.packageMethodTable 0 {
+		}
+
+		.method protected <init>()V 0 {
+			.stack 5;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 176;		// javacard/framework/Applet.<init>()V
+					aload_0;
+					sconst_0;
+					putfield_s 12;		// short com/test/ChameleonApplet.pqKeyLen
+					aload_0;
+					new 43;		// javacard/security/KeyPair
+					dup;
+					sconst_5;
+					sspush 192;
+					invokespecial 126;		// javacard/security/KeyPair.<init>(BS)V
+					putfield_a 13;		// reference com/test/ChameleonApplet.kp
+					aload_0;
+					sspush 255;
+					newarray 11;
+					putfield_a 14;		// reference com/test/ChameleonApplet.dataToSign
+					aload_0;
+					sspush 2012;
+					newarray 11;
+					putfield_a 15;		// reference com/test/ChameleonApplet.certificate
+					aload_0;
+					sspush 2012;
+					newarray 11;
+					putfield_a 16;		// reference com/test/ChameleonApplet.issuerCertificate
+					aload_0;
+					bspush 12;
+					sspush 192;
+					sconst_0;
+					invokestatic 84;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
+					checkcast 0 97;		// T_CLASSORINTERFACE javacard/security/ECPrivateKey
+					putfield_a 17;		// reference com/test/ChameleonApplet.classicalPrivateKey
+					aload_0;
+					bspush 17;
+					sconst_0;
+					invokestatic 127;		// javacard/security/Signature.getInstance(BZ)Ljavacard/security/Signature;
+					putfield_a 18;		// reference com/test/ChameleonApplet.classicalSignature
+					aload_0;
+					bspush 64;
+					newarray 11;
+					putfield_a 19;		// reference com/test/ChameleonApplet.classicalSigBuffer
+					aload_0;
+					sspush 185;
+					newarray 11;
+					putfield_a 20;		// reference com/test/ChameleonApplet.pqPrivateKey
+					aload_0;
+					sspush 556;
+					newarray 11;
+					putfield_a 21;		// reference com/test/ChameleonApplet.pqSignature
+					aload_0;
+					sconst_0;
+					putfield_b 22;		// boolean com/test/ChameleonApplet.personalized
+					aload_0;
+					invokevirtual 53;		// register()V
+					return;
+		}
+
+		.method public static install([BSB)V 1 {
+			.stack 2;
+			.locals 0;
+
+				L0:	new 54;		// com/test/ChameleonApplet
+					dup;
+					invokespecial 55;		// com/test/ChameleonApplet.<init>()V
+					pop;
+					return;
+		}
+
+		.method public process(Ljavacard/framework/APDU;)V 7 {
+			.stack 2;
+			.locals 1;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	aload_1;
+					invokevirtual 47;		// getBuffer()[B
+					astore_2;
+					aload_2;
+					sconst_0;
+					baload;
+					ifne L3;
+				L1:	aload_2;
+					sconst_1;
+					baload;
+					bspush -92;
+					if_scmpne L3;
+				L2:	return;
+				L3:	aload_2;
+					sconst_1;
+					baload;
+					slookupswitch L17 13 -120 L16 -80 L11 -79 L12 -78 L13 -77 L14 -76 L15 0 L4 16 L5 32 L6 48 L7 64 L8 80 L9 96 L10;
+				L4:	aload_0;
+					aload_1;
+					invokespecial 56;		// com/test/ChameleonApplet.initSession(Ljavacard/framework/APDU;)V
+					return;
+				L5:	aload_0;
+					aload_1;
+					invokespecial 57;		// com/test/ChameleonApplet.sendIssuerCertificate(Ljavacard/framework/APDU;)V
+					return;
+				L6:	aload_0;
+					aload_1;
+					invokespecial 58;		// com/test/ChameleonApplet.sendCertificate(Ljavacard/framework/APDU;)V
+					return;
+				L7:	aload_0;
+					aload_1;
+					invokespecial 59;		// com/test/ChameleonApplet.createSignatureBase(Ljavacard/framework/APDU;)V
+					return;
+				L8:	aload_0;
+					aload_1;
+					invokespecial 60;		// com/test/ChameleonApplet.createSignatureDelta(Ljavacard/framework/APDU;)V
+					return;
+				L9:	aload_0;
+					aload_1;
+					invokespecial 61;		// com/test/ChameleonApplet.sendSignatureBase(Ljavacard/framework/APDU;)V
+					return;
+				L10:	aload_0;
+					aload_1;
+					invokespecial 62;		// com/test/ChameleonApplet.sendSignatureDelta(Ljavacard/framework/APDU;)V
+					return;
+				L11:	aload_0;
+					aload_1;
+					invokespecial 63;		// com/test/ChameleonApplet.loadPrivateKeyBase(Ljavacard/framework/APDU;)V
+					return;
+				L12:	aload_0;
+					aload_1;
+					invokespecial 64;		// com/test/ChameleonApplet.loadPrivateKeyDelta(Ljavacard/framework/APDU;)V
+					return;
+				L13:	aload_0;
+					aload_1;
+					invokespecial 65;		// com/test/ChameleonApplet.loadIssuerCertificate(Ljavacard/framework/APDU;)V
+					return;
+				L14:	aload_0;
+					aload_1;
+					invokespecial 66;		// com/test/ChameleonApplet.loadCertificate(Ljavacard/framework/APDU;)V
+					return;
+				L15:	aload_0;
+					invokespecial 67;		// com/test/ChameleonApplet.lockCard()V
+					return;
+				L16:	aload_0;
+					aload_1;
+					invokespecial 68;		// com/test/ChameleonApplet.internalAuthenticate(Ljavacard/framework/APDU;)V
+					return;
+				L17:	sspush 27904;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+					return;
+		}
+
+		.method private loadPrivateKeyBase(Ljavacard/framework/APDU;)V {
+			.stack 4;
+			.locals 5;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	getfield_b_this 22;		// boolean com/test/ChameleonApplet.personalized
+					ifeq L2;
+				L1:	sspush 27010;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L2:	aload_1;
+					invokevirtual 47;		// getBuffer()[B
+					astore_2;
+					aload_1;
+					invokevirtual 80;		// setIncomingAndReceive()S
+					sstore_3;
+					getfield_a_this 17;		// reference com/test/ChameleonApplet.classicalPrivateKey
+					aload_2;
+					sconst_5;
+					sload_3;
+					invokeinterface 4 97 18;		// javacard/security/ECPrivateKey
+					getfield_a_this 13;		// reference com/test/ChameleonApplet.kp
+					invokevirtual 81;		// genKeyPair()V
+					getfield_a_this 13;		// reference com/test/ChameleonApplet.kp
+					invokevirtual 82;		// getPrivate()Ljavacard/security/PrivateKey;
+					checkcast 0 97;		// T_CLASSORINTERFACE javacard/security/ECPrivateKey
+					astore 4;
+					bspush 80;
+					newarray 11;
+					astore 5;
+					aload 4;
+					aload 5;
+					sconst_0;
+					invokeinterface 3 97 12;		// javacard/security/ECPrivateKey
+					sstore 6;
+					getfield_a_this 17;		// reference com/test/ChameleonApplet.classicalPrivateKey
+					aload 5;
+					sconst_0;
+					sload 6;
+					invokeinterface 4 97 4;		// javacard/security/ECPrivateKey
+					aload 4;
+					aload 5;
+					sconst_0;
+					invokeinterface 3 97 13;		// javacard/security/ECPrivateKey
+					sstore 6;
+					getfield_a_this 17;		// reference com/test/ChameleonApplet.classicalPrivateKey
+					aload 5;
+					sconst_0;
+					sload 6;
+					invokeinterface 4 97 7;		// javacard/security/ECPrivateKey
+					aload 4;
+					aload 5;
+					sconst_0;
+					invokeinterface 3 97 14;		// javacard/security/ECPrivateKey
+					sstore 6;
+					getfield_a_this 17;		// reference com/test/ChameleonApplet.classicalPrivateKey
+					aload 5;
+					sconst_0;
+					sload 6;
+					invokeinterface 4 97 8;		// javacard/security/ECPrivateKey
+					aload 4;
+					aload 5;
+					sconst_0;
+					invokeinterface 3 97 15;		// javacard/security/ECPrivateKey
+					sstore 6;
+					getfield_a_this 17;		// reference com/test/ChameleonApplet.classicalPrivateKey
+					aload 5;
+					sconst_0;
+					sload 6;
+					invokeinterface 4 97 9;		// javacard/security/ECPrivateKey
+					aload 4;
+					aload 5;
+					sconst_0;
+					invokeinterface 3 97 16;		// javacard/security/ECPrivateKey
+					sstore 6;
+					getfield_a_this 17;		// reference com/test/ChameleonApplet.classicalPrivateKey
+					aload 5;
+					sconst_0;
+					sload 6;
+					invokeinterface 4 97 10;		// javacard/security/ECPrivateKey
+					return;
+		}
+
+		.method private loadPrivateKeyDelta(Ljavacard/framework/APDU;)V {
+			.stack 5;
+			.locals 2;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	getfield_b_this 22;		// boolean com/test/ChameleonApplet.personalized
+					ifeq L2;
+				L1:	sspush 27010;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L2:	aload_1;
+					invokevirtual 47;		// getBuffer()[B
+					astore_2;
+					aload_1;
+					invokevirtual 80;		// setIncomingAndReceive()S
+					sstore_3;
+					aload_2;
+					sconst_2;
+					baload;
+					ifne L4;
+				L3:	aload_0;
+					sconst_0;
+					putfield_s 12;		// short com/test/ChameleonApplet.pqKeyLen
+				L4:	aload_2;
+					sconst_5;
+					getfield_a_this 20;		// reference com/test/ChameleonApplet.pqPrivateKey
+					getfield_s_this 12;		// short com/test/ChameleonApplet.pqKeyLen
+					sload_3;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					aload_0;
+					dup;
+					getfield_s 12;		// short com/test/ChameleonApplet.pqKeyLen
+					sload_3;
+					sadd;
+					putfield_s 12;		// short com/test/ChameleonApplet.pqKeyLen
+					return;
+		}
+
+		.method private loadIssuerCertificate(Ljavacard/framework/APDU;)V {
+			.stack 5;
+			.locals 2;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	getfield_b_this 22;		// boolean com/test/ChameleonApplet.personalized
+					ifeq L2;
+				L1:	sspush 27010;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L2:	aload_1;
+					invokevirtual 47;		// getBuffer()[B
+					astore_2;
+					aload_1;
+					invokevirtual 80;		// setIncomingAndReceive()S
+					sstore_3;
+					aload_2;
+					sconst_2;
+					baload;
+					ifne L4;
+				L3:	aload_0;
+					sconst_0;
+					putfield_s 23;		// short com/test/ChameleonApplet.issuerCertLen
+				L4:	aload_2;
+					sconst_5;
+					getfield_a_this 16;		// reference com/test/ChameleonApplet.issuerCertificate
+					getfield_s_this 23;		// short com/test/ChameleonApplet.issuerCertLen
+					sload_3;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					aload_0;
+					dup;
+					getfield_s 23;		// short com/test/ChameleonApplet.issuerCertLen
+					sload_3;
+					sadd;
+					putfield_s 23;		// short com/test/ChameleonApplet.issuerCertLen
+					return;
+		}
+
+		.method private loadCertificate(Ljavacard/framework/APDU;)V {
+			.stack 5;
+			.locals 2;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	getfield_b_this 22;		// boolean com/test/ChameleonApplet.personalized
+					ifeq L2;
+				L1:	sspush 27010;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L2:	aload_1;
+					invokevirtual 47;		// getBuffer()[B
+					astore_2;
+					aload_1;
+					invokevirtual 80;		// setIncomingAndReceive()S
+					sstore_3;
+					aload_2;
+					sconst_2;
+					baload;
+					ifne L4;
+				L3:	aload_0;
+					sconst_0;
+					putfield_s 24;		// short com/test/ChameleonApplet.certLen
+				L4:	aload_2;
+					sconst_5;
+					getfield_a_this 15;		// reference com/test/ChameleonApplet.certificate
+					getfield_s_this 24;		// short com/test/ChameleonApplet.certLen
+					sload_3;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					aload_0;
+					dup;
+					getfield_s 24;		// short com/test/ChameleonApplet.certLen
+					sload_3;
+					sadd;
+					putfield_s 24;		// short com/test/ChameleonApplet.certLen
+					return;
+		}
+
+		.method private lockCard()V {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					sconst_1;
+					putfield_b 22;		// boolean com/test/ChameleonApplet.personalized
+					return;
+		}
+
+		.method private initSession(Ljavacard/framework/APDU;)V {
+			.stack 2;
+			.locals 0;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	aload_0;
+					sconst_0;
+					putfield_s 25;		// short com/test/ChameleonApplet.classicalSigLen
+					aload_0;
+					sconst_0;
+					putfield_s 26;		// short com/test/ChameleonApplet.pqSignatureLen
+					aload_0;
+					sconst_0;
+					putfield_s 27;		// short com/test/ChameleonApplet.dataToSignLen
+					return;
+		}
+
+		.method private internalAuthenticate(Ljavacard/framework/APDU;)V {
+			.stack 5;
+			.locals 7;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	aload_1;
+					invokevirtual 47;		// getBuffer()[B
+					astore_2;
+					getfield_a_this 14;		// reference com/test/ChameleonApplet.dataToSign
+					astore_3;
+					sconst_0;
+					sstore 4;
+					aload_2;
+					sconst_4;
+					baload;
+					sspush 255;
+					sand;
+					sstore 5;
+					aload_3;
+					sload 4;
+					sinc 4 1;
+					sconst_5;
+					bastore;
+					aload_3;
+					sload 4;
+					sinc 4 1;
+					sconst_1;
+					bastore;
+					aload_3;
+					sload 4;
+					sinc 4 1;
+					bspush 8;
+					bastore;
+					bspush 8;
+					newarray 11;
+					dup;
+					sconst_0;
+					bspush 108;
+					bastore;
+					dup;
+					sconst_1;
+					bspush 85;
+					bastore;
+					dup;
+					sconst_2;
+					bspush 68;
+					bastore;
+					dup;
+					sconst_3;
+					bspush 121;
+					bastore;
+					dup;
+					sconst_4;
+					bspush 122;
+					bastore;
+					dup;
+					sconst_5;
+					bspush -111;
+					bastore;
+					dup;
+					bspush 6;
+					bspush 17;
+					bastore;
+					dup;
+					bspush 7;
+					bspush 93;
+					bastore;
+					astore 6;
+					aload 6;
+					sconst_0;
+					aload_3;
+					sload 4;
+					aload 6;
+					arraylength;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					sload 4;
+					aload 6;
+					arraylength;
+					sadd;
+					sstore 4;
+					sspush 255;
+					sload 4;
+					ssub;
+					sload 5;
+					ssub;
+					sstore 7;
+					sconst_0;
+					sstore 8;
+				L1:	sload 8;
+					sload 7;
+					if_scmpge L3;
+				L2:	aload_3;
+					sload 4;
+					sinc 4 1;
+					bspush -69;
+					bastore;
+					sinc 8 1;
+					goto L1;
+				L3:	aload_2;
+					sconst_5;
+					aload_3;
+					sload 4;
+					sload 5;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					sload 4;
+					sload 5;
+					sadd;
+					sstore 4;
+					aload_0;
+					sload 4;
+					putfield_s 27;		// short com/test/ChameleonApplet.dataToSignLen
+					return;
+		}
+
+		.method private createSignatureBase(Ljavacard/framework/APDU;)V {
+			.stack 7;
+			.locals 0;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	getfield_a_this 18;		// reference com/test/ChameleonApplet.classicalSignature
+					getfield_a_this 17;		// reference com/test/ChameleonApplet.classicalPrivateKey
+					sconst_1;
+					invokevirtual 128;		// init(Ljavacard/security/Key;B)V
+					aload_0;
+					getfield_a_this 18;		// reference com/test/ChameleonApplet.classicalSignature
+					getfield_a_this 14;		// reference com/test/ChameleonApplet.dataToSign
+					sconst_0;
+					getfield_s_this 27;		// short com/test/ChameleonApplet.dataToSignLen
+					getfield_a_this 19;		// reference com/test/ChameleonApplet.classicalSigBuffer
+					sconst_0;
+					invokevirtual 129;		// sign([BSS[BS)S
+					putfield_s 25;		// short com/test/ChameleonApplet.classicalSigLen
+					return;
+		}
+
+		.method private createSignatureDelta(Ljavacard/framework/APDU;)V {
+			.stack 9;
+			.locals 3;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	getfield_s_this 27;		// short com/test/ChameleonApplet.dataToSignLen
+					ifne L2;
+				L1:	sspush 27013;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L2:	new 74;		// com/test/Hawk
+					dup;
+					invokespecial 75;		// com/test/Hawk.<init>()V
+					astore_2;
+					sspush 640;
+					newarray 11;
+					astore_3;
+					aload_2;
+					bspush 9;
+					getfield_a_this 21;		// reference com/test/ChameleonApplet.pqSignature
+					getfield_a_this 14;		// reference com/test/ChameleonApplet.dataToSign
+					getfield_s_this 27;		// short com/test/ChameleonApplet.dataToSignLen
+					getfield_a_this 20;		// reference com/test/ChameleonApplet.pqPrivateKey
+					getfield_s_this 12;		// short com/test/ChameleonApplet.pqKeyLen
+					aload_3;
+					aload_3;
+					arraylength;
+					invokevirtual 76;		// signMessage(S[B[BS[BS[BS)S
+					sstore 4;
+					sload 4;
+					ifne L4;
+				L3:	sspush 28416;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L4:	aload_0;
+					bspush 9;
+					invokestatic 77;		// com/test/Hawk.HAWK_SIG_SIZE(S)S
+					putfield_s 26;		// short com/test/ChameleonApplet.pqSignatureLen
+					return;
+		}
+
+		.method private sendIssuerCertificate(Ljavacard/framework/APDU;)V {
+			.stack 4;
+			.locals 4;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	getfield_s_this 23;		// short com/test/ChameleonApplet.issuerCertLen
+					ifne L2;
+				L1:	sspush 27013;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L2:	aload_1;
+					invokevirtual 47;		// getBuffer()[B
+					astore_2;
+					aload_2;
+					sconst_2;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					aload_2;
+					sconst_3;
+					baload;
+					sspush 255;
+					sand;
+					sor;
+					sstore_3;
+					sload_3;
+					getfield_s_this 23;		// short com/test/ChameleonApplet.issuerCertLen
+					if_scmplt L4;
+				L3:	sspush 27392;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L4:	getfield_s_this 23;		// short com/test/ChameleonApplet.issuerCertLen
+					sload_3;
+					ssub;
+					sstore 4;
+					sload 4;
+					sspush 200;
+					if_scmple L6;
+				L5:	sspush 200;
+					goto L7;
+				L6:	sload 4;
+				L7:	sstore 5;
+					aload_1;
+					invokevirtual 173;		// setOutgoing()S
+					pop;
+					aload_1;
+					sload 5;
+					invokevirtual 174;		// setOutgoingLength(S)V
+					aload_1;
+					getfield_a_this 16;		// reference com/test/ChameleonApplet.issuerCertificate
+					sload_3;
+					sload 5;
+					invokevirtual 175;		// sendBytesLong([BSS)V
+					return;
+		}
+
+		.method private sendCertificate(Ljavacard/framework/APDU;)V {
+			.stack 4;
+			.locals 4;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	getfield_s_this 24;		// short com/test/ChameleonApplet.certLen
+					ifne L2;
+				L1:	sspush 27013;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L2:	aload_1;
+					invokevirtual 47;		// getBuffer()[B
+					astore_2;
+					aload_2;
+					sconst_2;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					aload_2;
+					sconst_3;
+					baload;
+					sspush 255;
+					sand;
+					sor;
+					sstore_3;
+					sload_3;
+					getfield_s_this 24;		// short com/test/ChameleonApplet.certLen
+					if_scmplt L4;
+				L3:	sspush 27392;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L4:	getfield_s_this 24;		// short com/test/ChameleonApplet.certLen
+					sload_3;
+					ssub;
+					sstore 4;
+					sload 4;
+					sspush 200;
+					if_scmple L6;
+				L5:	sspush 200;
+					goto L7;
+				L6:	sload 4;
+				L7:	sstore 5;
+					aload_1;
+					invokevirtual 173;		// setOutgoing()S
+					pop;
+					aload_1;
+					sload 5;
+					invokevirtual 174;		// setOutgoingLength(S)V
+					aload_1;
+					getfield_a_this 15;		// reference com/test/ChameleonApplet.certificate
+					sload_3;
+					sload 5;
+					invokevirtual 175;		// sendBytesLong([BSS)V
+					return;
+		}
+
+		.method private sendSignatureBase(Ljavacard/framework/APDU;)V {
+			.stack 4;
+			.locals 0;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	aload_1;
+					invokevirtual 173;		// setOutgoing()S
+					pop;
+					aload_1;
+					getfield_s_this 25;		// short com/test/ChameleonApplet.classicalSigLen
+					invokevirtual 174;		// setOutgoingLength(S)V
+					aload_1;
+					getfield_a_this 19;		// reference com/test/ChameleonApplet.classicalSigBuffer
+					sconst_0;
+					getfield_s_this 25;		// short com/test/ChameleonApplet.classicalSigLen
+					invokevirtual 175;		// sendBytesLong([BSS)V
+					return;
+		}
+
+		.method private sendSignatureDelta(Ljavacard/framework/APDU;)V {
+			.stack 4;
+			.locals 4;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	aload_1;
+					invokevirtual 47;		// getBuffer()[B
+					astore_2;
+					aload_2;
+					sconst_2;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					aload_2;
+					sconst_3;
+					baload;
+					sspush 255;
+					sand;
+					sor;
+					sstore_3;
+					sload_3;
+					getfield_s_this 26;		// short com/test/ChameleonApplet.pqSignatureLen
+					if_scmplt L2;
+				L1:	sspush 27392;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L2:	getfield_s_this 26;		// short com/test/ChameleonApplet.pqSignatureLen
+					sload_3;
+					ssub;
+					sstore 4;
+					sload 4;
+					sspush 200;
+					if_scmple L4;
+				L3:	sspush 200;
+					goto L5;
+				L4:	sload 4;
+				L5:	sstore 5;
+					aload_1;
+					invokevirtual 173;		// setOutgoing()S
+					pop;
+					aload_1;
+					sload 5;
+					invokevirtual 174;		// setOutgoingLength(S)V
+					aload_1;
+					getfield_a_this 21;		// reference com/test/ChameleonApplet.pqSignature
+					sload_3;
+					sload 5;
+					invokevirtual 175;		// sendBytesLong([BSS)V
+					return;
+		}
+
+	}
+
+	.class  Hawk extends 2.0 {		// extends java/lang/Object
+
+		.fields {
+			private 1.14 random 0;		// Ljavacard/security/RandomData;
+			private short logn 1;		// S
+			private short n 2;		// S
+			private short saltLen 3;		// S
+			private short maxXnorm 4;		// S
+			public static final short SG_MAX_HI_HAWK_512 = 10;		// S
+			public static final short SG_MAX_LO_HAWK_512 = 26;		// S
+			public static final short SIZE_64 = 64;		// S
+			public static final short SIZE_128 = 128;		// S
+			public static final short SIZE_256 = 256;		// S
+			public static final short SIZE_512 = 512;		// S
+			public static final short[] SIG_GAUSS_HI_HAWK_512 0 = {22539,13817,7476,3543,1463,524,162,43,10,1};		// [S
+			public static final short[] SIG_GAUSS_LO_HI_HI_HAWK_512 1 = {3111,15464,7247,31632,24163,20158,22190,17960,1566,32630,11173,1640,207,22,2,0,0,0,0,0,0,0,0,0,0,0};		// [S
+			public static final short[] SIG_GAUSS_LO_HI_LO_HAWK_512 2 = {-28150,-25198,-3716,-29567,9787,-625,-8272,-17301,8661,-28143,26841,-2975,3974,28891,5792,10934,749,44,2,0,0,0,0,0,0,0};		// [S
+			public static final short[] SIG_GAUSS_LO_LO_HI_HAWK_512 3 = {1272,4932,8266,-797,-8183,-2832,-30870,9096,-30516,-3973,12012,26941,-30765,26006,-15548,-7908,-3911,9532,15091,6337,235,7,0,0,0,0};		// [S
+			public static final short[] SIG_GAUSS_LO_LO_LO_HAWK_512 4 = {-3481,-25143,-24488,21071,-28675,29560,15320,29078,25036,12911,6375,-113,-20471,17541,-5307,9554,-30076,32385,-19737,19135,-13206,-30866,13519,317,6,0};		// [S
+			private static final short Q = 18433;		// S
+			private static final short R2 = 806;		// S
+			private static final short[] GM = {4564,17110,12162,16208,10701,9705,3451,5078,12400,10202,8245,13131,4631,3492,17179,5622,5537,3399,2485,9938,345,14064,10152,789,5092,15713,12632,6516,16107,2314,15385,17281,383,5515,5019,13218,3293,4728,9704,14263,4417,218,16011,2568,5635,8516,18352,12887,13102,15257,14316,12813,8886,11051,13356,15353,12059,6880,17926,11710,8052,1737,16384,18094,3410,14787,13788,14210,2656,17550,7950,4311,18150,4973,11548,7848,15326,15517,97,11648,17990,17685,10847,14695,282,1558,6535,10743,2399,181,10165,8051,12204,18401,13377,7233,10892,15728,15002,11766,8462,15245,12420,8613,5053,12360,17415,12678,4606,870,8429,9572,6542,1892,4008,17045,371,10155,819,15114,1522,13638,16576,17586,16840,7671,13873,12065,7433,7599,2497,5298,16406,3443,9437,6905,14589,17851,209,17496,1698,7028,4444,8211,9159,16089,16741,9085,2658,4488,8650,3995,6532,11903,508,192,4039,17347,12742,6993,14812,17645,4527,695,8380,16230,2153,3136,2133,4725,9230,13213,6548,18005,6108,16097,16952,13519,16207,12802,16047,7081,12818,8328,17091,8927,9558,9273,9301,10337,11142,5082,11846,15508,17108,8498,16135,3776,6752,12857,3590,486,3056,4203,10364,17125,14532,3025,18386,12029,1983,7426,13553,623,6269,15287,16399,12294,6987,8011,1378,14019,3042,3472,4734,12820,16363,7781,3644,16472,3523,14104,11521,18288,13956,4549,6314,16320,16373,16203,15299,7524,9080,15914,17765,12520,5829,13379,9482,7938,760,13350,9526,15502,16160,6398,7067,1655,3428,7827,10564,1235,10800,8291,15614,14755,8732,3010,12821,7168,8131,1912,8093,10461,12301,11616,13947,8029,15138,8334,13345,13462,7201,11285,8232,5869,5652,8087,9232,151,5425,15984,9061,10972,874,6136,9299,4966,10442,5398,6605,14398,7625,7091,10974,14743,6836,17243,504,7883,10503,12533,3111,13658,1303,6153,12791,335,16064,6652,14432,10970,558,5436,300,13031,12835,7899,8435,7252,2970,12879,2786,16438,16584,2204,5974,6467,7971,14624,9637,9448,18144,7293,18121,10042,1398,12430,157,6881,18084,12060,5783,444,14853,7936,13337,10411,4401,12549,17699,1174,1162,5374,3796,709,1424,8521,2238,991,9114,15056,4900,16221,731,18419,14885,1707,11644,7594,14783,4281,12810,5277,10528,15155,16633,13979,5573,7912,15085,4250,13224,11094,1717,11970,4689,11787,613,14891,6892,1734,15910,17044,1022,16497,7473,4421,17061,2094,17491,14013,1872,13480,10045,17585,1562,10460,12143,11266,2168,15769,3047,7683,14260,9889,14090,14179,4404,11389,11461,4622,18349,14047,7466,13272,5005,12487,615,1829,13229,15305,3467,11180,2855,8191,3868,9735,18383,13189,933,7900,18340,17527,4316,14694,5680,9549,15669,5777,17938,7070,11080,4478,1466,10714,15409,8001,7888,3707,14283,7140,3046,14214,15419,16423,18200,10217,10615,18381,13138,1337,8483,7125,6741,10966,18359,4036,11656,2954,5907,1652,12095,11393,12093,6022,11472,6513,15239,12291,16914,3635,2907,373,12897,8503,16298,8337,10348,11023,8932,5553,12984,11729,9882,13024,556,65,10270,4317,14404,9508,9191,9860,14257,11049,13040,14653,13038,9282,10349,4492,6555,9154,8558,14991,4583,3619,379,13206,11105,7100,15820,14978,7277,12620,3196,11513,7268,16100,46,12935,10191,4142,9281,11926,14900,14340,16894,5224,9309,13388,13942,3818,2937,7206,14135,15212,7925,1689,8800,1294,5524,14570,16368,11992,9491,4458,3910,11928,13598,1656,3586,8177,13056,2322,16649,1648,14699,18328,1843,116,10016,4221,3330,2710,5358,11169,13567,1354,8715,3439,8805,5505,10680,17825,14534,8396,4185,3904,8543,2358,13314,13160,14784,16183,3842,13644,17524,1253,13782,16530,12687,15971,13700,17515,2420,10494,7049,8615,15561,10671,10485,1060,1583,2340,6599,16718,5525,8039,12196,15350,10577,8497,16786,10118,13406,2164,696,7375,3971,630,13829,4501,10704,8545,8124,10763,4718,6718,13636,11540,16886,2173,13510,4961,9652,3648,3009,16232,2469,3836,4933,3461,12281,13205,11756,13442,4041,4285,3661,16043,9473,11418,13814,10301,5454,10915,8727,17232,13005,3609,9965,5508,3913,10768,11368,3716,15705,10290,10822,12073,8935,4393,3878,18157,11691,13998,11637,16445,17690,4654,12911,9234,2765,6125,12586,12014,18046,2176,17540,7355,811,12063,17878,11837,8513,13958,16653,12390,3722,4745,7749,8299,2499,10669,16214,3951,15969,375,13937,18040,11638,9914,16136,15678,7102,12699,9368,15152,16159,12929,14186,13925,6623,7438,5741,16684,153,14572,14261,3358,14440,14021,15097,18043,12112,10964,5242,13012,9833,1249,16386,5032,2437,10065,1738,3850,11,1891,3970,7161,7025,17895,6303,14429,12523,17941,6931,5087,11127,10882,13926,16149,7788,11652,8944,913,15223,6189,9511,2869,10910,8768,6262,5705,16606,5986,10784,2189,14068,10397,14897,15500,15844,5698,5743,3622,853,14256,9576,2313,15227,16931,3810,1440,6324,6309,3400,6365,10288,15790,16146,5667,10602,11119,5700,7960,4236,2617,12801,8757,1131,5072,16068,17394,1735,5010,2908,12275,3985,1361,17206,13615,12942,9536,12505,6468,8129,14974,2983,1708,11802,7944,17712,8436,5712,3320,13774,13479,9887,17235,4487,3873,3645,9941,16825,13471,8623,14435,5656,396,7269,9569,935,13271,13889,18167,6320,14000,40,15255,4382,7607,3761,8098,15702,11450,2666,7539,13722,2864,10120,7018,11627,8023,14190,6234,15359,2757,11647,6434,1917,14513,7362,10475,985,82,12956,10267,10798,2920,535,8185,17135,16491,6525,2321,11245,14410,9521,11291,4326,4683,2594,16946,12878,3561,9648,11339,9944,13628,14996,14086,16837,8831,12823,12539,2930,16057,11685,16318,11722,14300,10574,9657,17379,8165,18193,635,17483,10962,17727,2636,16666,1219,8272,2691,15755,15534,2783,17598,9028,5299,7757,11350,9421,803,16276,4555,2408,15134,13315,6629,2575,12004,16466,17109,14006,9793,17355,17445,9993,6970,13713,6344,17481,5591,17027,2952,268,827,1635,12955,8609,13704,8571,3820,15205,13149,13046,12333,8005,13766,18367,7087,5414,14093,14734,10939,12282,6674,3811,13342};		// [S
+			static final short[] iGM = {2282,9878,10329,12352,15894,7491,4364,3866,15622,627,16687,6901,2651,5094,13332,12233,576,1524,17276,1163,15175,12117,1360,15887,8822,13357,11401,9044,13464,7974,7517,6448,9386,10241,8348,14407,12578,9470,14993,3187,1540,11755,3691,13990,2810,11275,1588,11882,2773,9257,14175,6399,17149,1211,18324,7008,2085,13581,16069,7570,11824,6707,6459,9025,3184,2280,5381,10013,9640,10145,11614,17672,10876,8807,4139,9031,694,16429,17487,15162,13647,5002,17998,16130,12094,509,12253,6690,4910,12223,1594,14202,12550,10932,10569,12987,5600,2528,16,12331,5191,4134,9126,8017,3845,5949,17654,18292,1869,3793,374,9438,12609,9168,1458,10770,14509,12659,6730,9358,7061,14458,9658,17105,11328,11539,1823,16728,15234,10353,10682,13670,11758,18053,14464,13692,2527,6302,12173,334,10476,13893,14671,1567,1115,1030,10273,15276,6942,11455,9289,3456,11381,7455,10197,16611,5326,1035,12023,16066,16697,16912,2207,17744,5211,5723,12286,1017,1573,6082,8905,2440,14720,8225,3202,9240,7704,11167,654,13251,7115,16905,18190,16638,2788,15057,16545,1149,14184,9879,10679,12510,15892,12862,4048,4566,4580,13654,4753,671,14269,12024,5676,1193,12032,1113,2457,9957,1168,15379,214,15159,2610,13818,6854,8150,16865,8140,10318,14243,8869,6953,394,11027,5720,12062,543,7197,18337,18179,3265,15167,7219,14108,16189,17104,4674,846,1172,4637,5111,16211,14919,17584,9685,9112,291,1922,5764,4498,7495,10230,15784,7968,5417,5500,6440,13967,3705,13259,5048,10284,4965,2768,9030,7763,7399,9976,3071,1597,5960,12697,15422,3170,3520,3169,17607,6263,16956,12605,16415,37,12950,5846,5654,4975,8548,11864,26,3909,4108,9333,1005,1507,11326,16910,14863,2075,7363,14489,5216,1512,13076,17700,16194,12893,14898,9464,6328,1382,4442,15593,11086,16275,453,9263,14483,8750,2622,25,4349,16499,5121,7789,12843,7483,1564,2602,8302,8909,2973,6714,11797,14700,2193,42,16122,3486,3522,16231,2127,11388,4272,11303,5375,7693,1332,17349,12800,3145,13203,17652,424,4194,11693,17497,2210,471,17386,686,7006,5480,968,17922,9911,10478,17566,14987,1771,8910,3323,6872,12448,8358,12886,11821,16308,1674,14477,6430,2227,900,1639,13169,6578,12028,7076,1825,14636,12611,8363,1774,7,8851,1106,15983,10905,13876,8721,17314,4956,17721,8862,16535,15746,17852,17846,367,2942,7016,4011,2548,14465,1790,18211,6325,12403,9391,5776,9138,12218,17734,13412,156,5570,9361,13709,4398,11121,5231,5983,15446,17331,10141,10214,17040,2777,16948,14807,4999,5267,2799,2701,18283,15715,18154,12948,11217,15107,10401,9049,2821,6140,8565,11604,7661,2950,3965,5275,18181,595,15015,1845,12946,5671,5404,11234,5914,15734,13212,15950,4567,15365,17996,12947,4686,10441,6504,9141,13817,5173,15607,6282,14317,3574,5616,11702,2544,14266,10864,5202,2243,12625,3066,3986,5170,17477,5151,14849,2806,16928,14067,1839,10626,5071,13033,8599,13151,5303,16719,8389,5683,11762,7311,15096,12292,3747,11066,2170,15726,5673,33,11550,5214,3050,11910,2642,1614,16523,4931,11581,4912,2739,8399,8803,18299,16957,703,6421,476,15261,2360,14948,4220,494,539,4320,11430,662,10200,12431,7929,5902,2559,10866,17229,6939,10295,8815,4506,12758,5338,6567,13919,9634,7825,10666,1339,7871,14297,8607,10100,17115,353,12952,475,8899,120,5134,527,4388,13146,11283,12572,10274,3374,1188,16968,2947,2805,4801,798,11390,10935,11619,13461,3547,13609,7436,11994,9960,17136,6875,16270,3571,4456,11228,3594,8056,5954,971,649,5124,8949,16973,13034,4083,11955,18392,8724,3979,14752,1960,8258,15216,3393,7838,1537,15316,11338,5205,3403,14924,13373,17001,11572,5447,17100,12708,10582,14384,7336,5413,16242,1589,18413,11433,15273,133,2272,2581,8749,4432,5582,18235,15605,1999,4905,2481,804,4246,7394,7280,6973,599,4273,2477,11546,16773,15577,14215,9577,14461,12532,17579,7725,10946,5152,15199,2964,13665,11962,2409,9830,8536,7224,3079,16979,15928,8349,9736,10399,15897,8651,4838,2816,7908,16315,14453,15583,3657,13132,6383,10360,10538,13289,6034,16733,6062,15271,17713,16528,751,1603,8060,13645,11305,8790,16622,6345,15584,10511,10683,1768,4018,11399,8122,13041,15440,10130,6364,15302,14049,12978,7782,4461,6122,1605,8760,13961,12607,14539,1142,11470,12992,3653,6673,5751,246,2955,2002,6065,269,5704,5636,16448,8271,9211,16508,17564,4184,7998,15917,10240,8592,4300,11927,15812,12951,12377,195,1668,2206,11213,16754,2086,11147,9140,10091,6346,14714,5905,2254,11340,2752,1137,10857,13749,2867,14882,10594,10365,13476,12614,9413,2248,9029,1232,7241,10326,3882,7967,5067,5342,6844,16572,12238,890,11454,4960,3298,9494,3185,8811,5539,9663,17345,9410,12426,12140,6154,7834,13816,2761,16106,9588,994,3398,11434,3371,138,16494,7020,4749,3180,13022,13288,1364,16575,12749,13049,7260,15679,4234,7412,2714,9817,4853,3759,15706,4066,11526,12724,4480,1195,7386,7074,7196,11712,12555,2614,3076,7486,6750,16515,7982,10317,7712,16609,13607,6736,11678,8130,9990,12663,11615,15074,16074,3835,14371,4944,13081,6966,2302,18118,7231,5529,18085,17351,11730,13374,10040,4968,3928,10758,12335,5197,6454,10074,5917,17263,8425,17903,3974,3881,1436,4909,5692,13186,17223,459,11583,1231,2873,10168,11542,8590,9671,11611,16512,1125,11041,11853,11776,17254,4945,16481,7124,14235,11166,304,13093,6464,4814,7497,4859,17756,2433,3632,15754,17078,16768,7106,13425,18375,8295,9269,1867,17609,892,17272,11905,5128,16640,17605,11634,12469,16478,16204,4471,12437,10249,11148,15671,17786,14033,8372,5254,10827,2149,14830,7748,16524,11462,11739,4562,15821,9986,11263,10983,12470,4576,16362,4121,2749,18410,10383,14799,3460,16835,12123,5578,10944,10523,14883,3664,11830,9027,7407,6925,1721,14154,13856,5939,16187,4042,13792,11914,1890,11913,3692,2088,13503,4621,13679,11231,7058,13298,9184,18155,11921,13492,3352,11941};		// [S
+			private static final short BYTES_64 = 8;		// S
+			private static final short BYTES_128 = 16;		// S
+		}
+
+		.publicMethodTable 1 {
+			equals(Ljava/lang/Object;)Z;
+			regen_fg([BS[BS[B)V;
+			mq18433SetSmall(B)S;
+			mq18433PolySetSmall(S[SS[BS)V;
+			mq18433Sub(SS)S;
+			mq18433Add(SS)S;
+			mq18433MontyRed(SS)S;
+			mq18433MontyMul(SS)S;
+			mq18433ToMonty(S)S;
+			mq18433Half(S)S;
+			mq18433NTT(S[SS)V;
+			mq18433INTT(S[SS)V;
+			sigGauss(SLcom/test/SHAKE256JC;[BS[BS)S;
+			sign(SS[BLcom/test/SHAKE256JC;[BS[BS)S;
+			signMessage(S[B[BS[BS[BS)S;
+		}
+
+		.packageMethodTable 0 {
+		}
+
+		.method public <init>()V 0 {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 78;		// java/lang/Object.<init>()V
+					aload_0;
+					bspush 9;
+					putfield_s 28;		// short com/test/Hawk.logn
+					aload_0;
+					sconst_1;
+					getfield_s_this 28;		// short com/test/Hawk.logn
+					sshl;
+					putfield_s 29;		// short com/test/Hawk.n
+					aload_0;
+					bspush 24;
+					putfield_s 30;		// short com/test/Hawk.saltLen
+					aload_0;
+					sspush 8317;
+					putfield_s 31;		// short com/test/Hawk.maxXnorm
+					aload_0;
+					sconst_2;
+					invokestatic 83;		// javacard/security/RandomData.getInstance(B)Ljavacard/security/RandomData;
+					putfield_a 32;		// reference com/test/Hawk.random
+					return;
+		}
+
+		.method public static HAWK_SIG_SIZE(S)S 1 {
+			.stack 5;
+			.locals 0;
+
+				L0:	sspush 249;
+					sspush 306;
+					sconst_2;
+					bspush 10;
+					sload_0;
+					ssub;
+					sshr;
+					smul;
+					sadd;
+					sspush 360;
+					sconst_1;
+					bspush 10;
+					sload_0;
+					ssub;
+					sshr;
+					smul;
+					sadd;
+					sreturn;
+		}
+
+		.method private static popcount8(B)B {
+			.stack 3;
+			.locals 1;
+
+				L0:	sload_0;
+					sspush 255;
+					sand;
+					sstore_1;
+					sload_1;
+					bspush 85;
+					sand;
+					sload_1;
+					sconst_1;
+					sushr;
+					bspush 85;
+					sand;
+					sadd;
+					sstore_1;
+					sload_1;
+					bspush 51;
+					sand;
+					sload_1;
+					sconst_2;
+					sushr;
+					bspush 51;
+					sand;
+					sadd;
+					sstore_1;
+					sload_1;
+					bspush 15;
+					sand;
+					sload_1;
+					sconst_4;
+					sushr;
+					bspush 15;
+					sand;
+					sadd;
+					sstore_1;
+					sload_1;
+					s2b;
+					sreturn;
+		}
+
+		.method public regen_fg([BS[BS[B)V 1 {
+			.stack 4;
+			.locals 9;
+
+				L0:	aload_1;
+					ifnonnull L2;
+				L1:	sspush 30977;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L2:	aload_3;
+					ifnonnull L4;
+				L3:	sspush 30978;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L4:	sconst_0;
+					sstore 6;
+				L5:	sload 6;
+					sconst_4;
+					if_scmpge_w L25;
+				L6:	new 86;		// com/test/SHAKE256JC
+					dup;
+					invokespecial 87;		// com/test/SHAKE256JC.<init>()V
+					astore 7;
+					aload 7;
+					aload 5;
+					sconst_0;
+					bspush 24;
+					invokevirtual 88;		// update([BSS)V
+					sconst_1;
+					newarray 11;
+					astore 8;
+					aload 8;
+					sconst_0;
+					sload 6;
+					bastore;
+					aload 7;
+					aload 8;
+					sconst_0;
+					sconst_1;
+					invokevirtual 88;		// update([BSS)V
+					bspush 8;
+					newarray 11;
+					astore 9;
+					sconst_0;
+					sstore 10;
+				L7:	sload 10;
+					sspush 1024;
+					if_scmpge_w L24;
+				L8:	aload 7;
+					aload 9;
+					sconst_0;
+					bspush 8;
+					invokevirtual 89;		// doOutput([BSS)S
+					pop;
+					sconst_0;
+					sstore 11;
+				L9:	sload 11;
+					bspush 8;
+					if_scmpge L21;
+				L10:	aload 9;
+					sload 11;
+					baload;
+					invokestatic 90;		// com/test/Hawk.popcount8(B)B
+					sconst_4;
+					ssub;
+					s2b;
+					sstore 12;
+					sload 10;
+					sspush 512;
+					if_scmpge L16;
+				L11:	sload_2;
+					sload 10;
+					sadd;
+					sload 6;
+					sconst_3;
+					sshl;
+					sadd;
+					sload 11;
+					sadd;
+					sstore 13;
+				L12:	aload_1;
+					sload 13;
+					sload 12;
+					bastore;
+				L13:	goto L15;
+				L14:	astore 14;
+					sspush 31232;
+					sload 11;
+					sadd;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L15:	goto L20;
+				L16:	sload 4;
+					sload 10;
+					sspush 512;
+					ssub;
+					sadd;
+					sload 6;
+					sconst_3;
+					sshl;
+					sadd;
+					sload 11;
+					sadd;
+					sstore 13;
+				L17:	aload_3;
+					sload 13;
+					sload 12;
+					bastore;
+				L18:	goto L20;
+				L19:	astore 14;
+					sspush 31488;
+					sload 11;
+					sadd;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L20:	sinc 11 1;
+					goto L9;
+				L21:	sload 10;
+					sspush 512;
+					if_scmpne L23;
+				L22:	sspush 31744;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L23:	sinc 10 32;
+					goto_w L7;
+				L24:	sload 6;
+					sconst_1;
+					sadd;
+					s2b;
+					sstore 6;
+					goto_w L5;
+				L25:	return;
+			.exceptionTable {
+				// start_block end_block handler_block catch_type_index
+				L12 L13 L14 85;
+				L17 L18 L19 85;
+			}
+		}
+
+		.method public static enc32le([BSSS)V 2 {
+			.stack 4;
+			.locals 0;
+
+				L0:	aload_0;
+					sload_1;
+					sload_3;
+					s2b;
+					bastore;
+					aload_0;
+					sload_1;
+					sconst_1;
+					sadd;
+					sload_3;
+					bspush 8;
+					sushr;
+					s2b;
+					bastore;
+					aload_0;
+					sload_1;
+					sconst_2;
+					sadd;
+					sload_2;
+					s2b;
+					bastore;
+					aload_0;
+					sload_1;
+					sconst_3;
+					sadd;
+					sload_2;
+					bspush 8;
+					sushr;
+					s2b;
+					bastore;
+					return;
+		}
+
+		.method private static dec32le([BS[SS)V {
+			.stack 4;
+			.locals 2;
+
+				L0:	aload_0;
+					sload_1;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_1;
+					sconst_1;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					sstore 4;
+					aload_0;
+					sload_1;
+					sconst_2;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_1;
+					sconst_3;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					sstore 5;
+					aload_2;
+					sload_3;
+					sload 5;
+					sastore;
+					aload_2;
+					sload_3;
+					sconst_1;
+					sadd;
+					sload 4;
+					sastore;
+					return;
+		}
+
+		.method private static dec16le([BS)S {
+			.stack 4;
+			.locals 0;
+
+				L0:	aload_0;
+					sload_1;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_1;
+					sconst_1;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					sreturn;
+		}
+
+		.method private static uLessThan(SSSS)S {
+			.stack 3;
+			.locals 0;
+
+				L0:	sload_0;
+					sload_2;
+					if_scmpeq L5;
+				L1:	sload_0;
+					sspush -32768;
+					sxor;
+					sload_2;
+					sspush -32768;
+					sxor;
+					if_scmpge L3;
+				L2:	sconst_1;
+					goto L4;
+				L3:	sconst_0;
+				L4:	sreturn;
+				L5:	sload_1;
+					sspush -32768;
+					sxor;
+					sload_3;
+					sspush -32768;
+					sxor;
+					if_scmpge L7;
+				L6:	sconst_1;
+					goto L8;
+				L7:	sconst_0;
+				L8:	sreturn;
+		}
+
+		.method private static extract_lowbit(S[B[B)V {
+			.stack 3;
+			.locals 4;
+
+				L0:	sconst_1;
+					sload_0;
+					sshl;
+					sstore_3;
+					sconst_0;
+					sstore 4;
+				L1:	sload 4;
+					sload_3;
+					if_scmpge L8;
+				L2:	sconst_0;
+					sstore 5;
+					sconst_0;
+					sstore 6;
+				L3:	sload 6;
+					bspush 8;
+					if_scmpge L7;
+				L4:	aload_2;
+					sload 4;
+					sload 6;
+					sadd;
+					baload;
+					sconst_1;
+					sand;
+					ifeq L6;
+				L5:	sload 5;
+					sconst_1;
+					sload 6;
+					sshl;
+					s2b;
+					sor;
+					s2b;
+					sstore 5;
+				L6:	sinc 6 1;
+					goto L3;
+				L7:	aload_1;
+					sload 4;
+					sconst_3;
+					sshr;
+					sload 5;
+					bastore;
+					sinc 4 8;
+					goto L1;
+				L8:	return;
+		}
+
+		.method static tbmask(S)S {
+			.stack 2;
+			.locals 0;
+
+				L0:	sload_0;
+					bspush 15;
+					sshr;
+					sreturn;
+		}
+
+		.method public static bpXor64([BS[BS[BS)V 3 {
+			.stack 4;
+			.locals 6;
+
+				L0:	sconst_2;
+					newarray 12;
+					astore 6;
+					sconst_2;
+					newarray 12;
+					astore 7;
+					aload_2;
+					sload_3;
+					aload 6;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					aload 4;
+					sload 5;
+					aload 7;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					aload 6;
+					sconst_0;
+					saload;
+					aload 7;
+					sconst_0;
+					saload;
+					sxor;
+					sstore 8;
+					aload 6;
+					sconst_1;
+					saload;
+					aload 7;
+					sconst_1;
+					saload;
+					sxor;
+					sstore 9;
+					aload_2;
+					sload_3;
+					sconst_4;
+					sadd;
+					aload 6;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					aload 4;
+					sload 5;
+					sconst_4;
+					sadd;
+					aload 7;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					aload 6;
+					sconst_0;
+					saload;
+					aload 7;
+					sconst_0;
+					saload;
+					sxor;
+					sstore 10;
+					aload 6;
+					sconst_1;
+					saload;
+					aload 7;
+					sconst_1;
+					saload;
+					sxor;
+					sstore 11;
+					aload_0;
+					sload_1;
+					sload 8;
+					sload 9;
+					invokestatic 92;		// com/test/Hawk.enc32le([BSSS)V
+					aload_0;
+					sload_1;
+					sconst_4;
+					sadd;
+					sload 10;
+					sload 11;
+					invokestatic 92;		// com/test/Hawk.enc32le([BSSS)V
+					return;
+		}
+
+		.method public static mul64(SSSS[SS)V 4 {
+			.stack 4;
+			.locals 13;
+
+				L0:	new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 6;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 7;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 8;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 9;
+					sload_1;
+					sload_3;
+					aload 6;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					sload_1;
+					sload_2;
+					aload 7;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					sload_0;
+					sload_3;
+					aload 8;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					sload_0;
+					sload_2;
+					aload 9;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					aload 6;
+					getfield_s 33;		// short com/test/U32.lo
+					sstore 10;
+					aload 6;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 7;
+					getfield_s 33;		// short com/test/U32.lo
+					sadd;
+					sstore 11;
+					sconst_0;
+					sload 11;
+					sconst_0;
+					aload 6;
+					getfield_s 34;		// short com/test/U32.hi
+					invokestatic 98;		// com/test/Hawk.uLessThan(SSSS)S
+					sstore 12;
+					sload 11;
+					sstore 13;
+					sload 11;
+					aload 8;
+					getfield_s 33;		// short com/test/U32.lo
+					sadd;
+					sstore 11;
+					sconst_0;
+					sload 11;
+					sconst_0;
+					sload 13;
+					invokestatic 98;		// com/test/Hawk.uLessThan(SSSS)S
+					ifeq L2;
+				L1:	sinc 12 1;
+				L2:	sload 11;
+					sstore 14;
+					aload 7;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 8;
+					getfield_s 34;		// short com/test/U32.hi
+					sadd;
+					sstore 15;
+					sconst_0;
+					sload 15;
+					sconst_0;
+					aload 7;
+					getfield_s 34;		// short com/test/U32.hi
+					invokestatic 98;		// com/test/Hawk.uLessThan(SSSS)S
+					sstore 16;
+					sload 15;
+					sstore 13;
+					sload 15;
+					aload 9;
+					getfield_s 33;		// short com/test/U32.lo
+					sadd;
+					sstore 15;
+					sconst_0;
+					sload 15;
+					sconst_0;
+					sload 13;
+					invokestatic 98;		// com/test/Hawk.uLessThan(SSSS)S
+					ifeq L4;
+				L3:	sinc 16 1;
+				L4:	sload 15;
+					sstore 13;
+					sload 15;
+					sload 12;
+					sadd;
+					sstore 15;
+					sconst_0;
+					sload 15;
+					sconst_0;
+					sload 13;
+					invokestatic 98;		// com/test/Hawk.uLessThan(SSSS)S
+					ifeq L6;
+				L5:	sinc 16 1;
+				L6:	sload 15;
+					sstore 17;
+					aload 9;
+					getfield_s 34;		// short com/test/U32.hi
+					sload 16;
+					sadd;
+					sstore 18;
+					aload 4;
+					sload 5;
+					sload 10;
+					sastore;
+					aload 4;
+					sload 5;
+					sconst_1;
+					sadd;
+					sload 14;
+					sastore;
+					aload 4;
+					sload 5;
+					sconst_2;
+					sadd;
+					sload 17;
+					sastore;
+					aload 4;
+					sload 5;
+					sconst_3;
+					sadd;
+					sload 18;
+					sastore;
+					return;
+		}
+
+		.method public static bpMul32(SSSS[SS)V 5 {
+			.stack 6;
+			.locals 23;
+
+				L0:	new 93;		// com/test/U32
+					dup;
+					sload_0;
+					sload_1;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 6;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 7;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 8;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 9;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 10;
+					aload 6;
+					sspush 4369;
+					aload 7;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 6;
+					sspush 8738;
+					aload 8;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 6;
+					sspush 17476;
+					aload 9;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 6;
+					sspush -30584;
+					aload 10;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					new 93;		// com/test/U32
+					dup;
+					sload_2;
+					sload_3;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 11;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 12;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 13;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 14;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 15;
+					aload 11;
+					sspush 4369;
+					aload 12;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 11;
+					sspush 8738;
+					aload 13;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 11;
+					sspush 17476;
+					aload 14;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 11;
+					sspush -30584;
+					aload 15;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 16;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 17;
+					sconst_4;
+					newarray 12;
+					astore 18;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 19;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 20;
+					aload 7;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 7;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 12;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 12;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 16;
+					aload 19;
+					aload 16;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 17;
+					aload 20;
+					aload 17;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 8;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 8;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 15;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 15;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 16;
+					aload 19;
+					aload 16;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 17;
+					aload 20;
+					aload 17;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 9;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 9;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 14;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 14;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 16;
+					aload 19;
+					aload 16;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 17;
+					aload 20;
+					aload 17;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 10;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 10;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 13;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 13;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 16;
+					aload 19;
+					aload 16;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 17;
+					aload 20;
+					aload 17;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 21;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 22;
+					aload 7;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 7;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 13;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 13;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 21;
+					aload 19;
+					aload 21;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 22;
+					aload 20;
+					aload 22;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 8;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 8;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 12;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 12;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 21;
+					aload 19;
+					aload 21;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 22;
+					aload 20;
+					aload 22;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 9;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 9;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 15;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 15;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 21;
+					aload 19;
+					aload 21;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 22;
+					aload 20;
+					aload 22;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 10;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 10;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 14;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 14;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 21;
+					aload 19;
+					aload 21;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 22;
+					aload 20;
+					aload 22;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 23;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 24;
+					aload 7;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 7;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 14;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 14;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 23;
+					aload 19;
+					aload 23;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 24;
+					aload 20;
+					aload 24;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 8;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 8;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 13;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 13;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 23;
+					aload 19;
+					aload 23;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 24;
+					aload 20;
+					aload 24;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 9;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 9;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 12;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 12;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 23;
+					aload 19;
+					aload 23;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 24;
+					aload 20;
+					aload 24;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 10;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 10;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 15;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 15;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 23;
+					aload 19;
+					aload 23;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 24;
+					aload 20;
+					aload 24;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 25;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 26;
+					aload 7;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 7;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 15;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 15;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 25;
+					aload 19;
+					aload 25;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 26;
+					aload 20;
+					aload 26;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 8;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 8;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 14;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 14;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 25;
+					aload 19;
+					aload 25;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 26;
+					aload 20;
+					aload 26;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 9;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 9;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 13;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 13;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 25;
+					aload 19;
+					aload 25;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 26;
+					aload 20;
+					aload 26;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 10;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 10;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 12;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 12;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 18;
+					sconst_0;
+					invokestatic 101;		// com/test/Hawk.mul64(SSSS[SS)V
+					aload 19;
+					aload 18;
+					sconst_3;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 19;
+					aload 18;
+					sconst_2;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 20;
+					aload 18;
+					sconst_1;
+					saload;
+					putfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					aload 18;
+					sconst_0;
+					saload;
+					putfield_s 33;		// short com/test/U32.lo
+					aload 25;
+					aload 19;
+					aload 25;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 26;
+					aload 20;
+					aload 26;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 16;
+					sspush 4369;
+					aload 16;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 17;
+					sspush 4369;
+					aload 17;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 21;
+					sspush 8738;
+					aload 21;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 22;
+					sspush 8738;
+					aload 22;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 23;
+					sspush 17476;
+					aload 23;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 24;
+					sspush 17476;
+					aload 24;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 25;
+					sspush -30584;
+					aload 25;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					aload 26;
+					sspush -30584;
+					aload 26;
+					invokestatic 100;		// com/test/U32.andMask(Lcom/test/U32;SLcom/test/U32;)V
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 27;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 28;
+					aload 16;
+					aload 21;
+					aload 27;
+					invokestatic 103;		// com/test/U32.or(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 27;
+					aload 23;
+					aload 27;
+					invokestatic 103;		// com/test/U32.or(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 27;
+					aload 25;
+					aload 27;
+					invokestatic 103;		// com/test/U32.or(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 17;
+					aload 22;
+					aload 28;
+					invokestatic 103;		// com/test/U32.or(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 28;
+					aload 24;
+					aload 28;
+					invokestatic 103;		// com/test/U32.or(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 28;
+					aload 26;
+					aload 28;
+					invokestatic 103;		// com/test/U32.or(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 4;
+					sload 5;
+					aload 27;
+					getfield_s 33;		// short com/test/U32.lo
+					sastore;
+					aload 4;
+					sload 5;
+					sconst_1;
+					sadd;
+					aload 27;
+					getfield_s 34;		// short com/test/U32.hi
+					sastore;
+					aload 4;
+					sload 5;
+					sconst_2;
+					sadd;
+					aload 28;
+					getfield_s 33;		// short com/test/U32.lo
+					sastore;
+					aload 4;
+					sload 5;
+					sconst_3;
+					sadd;
+					aload 28;
+					getfield_s 34;		// short com/test/U32.hi
+					sastore;
+					return;
+		}
+
+		.method public static bpMuladd64([BS[BS[BS[BS)V 6 {
+			.stack 6;
+			.locals 18;
+
+				L0:	bspush 8;
+					newarray 12;
+					astore 8;
+					aload_2;
+					sload_3;
+					aload 8;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					new 93;		// com/test/U32
+					dup;
+					aload 8;
+					sconst_0;
+					saload;
+					aload 8;
+					sconst_1;
+					saload;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 9;
+					aload_2;
+					sload_3;
+					sconst_4;
+					sadd;
+					aload 8;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					new 93;		// com/test/U32
+					dup;
+					aload 8;
+					sconst_0;
+					saload;
+					aload 8;
+					sconst_1;
+					saload;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 10;
+					aload 4;
+					sload 5;
+					aload 8;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					new 93;		// com/test/U32
+					dup;
+					aload 8;
+					sconst_0;
+					saload;
+					aload 8;
+					sconst_1;
+					saload;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 11;
+					aload 4;
+					sload 5;
+					sconst_4;
+					sadd;
+					aload 8;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					new 93;		// com/test/U32
+					dup;
+					aload 8;
+					sconst_0;
+					saload;
+					aload 8;
+					sconst_1;
+					saload;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 12;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 13;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 14;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 15;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 16;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 17;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 18;
+					sconst_4;
+					newarray 12;
+					astore 19;
+					aload 9;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 9;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 11;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 11;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 19;
+					sconst_0;
+					invokestatic 104;		// com/test/Hawk.bpMul32(SSSS[SS)V
+					aload 13;
+					aload 19;
+					sconst_1;
+					saload;
+					aload 19;
+					sconst_0;
+					saload;
+					invokestatic 105;		// com/test/U32.set(Lcom/test/U32;SS)V
+					aload 14;
+					aload 19;
+					sconst_3;
+					saload;
+					aload 19;
+					sconst_2;
+					saload;
+					invokestatic 105;		// com/test/U32.set(Lcom/test/U32;SS)V
+					aload 10;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 10;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 12;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 12;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 19;
+					sconst_0;
+					invokestatic 104;		// com/test/Hawk.bpMul32(SSSS[SS)V
+					aload 15;
+					aload 19;
+					sconst_1;
+					saload;
+					aload 19;
+					sconst_0;
+					saload;
+					invokestatic 105;		// com/test/U32.set(Lcom/test/U32;SS)V
+					aload 16;
+					aload 19;
+					sconst_3;
+					saload;
+					aload 19;
+					sconst_2;
+					saload;
+					invokestatic 105;		// com/test/U32.set(Lcom/test/U32;SS)V
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 20;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 21;
+					aload 9;
+					aload 10;
+					aload 20;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 11;
+					aload 12;
+					aload 21;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 20;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 20;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 21;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 21;
+					getfield_s 33;		// short com/test/U32.lo
+					aload 19;
+					sconst_0;
+					invokestatic 104;		// com/test/Hawk.bpMul32(SSSS[SS)V
+					aload 17;
+					aload 19;
+					sconst_1;
+					saload;
+					aload 19;
+					sconst_0;
+					saload;
+					invokestatic 105;		// com/test/U32.set(Lcom/test/U32;SS)V
+					aload 18;
+					aload 19;
+					sconst_3;
+					saload;
+					aload 19;
+					sconst_2;
+					saload;
+					invokestatic 105;		// com/test/U32.set(Lcom/test/U32;SS)V
+					aload 17;
+					aload 13;
+					aload 17;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 18;
+					aload 14;
+					aload 18;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 17;
+					aload 15;
+					aload 17;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 18;
+					aload 16;
+					aload 18;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload_0;
+					sload_1;
+					aload 8;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					new 93;		// com/test/U32
+					dup;
+					aload 8;
+					sconst_0;
+					saload;
+					aload 8;
+					sconst_1;
+					saload;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 22;
+					aload_0;
+					sload_1;
+					sconst_4;
+					sadd;
+					aload 8;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					new 93;		// com/test/U32
+					dup;
+					aload 8;
+					sconst_0;
+					saload;
+					aload 8;
+					sconst_1;
+					saload;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 23;
+					aload_0;
+					sload_1;
+					bspush 8;
+					sadd;
+					aload 8;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					new 93;		// com/test/U32
+					dup;
+					aload 8;
+					sconst_0;
+					saload;
+					aload 8;
+					sconst_1;
+					saload;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 24;
+					aload_0;
+					sload_1;
+					bspush 12;
+					sadd;
+					aload 8;
+					sconst_0;
+					invokestatic 91;		// com/test/Hawk.dec32le([BS[SS)V
+					new 93;		// com/test/U32
+					dup;
+					aload 8;
+					sconst_0;
+					saload;
+					aload 8;
+					sconst_1;
+					saload;
+					invokespecial 99;		// com/test/U32.<init>(SS)V
+					astore 25;
+					aload 23;
+					aload 13;
+					aload 23;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 23;
+					aload 18;
+					aload 23;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 22;
+					aload 14;
+					aload 22;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 25;
+					aload 15;
+					aload 25;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 24;
+					aload 16;
+					aload 24;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload 24;
+					aload 17;
+					aload 24;
+					invokestatic 102;		// com/test/U32.xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V
+					aload_0;
+					sload_1;
+					aload 22;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 22;
+					getfield_s 33;		// short com/test/U32.lo
+					invokestatic 92;		// com/test/Hawk.enc32le([BSSS)V
+					aload_0;
+					sload_1;
+					sconst_4;
+					sadd;
+					aload 23;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 23;
+					getfield_s 33;		// short com/test/U32.lo
+					invokestatic 92;		// com/test/Hawk.enc32le([BSSS)V
+					aload_0;
+					sload_1;
+					bspush 8;
+					sadd;
+					aload 24;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 24;
+					getfield_s 33;		// short com/test/U32.lo
+					invokestatic 92;		// com/test/Hawk.enc32le([BSSS)V
+					aload_0;
+					sload_1;
+					bspush 12;
+					sadd;
+					aload 25;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 25;
+					getfield_s 33;		// short com/test/U32.lo
+					invokestatic 92;		// com/test/Hawk.enc32le([BSSS)V
+					return;
+		}
+
+		.method private static bpXor512([BS[BS[BS)V {
+			.stack 6;
+			.locals 1;
+
+				L0:	sconst_0;
+					sstore 6;
+				L1:	sload 6;
+					bspush 64;
+					if_scmpge L3;
+				L2:	aload_0;
+					sload_1;
+					sload 6;
+					sadd;
+					aload_2;
+					sload_3;
+					sload 6;
+					sadd;
+					baload;
+					aload 4;
+					sload 5;
+					sload 6;
+					sadd;
+					baload;
+					sxor;
+					bastore;
+					sinc 6 1;
+					goto L1;
+				L3:	return;
+		}
+
+		.method public static bpXor128([BS[BS[BS)V 7 {
+			.stack 7;
+			.locals 0;
+
+				L0:	aload_0;
+					sload_1;
+					aload_2;
+					sload_3;
+					aload 4;
+					sload 5;
+					invokestatic 106;		// com/test/Hawk.bpXor64([BS[BS[BS)V
+					aload_0;
+					sload_1;
+					bspush 8;
+					sadd;
+					aload_2;
+					sload_3;
+					bspush 8;
+					sadd;
+					aload 4;
+					sload 5;
+					bspush 8;
+					sadd;
+					invokestatic 106;		// com/test/Hawk.bpXor64([BS[BS[BS)V
+					return;
+		}
+
+		.method public static bpMuladd128([BS[BS[BS[BS)V 8 {
+			.stack 9;
+			.locals 2;
+
+				L0:	sload 7;
+					sstore 8;
+					sload 8;
+					bspush 16;
+					sadd;
+					sstore 9;
+					aload 6;
+					sload 9;
+					aload_2;
+					sload_3;
+					aload_2;
+					sload_3;
+					bspush 8;
+					sadd;
+					invokestatic 106;		// com/test/Hawk.bpXor64([BS[BS[BS)V
+					aload 6;
+					sload 9;
+					bspush 8;
+					sadd;
+					aload 4;
+					sload 5;
+					aload 4;
+					sload 5;
+					bspush 8;
+					sadd;
+					invokestatic 106;		// com/test/Hawk.bpXor64([BS[BS[BS)V
+					aload 6;
+					sload 8;
+					aload_0;
+					sload_1;
+					aload_0;
+					sload_1;
+					bspush 16;
+					sadd;
+					invokestatic 107;		// com/test/Hawk.bpXor128([BS[BS[BS)V
+					aload 6;
+					sload 8;
+					aload 6;
+					sload 9;
+					aload 6;
+					sload 9;
+					bspush 8;
+					sadd;
+					aload 6;
+					sload 9;
+					bspush 16;
+					sadd;
+					invokestatic 108;		// com/test/Hawk.bpMuladd64([BS[BS[BS[BS)V
+					aload_0;
+					sload_1;
+					aload_2;
+					sload_3;
+					aload 4;
+					sload 5;
+					aload 6;
+					sload 9;
+					invokestatic 108;		// com/test/Hawk.bpMuladd64([BS[BS[BS[BS)V
+					aload_0;
+					sload_1;
+					bspush 16;
+					sadd;
+					aload_2;
+					sload_3;
+					bspush 8;
+					sadd;
+					aload 4;
+					sload 5;
+					bspush 8;
+					sadd;
+					aload 6;
+					sload 9;
+					invokestatic 108;		// com/test/Hawk.bpMuladd64([BS[BS[BS[BS)V
+					aload 6;
+					sload 8;
+					aload 6;
+					sload 8;
+					aload_0;
+					sload_1;
+					invokestatic 107;		// com/test/Hawk.bpXor128([BS[BS[BS)V
+					aload 6;
+					sload 8;
+					aload 6;
+					sload 8;
+					aload_0;
+					sload_1;
+					bspush 16;
+					sadd;
+					invokestatic 107;		// com/test/Hawk.bpXor128([BS[BS[BS)V
+					aload_0;
+					sload_1;
+					bspush 8;
+					sadd;
+					aload_0;
+					sload_1;
+					bspush 8;
+					sadd;
+					aload 6;
+					sload 8;
+					invokestatic 107;		// com/test/Hawk.bpXor128([BS[BS[BS)V
+					return;
+		}
+
+		.method private static bpXor256([BS[BS[BS)V {
+			.stack 6;
+			.locals 1;
+
+				L0:	sconst_0;
+					sstore 6;
+				L1:	sload 6;
+					bspush 32;
+					if_scmpge L3;
+				L2:	aload_0;
+					sload_1;
+					sload 6;
+					sadd;
+					aload_2;
+					sload_3;
+					sload 6;
+					sadd;
+					baload;
+					aload 4;
+					sload 5;
+					sload 6;
+					sadd;
+					baload;
+					sxor;
+					bastore;
+					sinc 6 1;
+					goto L1;
+				L3:	return;
+		}
+
+		.method public static bpMuladd256([BS[BS[BS[BS)V 9 {
+			.stack 8;
+			.locals 5;
+
+				L0:	sload 7;
+					sstore 10;
+					sload 10;
+					bspush 32;
+					sadd;
+					sstore 11;
+					sload 11;
+					bspush 32;
+					sadd;
+					sstore 12;
+					aload 6;
+					sload 11;
+					aload_2;
+					sload_3;
+					aload_2;
+					sload_3;
+					bspush 16;
+					sadd;
+					invokestatic 107;		// com/test/Hawk.bpXor128([BS[BS[BS)V
+					aload 6;
+					sload 11;
+					bspush 16;
+					sadd;
+					aload 4;
+					sload 5;
+					aload 4;
+					sload 5;
+					bspush 16;
+					sadd;
+					invokestatic 107;		// com/test/Hawk.bpXor128([BS[BS[BS)V
+					aload 6;
+					sload 10;
+					aload_0;
+					sload_1;
+					aload_0;
+					sload_1;
+					bspush 32;
+					sadd;
+					invokestatic 109;		// com/test/Hawk.bpXor256([BS[BS[BS)V
+					aload 6;
+					sload 10;
+					aload 6;
+					sload 11;
+					aload 6;
+					sload 11;
+					bspush 16;
+					sadd;
+					aload 6;
+					sload 12;
+					invokestatic 110;		// com/test/Hawk.bpMuladd128([BS[BS[BS[BS)V
+					aload_0;
+					sload_1;
+					aload_2;
+					sload_3;
+					aload 4;
+					sload 5;
+					aload 6;
+					sload 12;
+					invokestatic 110;		// com/test/Hawk.bpMuladd128([BS[BS[BS[BS)V
+					aload_0;
+					sload_1;
+					bspush 32;
+					sadd;
+					aload_2;
+					sload_3;
+					bspush 16;
+					sadd;
+					aload 4;
+					sload 5;
+					bspush 16;
+					sadd;
+					aload 6;
+					sload 12;
+					invokestatic 110;		// com/test/Hawk.bpMuladd128([BS[BS[BS[BS)V
+					aload 6;
+					sload 10;
+					aload 6;
+					sload 10;
+					aload_0;
+					sload_1;
+					invokestatic 109;		// com/test/Hawk.bpXor256([BS[BS[BS)V
+					aload 6;
+					sload 10;
+					aload 6;
+					sload 10;
+					aload_0;
+					sload_1;
+					bspush 32;
+					sadd;
+					invokestatic 109;		// com/test/Hawk.bpXor256([BS[BS[BS)V
+					aload_0;
+					sload_1;
+					bspush 16;
+					sadd;
+					aload_0;
+					sload_1;
+					bspush 16;
+					sadd;
+					aload 6;
+					sload 10;
+					invokestatic 109;		// com/test/Hawk.bpXor256([BS[BS[BS)V
+					return;
+		}
+
+		.method private static bpXor(S[BS[BS[BS)V {
+			.stack 6;
+			.locals 2;
+
+				L0:	sload_0;
+					sconst_3;
+					sshr;
+					sstore 7;
+					sconst_0;
+					sstore 8;
+				L1:	sload 8;
+					sload 7;
+					if_scmpge L3;
+				L2:	aload_1;
+					sload_2;
+					sload 8;
+					sadd;
+					aload_3;
+					sload 4;
+					sload 8;
+					sadd;
+					baload;
+					aload 5;
+					sload 6;
+					sload 8;
+					sadd;
+					baload;
+					sxor;
+					bastore;
+					sinc 8 1;
+					goto L1;
+				L3:	return;
+		}
+
+		.method private static bpMulmod(SS[BS[BS[BS[BS)V {
+			.stack 8;
+			.locals 4;
+
+				L0:	sload_0;
+					bspush 8;
+					sdiv;
+					sstore 10;
+					sload_1;
+					bspush 8;
+					sdiv;
+					sstore 11;
+					sload 9;
+					sstore 12;
+					sload 12;
+					sload 10;
+					sadd;
+					sstore 13;
+					sload_1;
+					aload_2;
+					sload_3;
+					aload 4;
+					sload 5;
+					aload 4;
+					sload 5;
+					sload 11;
+					sadd;
+					invokestatic 111;		// com/test/Hawk.bpXor(S[BS[BS[BS)V
+					sload_1;
+					aload_2;
+					sload_3;
+					sload 11;
+					sadd;
+					aload 6;
+					sload 7;
+					aload 6;
+					sload 7;
+					sload 11;
+					sadd;
+					invokestatic 111;		// com/test/Hawk.bpXor(S[BS[BS[BS)V
+					sload_0;
+					aload 8;
+					sload 12;
+					aload_2;
+					sload_3;
+					aload_2;
+					sload_3;
+					sload 11;
+					sadd;
+					invokestatic 111;		// com/test/Hawk.bpXor(S[BS[BS[BS)V
+					aload 8;
+					sload 12;
+					sload 10;
+					sconst_0;
+					invokestatic 112;		// javacard/framework/Util.arrayFillNonAtomic([BSSB)S
+					pop;
+					aload 8;
+					sload 12;
+					aload_2;
+					sload_3;
+					aload_2;
+					sload_3;
+					sload 11;
+					sadd;
+					aload 8;
+					sload 13;
+					invokestatic 113;		// com/test/Hawk.bpMuladd256([BS[BS[BS[BS)V
+					aload_2;
+					sload_3;
+					sload 10;
+					sconst_0;
+					invokestatic 112;		// javacard/framework/Util.arrayFillNonAtomic([BSSB)S
+					pop;
+					aload_2;
+					sload_3;
+					aload 4;
+					sload 5;
+					aload 6;
+					sload 7;
+					aload 8;
+					sload 13;
+					invokestatic 113;		// com/test/Hawk.bpMuladd256([BS[BS[BS[BS)V
+					aload_2;
+					sload_3;
+					aload 4;
+					sload 5;
+					sload 11;
+					sadd;
+					aload 6;
+					sload 7;
+					sload 11;
+					sadd;
+					aload 8;
+					sload 13;
+					invokestatic 113;		// com/test/Hawk.bpMuladd256([BS[BS[BS[BS)V
+					sload_0;
+					aload 8;
+					sload 12;
+					aload 8;
+					sload 12;
+					aload_2;
+					sload_3;
+					invokestatic 111;		// com/test/Hawk.bpXor(S[BS[BS[BS)V
+					sload_1;
+					aload_2;
+					sload_3;
+					aload_2;
+					sload_3;
+					aload 8;
+					sload 12;
+					sload 11;
+					sadd;
+					invokestatic 111;		// com/test/Hawk.bpXor(S[BS[BS[BS)V
+					sload_1;
+					aload_2;
+					sload_3;
+					sload 11;
+					sadd;
+					aload_2;
+					sload_3;
+					sload 11;
+					sadd;
+					aload 8;
+					sload 12;
+					invokestatic 111;		// com/test/Hawk.bpXor(S[BS[BS[BS)V
+					return;
+		}
+
+		.method public static basisM2Mul(S[BS[BS[BS[BS[BS[BS[BS[BS[BS)V 10 {
+			.stack 10;
+			.locals 4;
+
+				L0:	sconst_1;
+					sload_0;
+					sshl;
+					sstore 19;
+					sload 19;
+					sconst_3;
+					sshr;
+					sstore 20;
+					sload 18;
+					sstore 21;
+					sload 21;
+					sload 20;
+					sadd;
+					sstore 22;
+					sspush 512;
+					sspush 256;
+					aload_1;
+					sload_2;
+					aload 5;
+					sload 6;
+					aload 9;
+					sload 10;
+					aload 17;
+					sload 22;
+					invokestatic 114;		// com/test/Hawk.bpMulmod(SS[BS[BS[BS[BS)V
+					sspush 512;
+					sspush 256;
+					aload 17;
+					sload 21;
+					aload 7;
+					sload 8;
+					aload 13;
+					sload 14;
+					aload 17;
+					sload 22;
+					invokestatic 114;		// com/test/Hawk.bpMulmod(SS[BS[BS[BS[BS)V
+					aload_1;
+					sload_2;
+					aload_1;
+					sload_2;
+					aload 17;
+					sload 21;
+					invokestatic 115;		// com/test/Hawk.bpXor512([BS[BS[BS)V
+					sspush 512;
+					sspush 256;
+					aload_3;
+					sload 4;
+					aload 5;
+					sload 6;
+					aload 11;
+					sload 12;
+					aload 17;
+					sload 22;
+					invokestatic 114;		// com/test/Hawk.bpMulmod(SS[BS[BS[BS[BS)V
+					sspush 512;
+					sspush 256;
+					aload 17;
+					sload 21;
+					aload 7;
+					sload 8;
+					aload 15;
+					sload 16;
+					aload 17;
+					sload 22;
+					invokestatic 114;		// com/test/Hawk.bpMulmod(SS[BS[BS[BS[BS)V
+					aload_3;
+					sload 4;
+					aload_3;
+					sload 4;
+					aload 17;
+					sload 21;
+					invokestatic 115;		// com/test/Hawk.bpXor512([BS[BS[BS)V
+					return;
+		}
+
+		.method public mq18433SetSmall(B)S 2 {
+			.stack 4;
+			.locals 2;
+
+				L0:	sload_1;
+					sstore_2;
+					sload_2;
+					sneg;
+					sstore_3;
+					sload_3;
+					sspush 18433;
+					sload_3;
+					bspush 16;
+					sushr;
+					sand;
+					sadd;
+					sstore_3;
+					sspush 18433;
+					sload_3;
+					ssub;
+					sreturn;
+		}
+
+		.method public mq18433PolySetSmall(S[SS[BS)V 3 {
+			.stack 6;
+			.locals 2;
+
+				L0:	sconst_1;
+					sload_1;
+					sshl;
+					sstore 6;
+					sconst_0;
+					sstore 7;
+				L1:	sload 7;
+					sload 6;
+					if_scmpge L3;
+				L2:	aload_2;
+					sload_3;
+					sload 7;
+					sadd;
+					aload_0;
+					aload 4;
+					sload 5;
+					sload 7;
+					sadd;
+					baload;
+					invokevirtual 116;		// mq18433SetSmall(B)S
+					sastore;
+					sinc 7 1;
+					goto L1;
+				L3:	return;
+		}
+
+		.method public mq18433Sub(SS)S 4 {
+			.stack 3;
+			.locals 2;
+
+				L0:	sload_2;
+					sload_1;
+					ssub;
+					sstore_3;
+					sload_3;
+					bspush 15;
+					sshr;
+					sstore 4;
+					sload_3;
+					sspush 18433;
+					sload 4;
+					sand;
+					sadd;
+					sstore_3;
+					sspush 18433;
+					sload_3;
+					ssub;
+					sreturn;
+		}
+
+		.method public mq18433Add(SS)S 5 {
+			.stack 3;
+			.locals 3;
+
+				L0:	sload_1;
+					sload_2;
+					sadd;
+					sstore_3;
+					sload_3;
+					sspush 18433;
+					ssub;
+					sstore 4;
+					sload 4;
+					bspush 15;
+					sshr;
+					sstore 5;
+					sload 4;
+					sspush 18433;
+					sload 5;
+					sand;
+					sadd;
+					sreturn;
+		}
+
+		.method static mul16(SSLcom/test/U32;)V {
+			.stack 4;
+			.locals 9;
+
+				L0:	sload_0;
+					sspush 255;
+					sand;
+					sstore_3;
+					sload_0;
+					bspush 8;
+					sushr;
+					sspush 255;
+					sand;
+					sstore 4;
+					sload_1;
+					sspush 255;
+					sand;
+					sstore 5;
+					sload_1;
+					bspush 8;
+					sushr;
+					sspush 255;
+					sand;
+					sstore 6;
+					sload_3;
+					sload 5;
+					smul;
+					sstore 7;
+					sload_3;
+					sload 6;
+					smul;
+					sstore 8;
+					sload 4;
+					sload 5;
+					smul;
+					sstore 9;
+					sload 4;
+					sload 6;
+					smul;
+					sstore 10;
+					sload 7;
+					bspush 8;
+					sushr;
+					sload 8;
+					sspush 255;
+					sand;
+					sadd;
+					sload 9;
+					sspush 255;
+					sand;
+					sadd;
+					sstore 11;
+					aload_2;
+					sload 7;
+					sspush 255;
+					sand;
+					sload 11;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 33;		// short com/test/U32.lo
+					aload_2;
+					sload 10;
+					sload 8;
+					bspush 8;
+					sushr;
+					sadd;
+					sload 9;
+					bspush 8;
+					sushr;
+					sadd;
+					sload 11;
+					bspush 8;
+					sushr;
+					sadd;
+					putfield_s 34;		// short com/test/U32.hi
+					return;
+		}
+
+		.method public mq18433MontyRed(SS)S 6 {
+			.stack 3;
+			.locals 6;
+
+				L0:	new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore_3;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 4;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 5;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 6;
+					sload_2;
+					sspush 18431;
+					aload_3;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					sload_2;
+					sspush -5184;
+					aload 4;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					sload_1;
+					sspush 18431;
+					aload 5;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					aload_3;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 4;
+					getfield_s 33;		// short com/test/U32.lo
+					sadd;
+					aload 5;
+					getfield_s 33;		// short com/test/U32.lo
+					sadd;
+					sstore 7;
+					sload 7;
+					sspush 18433;
+					aload 6;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					aload 6;
+					getfield_s 34;		// short com/test/U32.hi
+					sconst_1;
+					sadd;
+					sstore 8;
+					sload_1;
+					ifne L3;
+				L1:	sload_2;
+					ifne L3;
+				L2:	sconst_0;
+					sreturn;
+				L3:	sload 8;
+					sreturn;
+		}
+
+		.method public mq18433MontyMul(SS)S 7 {
+			.stack 3;
+			.locals 1;
+
+				L0:	new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore_3;
+					sload_1;
+					sload_2;
+					aload_3;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					aload_0;
+					aload_3;
+					getfield_s 34;		// short com/test/U32.hi
+					aload_3;
+					getfield_s 33;		// short com/test/U32.lo
+					invokevirtual 117;		// mq18433MontyRed(SS)S
+					sreturn;
+		}
+
+		.method public mq18433ToMonty(S)S 8 {
+			.stack 3;
+			.locals 1;
+
+				L0:	new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore_2;
+					sload_1;
+					sspush 806;
+					aload_2;
+					invokestatic 95;		// com/test/Hawk.mul16(SSLcom/test/U32;)V
+					aload_0;
+					aload_2;
+					getfield_s 34;		// short com/test/U32.hi
+					aload_2;
+					getfield_s 33;		// short com/test/U32.lo
+					invokevirtual 117;		// mq18433MontyRed(SS)S
+					sreturn;
+		}
+
+		.method public mq18433Half(S)S 9 {
+			.stack 2;
+			.locals 0;
+
+				L0:	sload_1;
+					sconst_1;
+					sand;
+					ifeq L2;
+				L1:	sload_1;
+					sspush 18433;
+					sadd;
+					sstore_1;
+				L2:	sload_1;
+					sconst_1;
+					sushr;
+					sspush 32767;
+					sand;
+					sreturn;
+		}
+
+		.method public mq18433NTT(S[SS)V 10 {
+			.stack 5;
+			.locals 13;
+
+				L0:	sload_1;
+					ifne L2;
+				L1:	return;
+				L2:	sconst_1;
+					sload_1;
+					sshl;
+					sstore 4;
+					sconst_0;
+					sstore 5;
+				L3:	sload 5;
+					sload_1;
+					if_scmpge_w L11;
+				L4:	sconst_1;
+					sload 5;
+					sshl;
+					sstore 6;
+					sload 4;
+					sconst_1;
+					sshr;
+					sstore 7;
+					sconst_0;
+					sstore 8;
+					sconst_0;
+					sstore 9;
+				L5:	sload 9;
+					sload 6;
+					if_scmpge L10;
+				L6:	getstatic_a 118;		// reference com/test/Hawk.GM
+					sload 9;
+					sload 6;
+					sadd;
+					saload;
+					sstore 10;
+					sconst_0;
+					sstore 11;
+				L7:	sload 11;
+					sload 7;
+					if_scmpge L9;
+				L8:	sload_3;
+					sload 8;
+					sadd;
+					sload 11;
+					sadd;
+					sstore 12;
+					sload 12;
+					sload 7;
+					sadd;
+					sstore 13;
+					aload_2;
+					sload 12;
+					saload;
+					sstore 14;
+					aload_2;
+					sload 13;
+					saload;
+					sstore 15;
+					aload_0;
+					sload 15;
+					sload 10;
+					invokevirtual 119;		// mq18433MontyMul(SS)S
+					sstore 16;
+					aload_2;
+					sload 12;
+					aload_0;
+					sload 14;
+					sload 16;
+					invokevirtual 120;		// mq18433Add(SS)S
+					sastore;
+					aload_2;
+					sload 13;
+					aload_0;
+					sload 14;
+					sload 16;
+					invokevirtual 121;		// mq18433Sub(SS)S
+					sastore;
+					sinc 11 1;
+					goto L7;
+				L9:	sload 8;
+					sload 4;
+					sadd;
+					sstore 8;
+					sinc 9 1;
+					goto L5;
+				L10:	sload 7;
+					sstore 4;
+					sinc 5 1;
+					goto_w L3;
+				L11:	return;
+		}
+
+		.method public mq18433INTT(S[SS)V 11 {
+			.stack 7;
+			.locals 12;
+
+				L0:	sload_1;
+					ifne L2;
+				L1:	return;
+				L2:	sconst_1;
+					sstore 4;
+					sconst_0;
+					sstore 5;
+				L3:	sload 5;
+					sload_1;
+					if_scmpge_w L11;
+				L4:	sconst_1;
+					sload_1;
+					sconst_1;
+					ssub;
+					sload 5;
+					ssub;
+					sshl;
+					sstore 6;
+					sload 4;
+					sconst_1;
+					sshl;
+					sstore 7;
+					sconst_0;
+					sstore 8;
+					sconst_0;
+					sstore 9;
+				L5:	sload 9;
+					sload 6;
+					if_scmpge L10;
+				L6:	getstatic_a 122;		// reference com/test/Hawk.iGM
+					sload 9;
+					sload 6;
+					sadd;
+					saload;
+					sstore 10;
+					sconst_0;
+					sstore 11;
+				L7:	sload 11;
+					sload 4;
+					if_scmpge L9;
+				L8:	sload_3;
+					sload 8;
+					sadd;
+					sload 11;
+					sadd;
+					sstore 12;
+					sload 12;
+					sload 4;
+					sadd;
+					sstore 13;
+					aload_2;
+					sload 12;
+					saload;
+					sstore 14;
+					aload_2;
+					sload 13;
+					saload;
+					sstore 15;
+					aload_2;
+					sload 12;
+					aload_0;
+					aload_0;
+					sload 14;
+					sload 15;
+					invokevirtual 120;		// mq18433Add(SS)S
+					invokevirtual 123;		// mq18433Half(S)S
+					sastore;
+					aload_2;
+					sload 13;
+					aload_0;
+					sload 10;
+					aload_0;
+					sload 14;
+					sload 15;
+					invokevirtual 121;		// mq18433Sub(SS)S
+					invokevirtual 119;		// mq18433MontyMul(SS)S
+					sastore;
+					sinc 11 1;
+					goto L7;
+				L9:	sload 8;
+					sload 7;
+					sadd;
+					sstore 8;
+					sinc 9 1;
+					goto L5;
+				L10:	sload 7;
+					sstore 4;
+					sinc 5 1;
+					goto_w L3;
+				L11:	return;
+		}
+
+		.method public static mq18433Snorm(S)S 11 {
+			.stack 2;
+			.locals 0;
+
+				L0:	sload_0;
+					sspush 9216;
+					if_scmple L2;
+				L1:	sload_0;
+					sspush 18433;
+					ssub;
+					sreturn;
+				L2:	sload_0;
+					sreturn;
+		}
+
+		.method public static mq18433PolySnorm(S[SS)V 12 {
+			.stack 4;
+			.locals 3;
+
+				L0:	sconst_1;
+					sload_0;
+					sshl;
+					sstore_3;
+					sconst_0;
+					sstore 4;
+				L1:	sload 4;
+					sload_3;
+					if_scmpge L3;
+				L2:	sload_2;
+					sload 4;
+					sadd;
+					sstore 5;
+					aload_1;
+					sload 5;
+					aload_1;
+					sload 5;
+					saload;
+					invokestatic 124;		// com/test/Hawk.mq18433Snorm(S)S
+					sastore;
+					sinc 4 1;
+					goto L1;
+				L3:	return;
+		}
+
+		.method public static polySymBreak(S[SS)S 13 {
+			.stack 4;
+			.locals 6;
+
+				L0:	sconst_1;
+					sload_0;
+					sshl;
+					sstore_3;
+					sconst_0;
+					sstore 4;
+					sconst_m1;
+					sstore 5;
+					sconst_0;
+					sstore 6;
+				L1:	sload 6;
+					sload_3;
+					if_scmpge L3;
+				L2:	aload_1;
+					sload_2;
+					sload 6;
+					sadd;
+					saload;
+					sstore 7;
+					sload 5;
+					sload 7;
+					sload 7;
+					sneg;
+					sor;
+					invokestatic 125;		// com/test/Hawk.tbmask(S)S
+					sand;
+					sstore 8;
+					sload 5;
+					sload 8;
+					sconst_m1;
+					sxor;
+					sand;
+					sstore 5;
+					sload 4;
+					sload 8;
+					sload 7;
+					invokestatic 125;		// com/test/Hawk.tbmask(S)S
+					sconst_1;
+					sor;
+					sand;
+					sor;
+					sstore 4;
+					sinc 6 1;
+					goto L1;
+				L3:	sload 4;
+					sreturn;
+		}
+
+		.method private static dec64le([BSLcom/test/U64;)V {
+			.stack 5;
+			.locals 0;
+
+				L0:	aload_2;
+					aload_0;
+					sload_1;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_1;
+					sconst_1;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 35;		// short com/test/U64.w0
+					aload_2;
+					aload_0;
+					sload_1;
+					sconst_2;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_1;
+					sconst_3;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_2;
+					aload_0;
+					sload_1;
+					sconst_4;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_1;
+					sconst_5;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_2;
+					aload_0;
+					sload_1;
+					bspush 6;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_1;
+					bspush 7;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 38;		// short com/test/U64.w3
+					return;
+		}
+
+		.method public sigGauss(SLcom/test/SHAKE256JC;[BS[BS)S 12 {
+			.stack 6;
+			.locals 32;
+
+				L0:	getstatic_a 130;		// reference com/test/Hawk.SIG_GAUSS_HI_HAWK_512
+					astore 11;
+					getstatic_a 131;		// reference com/test/Hawk.SIG_GAUSS_LO_HI_HI_HAWK_512
+					astore 7;
+					getstatic_a 132;		// reference com/test/Hawk.SIG_GAUSS_LO_HI_LO_HAWK_512
+					astore 8;
+					getstatic_a 133;		// reference com/test/Hawk.SIG_GAUSS_LO_LO_HI_HAWK_512
+					astore 9;
+					getstatic_a 134;		// reference com/test/Hawk.SIG_GAUSS_LO_LO_LO_HAWK_512
+					astore 10;
+					bspush 10;
+					sstore 12;
+					bspush 26;
+					sstore 13;
+					sconst_1;
+					sload_1;
+					sshl;
+					sstore 14;
+					bspush 41;
+					newarray 11;
+					astore 15;
+					bspush 40;
+					newarray 11;
+					astore 16;
+					getfield_a_this 32;		// reference com/test/Hawk.random
+					aload 16;
+					sconst_0;
+					bspush 40;
+					invokevirtual 135;		// generateData([BSS)V
+					aload 16;
+					sconst_0;
+					aload 15;
+					sconst_0;
+					aload 16;
+					arraylength;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					sconst_0;
+					sstore 17;
+					sconst_0;
+					sstore 18;
+				L1:	sload 18;
+					sconst_4;
+					if_scmpge_w L21;
+				L2:	new 86;		// com/test/SHAKE256JC
+					dup;
+					aload_2;
+					invokespecial 136;		// com/test/SHAKE256JC.<init>(Lcom/test/SHAKE256JC;)V
+					astore 19;
+					aload 15;
+					bspush 40;
+					sload 18;
+					s2b;
+					bastore;
+					aload 19;
+					aload 15;
+					sconst_0;
+					bspush 41;
+					invokevirtual 88;		// update([BSS)V
+					bspush 40;
+					newarray 11;
+					astore 20;
+					sload 14;
+					sconst_1;
+					sshl;
+					sstore 21;
+					sconst_0;
+					sstore 22;
+				L3:	sload 22;
+					sload 21;
+					if_scmpge_w L20;
+				L4:	aload 19;
+					aload 20;
+					sconst_0;
+					bspush 40;
+					invokevirtual 89;		// doOutput([BSS)S
+					pop;
+					sconst_0;
+					sstore 23;
+				L5:	sload 23;
+					sconst_4;
+					if_scmpge_w L19;
+				L6:	sload 22;
+					sload 18;
+					sconst_2;
+					sshl;
+					sadd;
+					sload 23;
+					sadd;
+					sstore 24;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore 25;
+					aload 20;
+					sload 23;
+					sconst_3;
+					sshl;
+					aload 25;
+					invokestatic 139;		// com/test/Hawk.dec64le([BSLcom/test/U64;)V
+					aload 20;
+					bspush 32;
+					sload 23;
+					sconst_1;
+					sshl;
+					sadd;
+					invokestatic 140;		// com/test/Hawk.dec16le([BS)S
+					sstore 26;
+					aload 25;
+					invokestatic 141;		// com/test/U64.msb(Lcom/test/U64;)S
+					sneg;
+					sstore 27;
+					aload 25;
+					invokestatic 142;		// com/test/U64.clearMsb(Lcom/test/U64;)V
+					sload 26;
+					sspush 32767;
+					sand;
+					sstore 26;
+					aload 5;
+					sload 6;
+					sload 24;
+					sconst_3;
+					sushr;
+					sadd;
+					baload;
+					sload 24;
+					bspush 7;
+					sand;
+					sushr;
+					sconst_1;
+					sand;
+					sstore 28;
+					sload 28;
+					sneg;
+					sstore 29;
+					sconst_0;
+					sstore 30;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore 31;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore 32;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore 33;
+					sconst_0;
+					sstore 34;
+				L7:	sload 34;
+					sload 12;
+					if_scmpge L12;
+				L8:	sload 29;
+					sstore 35;
+					aload 11;
+					sload 34;
+					saload;
+					sload 35;
+					aload 11;
+					sload 34;
+					saload;
+					aload 11;
+					sload 34;
+					sconst_1;
+					sadd;
+					saload;
+					sxor;
+					sand;
+					sxor;
+					sstore 36;
+					aload 7;
+					aload 8;
+					aload 9;
+					aload 10;
+					sload 34;
+					aload 31;
+					invokestatic 143;		// com/test/U64.getU64([S[S[S[SSLcom/test/U64;)V
+					aload 7;
+					aload 8;
+					aload 9;
+					aload 10;
+					sload 34;
+					sconst_1;
+					sadd;
+					aload 32;
+					invokestatic 143;		// com/test/U64.getU64([S[S[S[SSLcom/test/U64;)V
+					aload 31;
+					aload 32;
+					sload 35;
+					aload 33;
+					invokestatic 144;		// com/test/U64.select(Lcom/test/U64;Lcom/test/U64;SLcom/test/U64;)V
+					aload 25;
+					aload 33;
+					invokestatic 145;		// com/test/U64.ult(Lcom/test/U64;Lcom/test/U64;)S
+					sstore 37;
+					sload 26;
+					sload 36;
+					ssub;
+					sload 37;
+					ssub;
+					sstore 38;
+					sload 30;
+					sload 38;
+					ifge L10;
+				L9:	sconst_1;
+					goto L11;
+				L10:	sconst_0;
+				L11:	sadd;
+					sstore 30;
+					sinc 34 2;
+					goto L7;
+				L12:	sload 26;
+					ifne L14;
+				L13:	sconst_1;
+					goto L15;
+				L14:	sconst_0;
+				L15:	sstore 34;
+					sload 12;
+					sstore 35;
+				L16:	sload 35;
+					sload 13;
+					if_scmpge L18;
+				L17:	sload 29;
+					sstore 36;
+					aload 7;
+					aload 8;
+					aload 9;
+					aload 10;
+					sload 35;
+					aload 31;
+					invokestatic 143;		// com/test/U64.getU64([S[S[S[SSLcom/test/U64;)V
+					aload 7;
+					aload 8;
+					aload 9;
+					aload 10;
+					sload 35;
+					sconst_1;
+					sadd;
+					aload 32;
+					invokestatic 143;		// com/test/U64.getU64([S[S[S[SSLcom/test/U64;)V
+					aload 31;
+					aload 32;
+					sload 36;
+					aload 33;
+					invokestatic 144;		// com/test/U64.select(Lcom/test/U64;Lcom/test/U64;SLcom/test/U64;)V
+					aload 25;
+					aload 33;
+					invokestatic 145;		// com/test/U64.ult(Lcom/test/U64;Lcom/test/U64;)S
+					sstore 37;
+					sload 30;
+					sload 34;
+					sload 37;
+					sand;
+					sadd;
+					sstore 30;
+					sinc 35 2;
+					goto L16;
+				L18:	sload 30;
+					sconst_1;
+					sshl;
+					sload 29;
+					ssub;
+					sstore 30;
+					sload 30;
+					sload 27;
+					sxor;
+					sload 27;
+					ssub;
+					sstore 30;
+					aload_3;
+					sload 4;
+					sload 24;
+					sadd;
+					sload 30;
+					s2b;
+					bastore;
+					sload 17;
+					sload 30;
+					sload 30;
+					smul;
+					sadd;
+					sstore 17;
+					sinc 23 1;
+					goto_w L5;
+				L19:	sinc 22 16;
+					goto_w L3;
+				L20:	sinc 18 1;
+					goto_w L1;
+				L21:	sload 17;
+					sreturn;
+		}
+
+		.method public static encodeSig(S[BSS[BSS[SS)Z 14 {
+			.stack 5;
+			.locals 15;
+
+				L0:	sconst_1;
+					sload_0;
+					sshl;
+					sstore 9;
+					sload_0;
+					bspush 10;
+					if_scmpne L2;
+				L1:	bspush 6;
+					goto L3;
+				L2:	sconst_5;
+				L3:	sstore 10;
+					sload_2;
+					sstore 11;
+					sload_3;
+					sstore 12;
+					sload 6;
+					sload 10;
+					sconst_2;
+					sadd;
+					sload_0;
+					sconst_3;
+					ssub;
+					sshl;
+					sadd;
+					sstore 13;
+					sload 12;
+					sload 13;
+					if_scmpge L5;
+				L4:	sconst_0;
+					sreturn;
+				L5:	aload 4;
+					sload 5;
+					aload_1;
+					sload 11;
+					sload 6;
+					invokestatic 146;		// javacard/framework/Util.arrayCopyNonAtomic([BS[BSS)S
+					pop;
+					sload 11;
+					sload 6;
+					sadd;
+					sstore 11;
+					sload 12;
+					sload 6;
+					ssub;
+					sstore 12;
+					sconst_0;
+					sstore 14;
+				L6:	sload 14;
+					sload 9;
+					if_scmpge L11;
+				L7:	sconst_0;
+					sstore 16;
+					sconst_0;
+					sstore 15;
+				L8:	sload 15;
+					bspush 8;
+					if_scmpge L10;
+				L9:	aload 7;
+					sload 8;
+					sload 14;
+					sadd;
+					sload 15;
+					sadd;
+					saload;
+					sstore 17;
+					sload 17;
+					bspush 15;
+					sshr;
+					sconst_1;
+					sand;
+					s2b;
+					sstore 18;
+					sload 16;
+					sload 18;
+					sload 15;
+					sshl;
+					s2b;
+					sor;
+					s2b;
+					sstore 16;
+					sinc 15 1;
+					goto L8;
+				L10:	aload_1;
+					sload 11;
+					sload 14;
+					sconst_3;
+					sshr;
+					sadd;
+					sload 16;
+					bastore;
+					sinc 14 8;
+					goto L6;
+				L11:	sload 11;
+					sload 9;
+					sconst_3;
+					sshr;
+					sadd;
+					sstore 11;
+					sload 12;
+					sload 9;
+					sconst_3;
+					sshr;
+					ssub;
+					sstore 12;
+					sconst_1;
+					sload 10;
+					sshl;
+					sconst_1;
+					ssub;
+					sstore 16;
+					sconst_0;
+					sstore 17;
+					sconst_0;
+					sstore 18;
+					sconst_0;
+					sstore 14;
+				L12:	sload 14;
+					sload 9;
+					if_scmpge L19;
+				L13:	aload 7;
+					sload 8;
+					sload 14;
+					sadd;
+					saload;
+					sstore 19;
+					sload 19;
+					invokestatic 125;		// com/test/Hawk.tbmask(S)S
+					sstore 20;
+					sload 19;
+					sload 20;
+					sxor;
+					sstore 19;
+					sload 17;
+					sload 19;
+					sload 16;
+					sand;
+					sload 18;
+					sshl;
+					sor;
+					sstore 17;
+					sload 18;
+					sload 10;
+					sadd;
+					sstore 18;
+				L14:	sload 18;
+					bspush 8;
+					if_scmplt L18;
+				L15:	sload 12;
+					ifgt L17;
+				L16:	sconst_0;
+					sreturn;
+				L17:	aload_1;
+					sload 11;
+					sinc 11 1;
+					sload 17;
+					sspush 255;
+					sand;
+					s2b;
+					bastore;
+					sload 17;
+					bspush 8;
+					sushr;
+					sstore 17;
+					sinc 18 -8;
+					sinc 12 -1;
+					goto L14;
+				L18:	sinc 14 1;
+					goto L12;
+				L19:	sconst_0;
+					sstore 19;
+					sconst_0;
+					sstore 20;
+					sconst_0;
+					sstore 14;
+				L20:	sload 14;
+					sload 9;
+					if_scmpge L27;
+				L21:	aload 7;
+					sload 8;
+					sload 14;
+					sadd;
+					saload;
+					sstore 21;
+					sload 21;
+					invokestatic 125;		// com/test/Hawk.tbmask(S)S
+					sstore 22;
+					sload 21;
+					sload 22;
+					sxor;
+					sstore 21;
+					sload 21;
+					sload 10;
+					sushr;
+					sstore 23;
+					sload 19;
+					sconst_1;
+					sload 20;
+					sload 23;
+					sadd;
+					sshl;
+					sor;
+					sstore 19;
+					sload 20;
+					sconst_1;
+					sload 23;
+					sadd;
+					sadd;
+					sstore 20;
+				L22:	sload 20;
+					bspush 8;
+					if_scmplt L26;
+				L23:	sload 12;
+					ifgt L25;
+				L24:	sconst_0;
+					sreturn;
+				L25:	aload_1;
+					sload 11;
+					sinc 11 1;
+					sload 19;
+					s2b;
+					bastore;
+					sinc 12 -1;
+					sload 19;
+					bspush 8;
+					sushr;
+					sstore 19;
+					sinc 20 -8;
+					goto L22;
+				L26:	sinc 14 1;
+					goto L20;
+				L27:	sload 20;
+					ifle L31;
+				L28:	sload 12;
+					ifgt L30;
+				L29:	sconst_0;
+					sreturn;
+				L30:	aload_1;
+					sload 11;
+					sinc 11 1;
+					sload 19;
+					s2b;
+					bastore;
+					sinc 12 -1;
+				L31:	aload_1;
+					sload 11;
+					sload 12;
+					sconst_0;
+					invokestatic 112;		// javacard/framework/Util.arrayFillNonAtomic([BSSB)S
+					pop;
+					sconst_1;
+					sreturn;
+		}
+
+		.method public sign(SS[BLcom/test/SHAKE256JC;[BS[BS)S 13 {
+			.stack 19;
+			.locals 42;
+
+				L0:	sload 8;
+					bspush 7;
+					if_scmpge L2;
+				L1:	sconst_0;
+					sreturn;
+				L2:	sload_1;
+					bspush 8;
+					if_scmplt L4;
+				L3:	sload_1;
+					bspush 10;
+					if_scmple L5;
+				L4:	sconst_0;
+					sreturn;
+				L5:	sconst_0;
+					sstore 9;
+					sload 9;
+					bspush 7;
+					sadd;
+					bspush -8;
+					sand;
+					sstore 10;
+					sload 8;
+					sload 10;
+					sload 9;
+					ssub;
+					ssub;
+					sstore 8;
+					sspush 512;
+					sstore 11;
+					sload 8;
+					sload 11;
+					if_scmpge L7;
+				L6:	sconst_0;
+					sreturn;
+				L7:	bspush 24;
+					sstore 12;
+					bspush 32;
+					sstore 13;
+					sspush 512;
+					newarray 11;
+					astore 14;
+					sspush 1024;
+					newarray 11;
+					astore 15;
+					sspush 1024;
+					newarray 11;
+					astore 16;
+					sspush 512;
+					newarray 11;
+					astore 17;
+					sload 12;
+					newarray 11;
+					astore 21;
+					aload 5;
+					sconst_0;
+					aload 21;
+					sconst_0;
+					sload 12;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					aload_0;
+					aload 17;
+					sconst_0;
+					aload 14;
+					sconst_0;
+					aload 21;
+					invokevirtual 147;		// regen_fg([BS[BS[B)V
+					aload 21;
+					sconst_0;
+					aload 7;
+					sconst_0;
+					sload 12;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					newarray 11;
+					astore 18;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					newarray 11;
+					astore 19;
+					sload 13;
+					newarray 11;
+					astore 20;
+					aload 5;
+					sload 12;
+					aload 18;
+					sconst_0;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					aload 5;
+					sload 12;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					sadd;
+					aload 19;
+					sconst_0;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					aload 5;
+					sload 12;
+					sconst_2;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					smul;
+					sadd;
+					aload 20;
+					sconst_0;
+					sload 13;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+					bspush 64;
+					newarray 11;
+					astore 22;
+				L8:	aload 4;
+					aload 20;
+					sconst_0;
+					sload 13;
+					invokevirtual 88;		// update([BSS)V
+					aload 4;
+					aload 22;
+					sconst_0;
+					aload 22;
+					arraylength;
+					invokevirtual 148;		// doFinal([BSS)S
+					pop;
+				L9:	goto L11;
+				L10:	astore 23;
+					sspush 28674;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L11:	sconst_0;
+					sstore 23;
+				L12:	sconst_0;
+					sstore 24;
+					sload 24;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					sadd;
+					sstore 25;
+					sload 25;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					sadd;
+					sstore 26;
+					sload 26;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					sadd;
+					sstore 27;
+					sload 27;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					sadd;
+					sstore 28;
+					sload 28;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					sadd;
+					sstore 29;
+					sload 29;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					sadd;
+					sstore 30;
+					getfield_s_this 30;		// short com/test/Hawk.saltLen
+					newarray 11;
+					astore 31;
+				L13:	getfield_a_this 32;		// reference com/test/Hawk.random
+					aload 31;
+					sconst_0;
+					getfield_s_this 30;		// short com/test/Hawk.saltLen
+					invokevirtual 135;		// generateData([BSS)V
+				L14:	goto L16;
+				L15:	astore 32;
+					sspush 28675;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L16:	sload_2;
+					ifeq L21;
+				L17:	sconst_4;
+					newarray 11;
+					astore 32;
+					aload 32;
+					sconst_0;
+					sload 23;
+					bspush 16;
+					sushr;
+					sload 23;
+					invokestatic 92;		// com/test/Hawk.enc32le([BSSS)V
+				L18:	new 86;		// com/test/SHAKE256JC
+					dup;
+					invokespecial 87;		// com/test/SHAKE256JC.<init>()V
+					astore 33;
+					aload 33;
+					aload 22;
+					sconst_0;
+					aload 22;
+					arraylength;
+					invokevirtual 88;		// update([BSS)V
+					aload 33;
+					aload 5;
+					sconst_0;
+					sload 12;
+					invokevirtual 88;		// update([BSS)V
+					aload 33;
+					aload 32;
+					sconst_0;
+					aload 32;
+					arraylength;
+					invokevirtual 88;		// update([BSS)V
+					aload 33;
+					aload 31;
+					sconst_0;
+					getfield_s_this 30;		// short com/test/Hawk.saltLen
+					invokevirtual 88;		// update([BSS)V
+					aload 33;
+					aload 31;
+					sconst_0;
+					getfield_s_this 30;		// short com/test/Hawk.saltLen
+					invokevirtual 148;		// doFinal([BSS)S
+					pop;
+				L19:	goto L21;
+				L20:	astore 33;
+					sspush 28676;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L21:	new 86;		// com/test/SHAKE256JC
+					dup;
+					invokespecial 87;		// com/test/SHAKE256JC.<init>()V
+					astore 32;
+					aload 32;
+					aload 22;
+					sconst_0;
+					aload 22;
+					arraylength;
+					invokevirtual 88;		// update([BSS)V
+					aload 32;
+					aload 31;
+					sconst_0;
+					getfield_s_this 30;		// short com/test/Hawk.saltLen
+					invokevirtual 88;		// update([BSS)V
+					aload 32;
+					aload 15;
+					sload 26;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_2;
+					sshr;
+					invokevirtual 148;		// doFinal([BSS)S
+					pop;
+				L22:	goto L24;
+				L23:	astore 32;
+					sspush 28677;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L24:	getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					newarray 11;
+					astore 32;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					newarray 11;
+					astore 33;
+				L25:	sload_1;
+					aload 32;
+					aload 17;
+					invokestatic 149;		// com/test/Hawk.extract_lowbit(S[B[B)V
+					sload_1;
+					aload 33;
+					aload 14;
+					invokestatic 149;		// com/test/Hawk.extract_lowbit(S[B[B)V
+				L26:	goto L28;
+				L27:	astore 34;
+					sspush 28678;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L28:	sload_1;
+					aload 15;
+					sload 24;
+					aload 15;
+					sload 25;
+					aload 15;
+					sload 26;
+					aload 15;
+					sload 27;
+					aload 32;
+					sconst_0;
+					aload 33;
+					sconst_0;
+					aload 18;
+					sconst_0;
+					aload 19;
+					sconst_0;
+					aload 7;
+					sload 30;
+					invokestatic 150;		// com/test/Hawk.basisM2Mul(S[BS[BS[BS[BS[BS[BS[BS[BS[BS)V
+				L29:	goto L31;
+				L30:	astore 34;
+					sspush 28679;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L31:	sconst_4;
+					newarray 11;
+					astore 35;
+					sload 23;
+					sconst_1;
+					sadd;
+					sstore 36;
+					aload 35;
+					sconst_0;
+					sload 36;
+					bspush 16;
+					sushr;
+					sload 36;
+					invokestatic 92;		// com/test/Hawk.enc32le([BSSS)V
+				L32:	new 86;		// com/test/SHAKE256JC
+					dup;
+					invokespecial 87;		// com/test/SHAKE256JC.<init>()V
+					astore 37;
+					aload 37;
+					aload 22;
+					sconst_0;
+					aload 22;
+					arraylength;
+					invokevirtual 88;		// update([BSS)V
+					aload 37;
+					aload 5;
+					sconst_0;
+					sload 12;
+					invokevirtual 88;		// update([BSS)V
+					aload 37;
+					aload 35;
+					sconst_0;
+					aload 35;
+					arraylength;
+					invokevirtual 88;		// update([BSS)V
+					aload_0;
+					sload_1;
+					aload 37;
+					aload 16;
+					sconst_0;
+					aload 15;
+					sload 24;
+					invokevirtual 151;		// sigGauss(SLcom/test/SHAKE256JC;[BS[BS)S
+					sstore 34;
+					sload 34;
+					getfield_s_this 31;		// short com/test/Hawk.maxXnorm
+					if_scmple L34;
+				L33:	goto_w L75;
+				L34:	goto L36;
+				L35:	astore 37;
+					sspush 28680;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L36:	getfield_s_this 29;		// short com/test/Hawk.n
+					newarray 12;
+					astore 37;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					newarray 12;
+					astore 38;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					newarray 12;
+					astore 39;
+				L37:	aload_0;
+					sload_1;
+					aload 37;
+					sconst_0;
+					aload 14;
+					sconst_0;
+					invokevirtual 152;		// mq18433PolySetSmall(S[SS[BS)V
+					aload_0;
+					sload_1;
+					aload 38;
+					sconst_0;
+					aload 16;
+					sconst_0;
+					invokevirtual 152;		// mq18433PolySetSmall(S[SS[BS)V
+					aload_0;
+					sload_1;
+					aload 37;
+					sconst_0;
+					invokevirtual 153;		// mq18433NTT(S[SS)V
+					aload_0;
+					sload_1;
+					aload 38;
+					sconst_0;
+					invokevirtual 153;		// mq18433NTT(S[SS)V
+				L38:	goto L40;
+				L39:	astore 40;
+					sspush 28681;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L40:	sconst_0;
+					sstore 40;
+				L41:	sload 40;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					if_scmpge L43;
+				L42:	aload 37;
+					sload 40;
+					aload_0;
+					aload 37;
+					sload 40;
+					saload;
+					aload 38;
+					sload 40;
+					saload;
+					invokevirtual 119;		// mq18433MontyMul(SS)S
+					sastore;
+					sinc 40 1;
+					goto L41;
+				L43:	aload_0;
+					sload_1;
+					aload 38;
+					sconst_0;
+					aload 16;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					invokevirtual 152;		// mq18433PolySetSmall(S[SS[BS)V
+					aload_0;
+					sload_1;
+					aload 39;
+					sconst_0;
+					aload 17;
+					sconst_0;
+					invokevirtual 152;		// mq18433PolySetSmall(S[SS[BS)V
+					aload_0;
+					sload_1;
+					aload 38;
+					sconst_0;
+					invokevirtual 153;		// mq18433NTT(S[SS)V
+					aload_0;
+					sload_1;
+					aload 39;
+					sconst_0;
+					invokevirtual 153;		// mq18433NTT(S[SS)V
+				L44:	goto L46;
+				L45:	astore 40;
+					sspush 28682;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L46:	sconst_0;
+					sstore 40;
+				L47:	sload 40;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					if_scmpge L49;
+				L48:	aload 39;
+					sload 40;
+					aload_0;
+					aload_0;
+					aload_0;
+					aload 38;
+					sload 40;
+					saload;
+					aload 39;
+					sload 40;
+					saload;
+					invokevirtual 119;		// mq18433MontyMul(SS)S
+					aload 37;
+					sload 40;
+					saload;
+					invokevirtual 121;		// mq18433Sub(SS)S
+					invokevirtual 154;		// mq18433ToMonty(S)S
+					sastore;
+					sinc 40 1;
+					goto L47;
+				L49:	aload_0;
+					sload_1;
+					aload 39;
+					sconst_0;
+					invokevirtual 155;		// mq18433INTT(S[SS)V
+					sload_1;
+					aload 39;
+					sconst_0;
+					invokestatic 156;		// com/test/Hawk.mq18433PolySnorm(S[SS)V
+				L50:	goto L52;
+				L51:	astore 40;
+					sspush 28683;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L52:	aload 39;
+					astore 40;
+					sload_1;
+					aload 40;
+					sconst_0;
+					invokestatic 157;		// com/test/Hawk.polySymBreak(S[SS)S
+					sstore 41;
+					sconst_1;
+					sload_1;
+					bspush 10;
+					if_scmpne L54;
+				L53:	bspush 10;
+					goto L55;
+				L54:	bspush 9;
+				L55:	sshl;
+					sstore 42;
+					sload 41;
+					sconst_1;
+					ssub;
+					invokestatic 125;		// com/test/Hawk.tbmask(S)S
+					sconst_m1;
+					sxor;
+					sstore 43;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					newarray 11;
+					astore 44;
+				L56:	aload 15;
+					sload 27;
+					aload 44;
+					sconst_0;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					sconst_3;
+					sshr;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+				L57:	goto L59;
+				L58:	astore 45;
+					sspush 28685;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L59:	sconst_0;
+					sstore 45;
+					sconst_0;
+					sstore 46;
+				L60:	sload 46;
+					getfield_s_this 29;		// short com/test/Hawk.n
+					if_scmpge L65;
+				L61:	aload 40;
+					sload 46;
+					saload;
+					sstore 47;
+					sload 47;
+					sload 43;
+					sxor;
+					sload 43;
+					ssub;
+					aload 44;
+					sload 46;
+					sconst_3;
+					sshr;
+					baload;
+					sload 46;
+					bspush 7;
+					sand;
+					sshr;
+					sconst_1;
+					sand;
+					sadd;
+					sstore 47;
+					sload 47;
+					sconst_1;
+					sshr;
+					sstore 48;
+					sload 42;
+					sneg;
+					sstore 49;
+					sconst_0;
+					sstore 50;
+					sload 48;
+					sload 49;
+					if_scmplt L63;
+				L62:	sload 48;
+					sload 42;
+					if_scmplt L64;
+				L63:	sconst_m1;
+					sstore 50;
+				L64:	sload 45;
+					sload 50;
+					sor;
+					sstore 45;
+					aload 40;
+					sload 46;
+					sload 48;
+					sastore;
+					sinc 46 1;
+					goto L60;
+				L65:	sload 45;
+					ifeq L67;
+				L66:	goto L75;
+				L67:	sload_1;
+					invokestatic 77;		// com/test/Hawk.HAWK_SIG_SIZE(S)S
+					sstore 46;
+				L68:	sload_1;
+					aload 7;
+					sconst_0;
+					sload 46;
+					aload 31;
+					sconst_0;
+					getfield_s_this 30;		// short com/test/Hawk.saltLen
+					aload 40;
+					sconst_0;
+					invokestatic 158;		// com/test/Hawk.encodeSig(S[BSS[BSS[SS)Z
+					ifeq L73;
+				L69:	aload_3;
+					ifnull L71;
+				L70:	aload 7;
+					sconst_0;
+					aload_3;
+					sconst_0;
+					sload 46;
+					invokestatic 96;		// javacard/framework/Util.arrayCopy([BS[BSS)S
+					pop;
+				L71:	sconst_1;
+				L72:	sreturn;
+				L73:	goto L75;
+				L74:	astore 47;
+					sspush 28686;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L75:	sinc 23 2;
+					goto_w L12;
+			.exceptionTable {
+				// start_block end_block handler_block catch_type_index
+				L8 L9 L10 85;
+				L13 L14 L15 85;
+				L18 L19 L20 85;
+				L21 L22 L23 85;
+				L25 L26 L27 85;
+				L28 L29 L30 85;
+				L32 L33 L35 85;
+				L37 L38 L39 85;
+				L43 L44 L45 85;
+				L49 L50 L51 85;
+				L56 L57 L58 85;
+				L68 L72 L74 85;
+			}
+		}
+
+		.method public signMessage(S[B[BS[BS[BS)S 14 {
+			.stack 9;
+			.locals 1;
+
+				L0:	new 86;		// com/test/SHAKE256JC
+					dup;
+					invokespecial 87;		// com/test/SHAKE256JC.<init>()V
+					astore 9;
+					aload 9;
+					aload_3;
+					sconst_0;
+					sload 4;
+					invokevirtual 88;		// update([BSS)V
+					aload_0;
+					sload_1;
+					sconst_1;
+					aload_2;
+					aload 9;
+					aload 5;
+					sload 6;
+					aload 7;
+					sload 8;
+					invokevirtual 159;		// sign(SS[BLcom/test/SHAKE256JC;[BS[BS)S
+					sreturn;
+		}
+
+	}
+
+	.class public final KeccakF1600 2 extends 2.0 {		// extends java/lang/Object
+
+		.fields {
+			private static final byte[] RHO_OFFSETS = {0,1,62,28,27,36,44,6,55,20,3,10,43,25,39,41,45,15,21,8,18,2,61,56,14};		// [B
+			private static final short[] RC_W3 = {0,0,-32768,-32768,0,0,-32768,-32768,0,0,0,0,0,-32768,-32768,-32768,-32768,-32768,0,-32768,-32768,-32768,0,-32768};		// [S
+			private static final short[] RC_W2 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};		// [S
+			private static final short[] RC_W1 = {0,0,0,-32768,0,-32768,-32768,0,0,0,-32768,-32768,-32768,0,0,0,0,0,0,-32768,-32768,0,-32768,-32768};		// [S
+			private static final short[] RC_W0 = {1,-32638,-32630,-32768,-32629,1,-32639,-32759,138,136,-32759,10,-32629,139,-32631,-32765,-32766,128,-32758,10,-32639,-32640,1,-32760};		// [S
+			private static short permCount;		// S
+		}
+
+		.publicMethodTable 1 {
+			equals(Ljava/lang/Object;)Z;
+		}
+
+		.packageMethodTable 0 {
+		}
+
+		.method public <init>()V 0 {
+			.stack 1;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 78;		// java/lang/Object.<init>()V
+					return;
+		}
+
+		.method public static permute([B)V 1 {
+			.stack 2;
+			.locals 1;
+
+				L0:	bspush 25;
+					anewarray 137;		// com/test/U64
+					astore_1;
+					aload_0;
+					aload_1;
+					invokestatic 160;		// com/test/KeccakF1600.permute([B[Lcom/test/U64;)V
+					return;
+		}
+
+		.method public static permute([B[Lcom/test/U64;)V 2 {
+			.stack 5;
+			.locals 14;
+
+				L0:	getstatic_s 161;		// short com/test/KeccakF1600.permCount
+					sconst_1;
+					sadd;
+					putstatic_s 161;		// short com/test/KeccakF1600.permCount
+					sconst_0;
+					sstore_2;
+				L1:	sload_2;
+					bspush 25;
+					if_scmpge L3;
+				L2:	aload_1;
+					sload_2;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					aastore;
+					sinc 2 1;
+					goto L1;
+				L3:	sconst_0;
+					sstore_2;
+				L4:	sload_2;
+					bspush 25;
+					if_scmpge L6;
+				L5:	sload_2;
+					sconst_3;
+					sshl;
+					sstore_3;
+					aload_1;
+					sload_2;
+					aaload;
+					aload_0;
+					sload_3;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_3;
+					sconst_1;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 35;		// short com/test/U64.w0
+					aload_1;
+					sload_2;
+					aaload;
+					aload_0;
+					sload_3;
+					sconst_2;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_3;
+					sconst_3;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					sload_2;
+					aaload;
+					aload_0;
+					sload_3;
+					sconst_4;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_3;
+					sconst_5;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					sload_2;
+					aaload;
+					aload_0;
+					sload_3;
+					bspush 6;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					aload_0;
+					sload_3;
+					bspush 7;
+					sadd;
+					baload;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 38;		// short com/test/U64.w3
+					sinc 2 1;
+					goto L4;
+				L6:	bspush 25;
+					anewarray 137;		// com/test/U64
+					astore_2;
+					sconst_5;
+					anewarray 137;		// com/test/U64
+					astore_3;
+					sconst_5;
+					anewarray 137;		// com/test/U64
+					astore 4;
+					sconst_0;
+					sstore 5;
+				L7:	sload 5;
+					bspush 25;
+					if_scmpge L9;
+				L8:	aload_2;
+					sload 5;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					aastore;
+					sinc 5 1;
+					goto L7;
+				L9:	sconst_0;
+					sstore 5;
+				L10:	sload 5;
+					sconst_5;
+					if_scmpge L12;
+				L11:	aload_3;
+					sload 5;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					aastore;
+					aload 4;
+					sload 5;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					aastore;
+					sinc 5 1;
+					goto L10;
+				L12:	new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore 5;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore 6;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore 7;
+					sconst_0;
+					sstore 8;
+				L13:	sload 8;
+					bspush 24;
+					if_scmpge_w L39;
+				L14:	sconst_0;
+					sstore 9;
+				L15:	sload 9;
+					sconst_5;
+					if_scmpge L17;
+				L16:	aload_1;
+					sload 9;
+					aaload;
+					aload_3;
+					sload 9;
+					aaload;
+					invokestatic 162;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+					aload_3;
+					sload 9;
+					aaload;
+					aload_1;
+					sload 9;
+					sconst_5;
+					sadd;
+					aaload;
+					aload_3;
+					sload 9;
+					aaload;
+					invokestatic 163;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					aload_3;
+					sload 9;
+					aaload;
+					aload_1;
+					sload 9;
+					bspush 10;
+					sadd;
+					aaload;
+					aload_3;
+					sload 9;
+					aaload;
+					invokestatic 163;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					aload_3;
+					sload 9;
+					aaload;
+					aload_1;
+					sload 9;
+					bspush 15;
+					sadd;
+					aaload;
+					aload_3;
+					sload 9;
+					aaload;
+					invokestatic 163;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					aload_3;
+					sload 9;
+					aaload;
+					aload_1;
+					sload 9;
+					bspush 20;
+					sadd;
+					aaload;
+					aload_3;
+					sload 9;
+					aaload;
+					invokestatic 163;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 9 1;
+					goto L15;
+				L17:	sconst_0;
+					sstore 9;
+				L18:	sload 9;
+					sconst_5;
+					if_scmpge L20;
+				L19:	sload 9;
+					sconst_1;
+					sadd;
+					sstore 10;
+					sload 9;
+					sconst_4;
+					sadd;
+					sstore 11;
+					sload 10;
+					sconst_5;
+					srem;
+					sstore 10;
+					sload 11;
+					sconst_5;
+					srem;
+					sstore 11;
+					aload_3;
+					sload 10;
+					aaload;
+					aload 5;
+					invokestatic 164;		// com/test/U64.rol1(Lcom/test/U64;Lcom/test/U64;)V
+					aload_3;
+					sload 11;
+					aaload;
+					aload 5;
+					aload 4;
+					sload 9;
+					aaload;
+					invokestatic 163;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 9 1;
+					goto L18;
+				L20:	sconst_0;
+					sstore 9;
+				L21:	sload 9;
+					sconst_5;
+					if_scmpge L26;
+				L22:	sconst_0;
+					sstore 10;
+				L23:	sload 10;
+					sconst_5;
+					if_scmpge L25;
+				L24:	sload 9;
+					sconst_5;
+					sload 10;
+					smul;
+					sadd;
+					sstore 11;
+					aload_1;
+					sload 11;
+					aaload;
+					aload 4;
+					sload 9;
+					aaload;
+					aload_1;
+					sload 11;
+					aaload;
+					invokestatic 163;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 10 1;
+					goto L23;
+				L25:	sinc 9 1;
+					goto L21;
+				L26:	sconst_0;
+					sstore 9;
+				L27:	sload 9;
+					sconst_5;
+					if_scmpge L32;
+				L28:	sconst_0;
+					sstore 10;
+				L29:	sload 10;
+					sconst_5;
+					if_scmpge L31;
+				L30:	sload 9;
+					sconst_5;
+					sload 10;
+					smul;
+					sadd;
+					sstore 11;
+					getstatic_a 165;		// reference com/test/KeccakF1600.RHO_OFFSETS
+					sload 11;
+					baload;
+					sspush 255;
+					sand;
+					sstore 12;
+					sload 10;
+					sstore 13;
+					sconst_2;
+					sload 9;
+					smul;
+					sconst_3;
+					sload 10;
+					smul;
+					sadd;
+					sstore 14;
+					sload 14;
+					sconst_5;
+					srem;
+					sstore 14;
+					sload 13;
+					sconst_5;
+					sload 14;
+					smul;
+					sadd;
+					sstore 15;
+					aload_1;
+					sload 11;
+					aaload;
+					sload 12;
+					aload_2;
+					sload 15;
+					aaload;
+					invokestatic 166;		// com/test/U64.rol(Lcom/test/U64;SLcom/test/U64;)V
+					sinc 10 1;
+					goto L29;
+				L31:	sinc 9 1;
+					goto L27;
+				L32:	sconst_0;
+					sstore 9;
+				L33:	sload 9;
+					sconst_5;
+					if_scmpge L38;
+				L34:	sconst_0;
+					sstore 10;
+				L35:	sload 10;
+					sconst_5;
+					if_scmpge L37;
+				L36:	sload 10;
+					sconst_5;
+					sload 9;
+					smul;
+					sadd;
+					sstore 11;
+					sload 10;
+					sconst_1;
+					sadd;
+					sconst_5;
+					srem;
+					sstore 12;
+					sload 12;
+					sconst_5;
+					sload 9;
+					smul;
+					sadd;
+					sstore 12;
+					sload 10;
+					sconst_2;
+					sadd;
+					sconst_5;
+					srem;
+					sstore 13;
+					sload 13;
+					sconst_5;
+					sload 9;
+					smul;
+					sadd;
+					sstore 13;
+					aload_2;
+					sload 12;
+					aaload;
+					aload 6;
+					invokestatic 167;		// com/test/U64.not(Lcom/test/U64;Lcom/test/U64;)V
+					aload 6;
+					aload_2;
+					sload 13;
+					aaload;
+					aload 7;
+					invokestatic 168;		// com/test/U64.and(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					aload_2;
+					sload 11;
+					aaload;
+					aload 7;
+					aload_1;
+					sload 11;
+					aaload;
+					invokestatic 163;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 10 1;
+					goto L35;
+				L37:	sinc 9 1;
+					goto L33;
+				L38:	new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore 9;
+					aload 9;
+					getstatic_a 169;		// reference com/test/KeccakF1600.RC_W3
+					sload 8;
+					saload;
+					putfield_s 38;		// short com/test/U64.w3
+					aload 9;
+					getstatic_a 170;		// reference com/test/KeccakF1600.RC_W2
+					sload 8;
+					saload;
+					putfield_s 37;		// short com/test/U64.w2
+					aload 9;
+					getstatic_a 171;		// reference com/test/KeccakF1600.RC_W1
+					sload 8;
+					saload;
+					putfield_s 36;		// short com/test/U64.w1
+					aload 9;
+					getstatic_a 172;		// reference com/test/KeccakF1600.RC_W0
+					sload 8;
+					saload;
+					putfield_s 35;		// short com/test/U64.w0
+					aload_1;
+					sconst_0;
+					aaload;
+					aload 9;
+					aload_1;
+					sconst_0;
+					aaload;
+					invokestatic 163;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 8 1;
+					goto_w L13;
+				L39:	sconst_0;
+					sstore 8;
+				L40:	sload 8;
+					bspush 25;
+					if_scmpge_w L51;
+				L41:	sload 8;
+					sconst_3;
+					sshl;
+					sstore 9;
+					getstatic_s 161;		// short com/test/KeccakF1600.permCount
+					sconst_3;
+					if_scmpne L44;
+				L42:	sload 8;
+					bspush 20;
+					if_scmpne L44;
+				L43:	sspush 32544;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L44:	aload_0;
+					sload 9;
+					aload_1;
+					sload 8;
+					aaload;
+					getfield_s 35;		// short com/test/U64.w0
+					s2b;
+					bastore;
+					getstatic_s 161;		// short com/test/KeccakF1600.permCount
+					sconst_3;
+					if_scmpne L47;
+				L45:	sload 8;
+					bspush 20;
+					if_scmpne L47;
+				L46:	sspush 32545;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L47:	aload_0;
+					sload 9;
+					sconst_1;
+					sadd;
+					aload_1;
+					sload 8;
+					aaload;
+					getfield_s 35;		// short com/test/U64.w0
+					bspush 8;
+					sushr;
+					s2b;
+					bastore;
+					getstatic_s 161;		// short com/test/KeccakF1600.permCount
+					sconst_3;
+					if_scmpne L50;
+				L48:	sload 8;
+					bspush 20;
+					if_scmpne L50;
+				L49:	sspush 32546;
+					invokestatic 79;		// javacard/framework/ISOException.throwIt(S)V
+				L50:	aload_0;
+					sload 9;
+					sconst_2;
+					sadd;
+					aload_1;
+					sload 8;
+					aaload;
+					getfield_s 36;		// short com/test/U64.w1
+					s2b;
+					bastore;
+					aload_0;
+					sload 9;
+					sconst_3;
+					sadd;
+					aload_1;
+					sload 8;
+					aaload;
+					getfield_s 36;		// short com/test/U64.w1
+					bspush 8;
+					sushr;
+					s2b;
+					bastore;
+					aload_0;
+					sload 9;
+					sconst_4;
+					sadd;
+					aload_1;
+					sload 8;
+					aaload;
+					getfield_s 37;		// short com/test/U64.w2
+					s2b;
+					bastore;
+					aload_0;
+					sload 9;
+					sconst_5;
+					sadd;
+					aload_1;
+					sload 8;
+					aaload;
+					getfield_s 37;		// short com/test/U64.w2
+					bspush 8;
+					sushr;
+					s2b;
+					bastore;
+					aload_0;
+					sload 9;
+					bspush 6;
+					sadd;
+					aload_1;
+					sload 8;
+					aaload;
+					getfield_s 38;		// short com/test/U64.w3
+					s2b;
+					bastore;
+					aload_0;
+					sload 9;
+					bspush 7;
+					sadd;
+					aload_1;
+					sload 8;
+					aaload;
+					getfield_s 38;		// short com/test/U64.w3
+					bspush 8;
+					sushr;
+					s2b;
+					bastore;
+					sinc 8 1;
+					goto_w L40;
+				L51:	return;
+		}
+
+	}
+
+	.class public final SHAKE256JC 3 extends 2.0 {		// extends java/lang/Object
+
+		.fields {
+			private final byte[] state 0;		// [B
+			private final U64[] scratch 1;		// [Lcom/test/U64;
+			private short ratePos 2;		// S
+			private boolean squeezing 3;		// Z
+			public static final short RATE_BYTES = 136;		// S
+			public static final short STATE_SIZE = 200;		// S
+		}
+
+		.publicMethodTable 1 {
+			equals(Ljava/lang/Object;)Z;
+			reset()V;
+			absorbXor([BSS)V;
+			finalizeSqueeze()V;
+			squeezeBytes([BSS)V;
+			update([BSS)V;
+			doOutput([BSS)S;
+			doFinal([BSS)S;
+		}
+
+		.packageMethodTable 0 {
+		}
+
+		.method public <init>()V 0 {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 78;		// java/lang/Object.<init>()V
+					aload_0;
+					sspush 200;
+					newarray 11;
+					putfield_a 39;		// reference com/test/SHAKE256JC.state
+					aload_0;
+					bspush 25;
+					anewarray 137;		// com/test/U64
+					putfield_a 40;		// reference com/test/SHAKE256JC.scratch
+					aload_0;
+					sconst_0;
+					putfield_s 41;		// short com/test/SHAKE256JC.ratePos
+					aload_0;
+					sconst_0;
+					putfield_b 42;		// boolean com/test/SHAKE256JC.squeezing
+					return;
+		}
+
+		.method public <init>(Lcom/test/SHAKE256JC;)V 1 {
+			.stack 4;
+			.locals 1;
+
+				L0:	aload_0;
+					invokespecial 78;		// java/lang/Object.<init>()V
+					aload_0;
+					sspush 200;
+					newarray 11;
+					putfield_a 39;		// reference com/test/SHAKE256JC.state
+					aload_0;
+					bspush 25;
+					anewarray 137;		// com/test/U64
+					putfield_a 40;		// reference com/test/SHAKE256JC.scratch
+					sconst_0;
+					sstore_2;
+				L1:	sload_2;
+					sspush 200;
+					if_scmpge L3;
+				L2:	getfield_a_this 39;		// reference com/test/SHAKE256JC.state
+					sload_2;
+					aload_1;
+					getfield_a 39;		// reference com/test/SHAKE256JC.state
+					sload_2;
+					baload;
+					bastore;
+					sinc 2 1;
+					goto L1;
+				L3:	aload_0;
+					aload_1;
+					getfield_s 41;		// short com/test/SHAKE256JC.ratePos
+					putfield_s 41;		// short com/test/SHAKE256JC.ratePos
+					aload_0;
+					aload_1;
+					getfield_b 42;		// boolean com/test/SHAKE256JC.squeezing
+					putfield_b 42;		// boolean com/test/SHAKE256JC.squeezing
+					return;
+		}
+
+		.method public reset()V 1 {
+			.stack 3;
+			.locals 1;
+
+				L0:	sconst_0;
+					sstore_1;
+				L1:	sload_1;
+					sspush 200;
+					if_scmpge L3;
+				L2:	getfield_a_this 39;		// reference com/test/SHAKE256JC.state
+					sload_1;
+					sconst_0;
+					bastore;
+					sinc 1 1;
+					goto L1;
+				L3:	aload_0;
+					sconst_0;
+					putfield_s 41;		// short com/test/SHAKE256JC.ratePos
+					aload_0;
+					sconst_0;
+					putfield_b 42;		// boolean com/test/SHAKE256JC.squeezing
+					return;
+		}
+
+		.method public absorbXor([BSS)V 2 {
+			.stack 6;
+			.locals 4;
+
+				L0:	sload_2;
+					sstore 4;
+					sload_3;
+					sstore 5;
+				L1:	sload 5;
+					ifle L10;
+				L2:	sspush 136;
+					getfield_s_this 41;		// short com/test/SHAKE256JC.ratePos
+					ssub;
+					sstore 6;
+					sload 6;
+					sload 5;
+					if_scmple L4;
+				L3:	sload 5;
+					sstore 6;
+				L4:	sconst_0;
+					sstore 7;
+				L5:	sload 7;
+					sload 6;
+					if_scmpge L7;
+				L6:	getfield_a_this 39;		// reference com/test/SHAKE256JC.state
+					getfield_s_this 41;		// short com/test/SHAKE256JC.ratePos
+					sload 7;
+					sadd;
+					dup2;
+					baload;
+					aload_1;
+					sload 4;
+					sload 7;
+					sadd;
+					baload;
+					sxor;
+					bastore;
+					sinc 7 1;
+					goto L5;
+				L7:	aload_0;
+					dup;
+					getfield_s 41;		// short com/test/SHAKE256JC.ratePos
+					sload 6;
+					sadd;
+					putfield_s 41;		// short com/test/SHAKE256JC.ratePos
+					sload 4;
+					sload 6;
+					sadd;
+					sstore 4;
+					sload 5;
+					sload 6;
+					ssub;
+					sstore 5;
+					getfield_s_this 41;		// short com/test/SHAKE256JC.ratePos
+					sspush 136;
+					if_scmpne L9;
+				L8:	getfield_a_this 39;		// reference com/test/SHAKE256JC.state
+					getfield_a_this 40;		// reference com/test/SHAKE256JC.scratch
+					invokestatic 160;		// com/test/KeccakF1600.permute([B[Lcom/test/U64;)V
+					aload_0;
+					sconst_0;
+					putfield_s 41;		// short com/test/SHAKE256JC.ratePos
+				L9:	goto L1;
+				L10:	return;
+		}
+
+		.method public finalizeSqueeze()V 3 {
+			.stack 4;
+			.locals 0;
+
+				L0:	getfield_b_this 42;		// boolean com/test/SHAKE256JC.squeezing
+					ifeq L2;
+				L1:	return;
+				L2:	getfield_a_this 39;		// reference com/test/SHAKE256JC.state
+					getfield_s_this 41;		// short com/test/SHAKE256JC.ratePos
+					dup2;
+					baload;
+					bspush 31;
+					sxor;
+					bastore;
+					getfield_a_this 39;		// reference com/test/SHAKE256JC.state
+					sspush 135;
+					dup2;
+					baload;
+					bspush -128;
+					sxor;
+					bastore;
+					getfield_a_this 39;		// reference com/test/SHAKE256JC.state
+					getfield_a_this 40;		// reference com/test/SHAKE256JC.scratch
+					invokestatic 160;		// com/test/KeccakF1600.permute([B[Lcom/test/U64;)V
+					aload_0;
+					sconst_0;
+					putfield_s 41;		// short com/test/SHAKE256JC.ratePos
+					aload_0;
+					sconst_1;
+					putfield_b 42;		// boolean com/test/SHAKE256JC.squeezing
+					return;
+		}
+
+		.method public squeezeBytes([BSS)V 4 {
+			.stack 5;
+			.locals 5;
+
+				L0:	getfield_b_this 42;		// boolean com/test/SHAKE256JC.squeezing
+					ifne L2;
+				L1:	aload_0;
+					invokevirtual 177;		// finalizeSqueeze()V
+				L2:	sload_2;
+					sstore 4;
+					sload_3;
+					sstore 5;
+				L3:	sload 5;
+					ifle L13;
+				L4:	sspush 136;
+					getfield_s_this 41;		// short com/test/SHAKE256JC.ratePos
+					ssub;
+					sstore 6;
+					sload 6;
+					sload 5;
+					if_scmpge L6;
+				L5:	sload 6;
+					goto L7;
+				L6:	sload 5;
+				L7:	sstore 7;
+					sconst_0;
+					sstore 8;
+				L8:	sload 8;
+					sload 7;
+					if_scmpge L10;
+				L9:	aload_1;
+					sload 4;
+					sload 8;
+					sadd;
+					getfield_a_this 39;		// reference com/test/SHAKE256JC.state
+					getfield_s_this 41;		// short com/test/SHAKE256JC.ratePos
+					sload 8;
+					sadd;
+					baload;
+					bastore;
+					sinc 8 1;
+					goto L8;
+				L10:	sload 4;
+					sload 7;
+					sadd;
+					sstore 4;
+					aload_0;
+					dup;
+					getfield_s 41;		// short com/test/SHAKE256JC.ratePos
+					sload 7;
+					sadd;
+					putfield_s 41;		// short com/test/SHAKE256JC.ratePos
+					sload 5;
+					sload 7;
+					ssub;
+					sstore 5;
+					getfield_s_this 41;		// short com/test/SHAKE256JC.ratePos
+					sspush 136;
+					if_scmpne L12;
+				L11:	getfield_a_this 39;		// reference com/test/SHAKE256JC.state
+					getfield_a_this 40;		// reference com/test/SHAKE256JC.scratch
+					invokestatic 160;		// com/test/KeccakF1600.permute([B[Lcom/test/U64;)V
+					aload_0;
+					sconst_0;
+					putfield_s 41;		// short com/test/SHAKE256JC.ratePos
+				L12:	goto L3;
+				L13:	return;
+		}
+
+		.method public update([BSS)V 5 {
+			.stack 4;
+			.locals 0;
+
+				L0:	aload_0;
+					aload_1;
+					sload_2;
+					sload_3;
+					invokevirtual 178;		// absorbXor([BSS)V
+					return;
+		}
+
+		.method public doOutput([BSS)S 6 {
+			.stack 4;
+			.locals 0;
+
+				L0:	aload_0;
+					aload_1;
+					sload_2;
+					sload_3;
+					invokevirtual 179;		// squeezeBytes([BSS)V
+					sload_3;
+					sreturn;
+		}
+
+		.method public doFinal([BSS)S 7 {
+			.stack 4;
+			.locals 0;
+
+				L0:	aload_0;
+					aload_1;
+					sload_2;
+					sload_3;
+					invokevirtual 179;		// squeezeBytes([BSS)V
+					aload_0;
+					invokevirtual 180;		// reset()V
+					sload_3;
+					sreturn;
+		}
+
+	}
+
+	.class public final U32 4 extends 2.0 {		// extends java/lang/Object
+
+		.fields {
+			 short hi 0;		// S
+			 short lo 1;		// S
+			static final short MASK1 = 4369;		// S
+			static final short MASK2 = 8738;		// S
+			static final short MASK4 = 17476;		// S
+			static final short MASK8 = -30584;		// S
+		}
+
+		.publicMethodTable 1 {
+			equals(Ljava/lang/Object;)Z;
+		}
+
+		.packageMethodTable 0 {
+		}
+
+		.method  <init>()V {
+			.stack 1;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 78;		// java/lang/Object.<init>()V
+					return;
+		}
+
+		.method  <init>(SS)V {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 78;		// java/lang/Object.<init>()V
+					aload_0;
+					sload_1;
+					putfield_s 34;		// short com/test/U32.hi
+					aload_0;
+					sload_2;
+					putfield_s 33;		// short com/test/U32.lo
+					return;
+		}
+
+		.method static set(Lcom/test/U32;SS)V {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					sload_1;
+					putfield_s 34;		// short com/test/U32.hi
+					aload_0;
+					sload_2;
+					putfield_s 33;		// short com/test/U32.lo
+					return;
+		}
+
+		.method static copy(Lcom/test/U32;Lcom/test/U32;)V {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					aload_1;
+					getfield_s 34;		// short com/test/U32.hi
+					putfield_s 34;		// short com/test/U32.hi
+					aload_0;
+					aload_1;
+					getfield_s 33;		// short com/test/U32.lo
+					putfield_s 33;		// short com/test/U32.lo
+					return;
+		}
+
+		.method static xor(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_2;
+					aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					aload_1;
+					getfield_s 34;		// short com/test/U32.hi
+					sxor;
+					putfield_s 34;		// short com/test/U32.hi
+					aload_2;
+					aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					aload_1;
+					getfield_s 33;		// short com/test/U32.lo
+					sxor;
+					putfield_s 33;		// short com/test/U32.lo
+					return;
+		}
+
+		.method static and(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_2;
+					aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					aload_1;
+					getfield_s 34;		// short com/test/U32.hi
+					sand;
+					putfield_s 34;		// short com/test/U32.hi
+					aload_2;
+					aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					aload_1;
+					getfield_s 33;		// short com/test/U32.lo
+					sand;
+					putfield_s 33;		// short com/test/U32.lo
+					return;
+		}
+
+		.method static or(Lcom/test/U32;Lcom/test/U32;Lcom/test/U32;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_2;
+					aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					aload_1;
+					getfield_s 34;		// short com/test/U32.hi
+					sor;
+					putfield_s 34;		// short com/test/U32.hi
+					aload_2;
+					aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					aload_1;
+					getfield_s 33;		// short com/test/U32.lo
+					sor;
+					putfield_s 33;		// short com/test/U32.lo
+					return;
+		}
+
+		.method static andMask(Lcom/test/U32;SLcom/test/U32;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_2;
+					aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					sload_1;
+					sand;
+					putfield_s 34;		// short com/test/U32.hi
+					aload_2;
+					aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					sload_1;
+					sand;
+					putfield_s 33;		// short com/test/U32.lo
+					return;
+		}
+
+		.method static high(Lcom/test/U32;)S {
+			.stack 1;
+			.locals 0;
+
+				L0:	aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					sreturn;
+		}
+
+		.method static low(Lcom/test/U32;)S {
+			.stack 1;
+			.locals 0;
+
+				L0:	aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					sreturn;
+		}
+
+		.method static isZero(Lcom/test/U32;)Z {
+			.stack 1;
+			.locals 0;
+
+				L0:	aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					ifne L3;
+				L1:	aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					ifne L3;
+				L2:	sconst_1;
+					goto L4;
+				L3:	sconst_0;
+				L4:	sreturn;
+		}
+
+		.method static xorReduce(Lcom/test/U32;)S {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					sxor;
+					sreturn;
+		}
+
+		.method private static uLessThan(SSSS)S {
+			.stack 3;
+			.locals 0;
+
+				L0:	sload_0;
+					sload_2;
+					if_scmpeq L5;
+				L1:	sload_0;
+					sspush -32768;
+					sxor;
+					sload_2;
+					sspush -32768;
+					sxor;
+					if_scmpge L3;
+				L2:	sconst_1;
+					goto L4;
+				L3:	sconst_0;
+				L4:	sreturn;
+				L5:	sload_1;
+					sspush -32768;
+					sxor;
+					sload_3;
+					sspush -32768;
+					sxor;
+					if_scmpge L7;
+				L6:	sconst_1;
+					goto L8;
+				L7:	sconst_0;
+				L8:	sreturn;
+		}
+
+		.method static ult(Lcom/test/U32;Lcom/test/U32;)S {
+			.stack 4;
+			.locals 0;
+
+				L0:	aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					aload_1;
+					getfield_s 34;		// short com/test/U32.hi
+					aload_1;
+					getfield_s 33;		// short com/test/U32.lo
+					invokestatic 181;		// com/test/U32.uLessThan(SSSS)S
+					sreturn;
+		}
+
+		.method static msb(Lcom/test/U32;)S {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					bspush 15;
+					sushr;
+					sconst_1;
+					sand;
+					sreturn;
+		}
+
+		.method static clearMsb(Lcom/test/U32;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_0;
+					aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					sspush 32767;
+					sand;
+					putfield_s 34;		// short com/test/U32.hi
+					return;
+		}
+
+		.method static select(Lcom/test/U32;Lcom/test/U32;SLcom/test/U32;)V {
+			.stack 5;
+			.locals 0;
+
+				L0:	aload_3;
+					aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					sload_2;
+					aload_0;
+					getfield_s 34;		// short com/test/U32.hi
+					aload_1;
+					getfield_s 34;		// short com/test/U32.hi
+					sxor;
+					sand;
+					sxor;
+					putfield_s 34;		// short com/test/U32.hi
+					aload_3;
+					aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					sload_2;
+					aload_0;
+					getfield_s 33;		// short com/test/U32.lo
+					aload_1;
+					getfield_s 33;		// short com/test/U32.lo
+					sxor;
+					sand;
+					sxor;
+					putfield_s 33;		// short com/test/U32.lo
+					return;
+		}
+
+		.method static mul16(SSLcom/test/U32;)V {
+			.stack 4;
+			.locals 9;
+
+				L0:	sload_0;
+					sspush 255;
+					sand;
+					sstore_3;
+					sload_0;
+					bspush 8;
+					sushr;
+					sspush 255;
+					sand;
+					sstore 4;
+					sload_1;
+					sspush 255;
+					sand;
+					sstore 5;
+					sload_1;
+					bspush 8;
+					sushr;
+					sspush 255;
+					sand;
+					sstore 6;
+					sload_3;
+					sload 5;
+					smul;
+					sstore 7;
+					sload_3;
+					sload 6;
+					smul;
+					sstore 8;
+					sload 4;
+					sload 5;
+					smul;
+					sstore 9;
+					sload 4;
+					sload 6;
+					smul;
+					sstore 10;
+					sload 7;
+					bspush 8;
+					sushr;
+					sload 8;
+					sspush 255;
+					sand;
+					sadd;
+					sload 9;
+					sspush 255;
+					sand;
+					sadd;
+					sstore 11;
+					aload_2;
+					sload 7;
+					sspush 255;
+					sand;
+					sload 11;
+					sspush 255;
+					sand;
+					bspush 8;
+					sshl;
+					sor;
+					putfield_s 33;		// short com/test/U32.lo
+					aload_2;
+					sload 10;
+					sload 8;
+					bspush 8;
+					sushr;
+					sadd;
+					sload 9;
+					bspush 8;
+					sushr;
+					sadd;
+					sload 11;
+					bspush 8;
+					sushr;
+					sadd;
+					putfield_s 34;		// short com/test/U32.hi
+					return;
+		}
+
+		.method public static mul64(SSSS[SS)V 0 {
+			.stack 4;
+			.locals 13;
+
+				L0:	new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 6;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 7;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 8;
+					new 93;		// com/test/U32
+					dup;
+					invokespecial 94;		// com/test/U32.<init>()V
+					astore 9;
+					sload_1;
+					sload_3;
+					aload 6;
+					invokestatic 182;		// com/test/U32.mul16(SSLcom/test/U32;)V
+					sload_1;
+					sload_2;
+					aload 7;
+					invokestatic 182;		// com/test/U32.mul16(SSLcom/test/U32;)V
+					sload_0;
+					sload_3;
+					aload 8;
+					invokestatic 182;		// com/test/U32.mul16(SSLcom/test/U32;)V
+					sload_0;
+					sload_2;
+					aload 9;
+					invokestatic 182;		// com/test/U32.mul16(SSLcom/test/U32;)V
+					aload 6;
+					getfield_s 33;		// short com/test/U32.lo
+					sstore 10;
+					aload 6;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 7;
+					getfield_s 33;		// short com/test/U32.lo
+					sadd;
+					sstore 11;
+					sconst_0;
+					sload 11;
+					sconst_0;
+					aload 6;
+					getfield_s 34;		// short com/test/U32.hi
+					invokestatic 181;		// com/test/U32.uLessThan(SSSS)S
+					sstore 12;
+					sload 11;
+					sstore 13;
+					sload 11;
+					aload 8;
+					getfield_s 33;		// short com/test/U32.lo
+					sadd;
+					sstore 11;
+					sconst_0;
+					sload 11;
+					sconst_0;
+					sload 13;
+					invokestatic 181;		// com/test/U32.uLessThan(SSSS)S
+					ifeq L2;
+				L1:	sinc 12 1;
+				L2:	sload 11;
+					sstore 14;
+					aload 7;
+					getfield_s 34;		// short com/test/U32.hi
+					aload 8;
+					getfield_s 34;		// short com/test/U32.hi
+					sadd;
+					sstore 15;
+					sconst_0;
+					sload 15;
+					sconst_0;
+					aload 7;
+					getfield_s 34;		// short com/test/U32.hi
+					invokestatic 181;		// com/test/U32.uLessThan(SSSS)S
+					sstore 16;
+					sload 15;
+					sstore 13;
+					sload 15;
+					aload 9;
+					getfield_s 33;		// short com/test/U32.lo
+					sadd;
+					sstore 15;
+					sconst_0;
+					sload 15;
+					sconst_0;
+					sload 13;
+					invokestatic 181;		// com/test/U32.uLessThan(SSSS)S
+					ifeq L4;
+				L3:	sinc 16 1;
+				L4:	sload 15;
+					sstore 13;
+					sload 15;
+					sload 12;
+					sadd;
+					sstore 15;
+					sconst_0;
+					sload 15;
+					sconst_0;
+					sload 13;
+					invokestatic 181;		// com/test/U32.uLessThan(SSSS)S
+					ifeq L6;
+				L5:	sinc 16 1;
+				L6:	sload 15;
+					sstore 17;
+					aload 9;
+					getfield_s 34;		// short com/test/U32.hi
+					sload 16;
+					sadd;
+					sstore 18;
+					aload 4;
+					sload 5;
+					sload 10;
+					sastore;
+					aload 4;
+					sload 5;
+					sconst_1;
+					sadd;
+					sload 14;
+					sastore;
+					aload 4;
+					sload 5;
+					sconst_2;
+					sadd;
+					sload 17;
+					sastore;
+					aload 4;
+					sload 5;
+					sconst_3;
+					sadd;
+					sload 18;
+					sastore;
+					return;
+		}
+
+	}
+
+	.class public final U64 5 extends 2.0 {		// extends java/lang/Object
+
+		.fields {
+			 short w3 0;		// S
+			 short w2 1;		// S
+			 short w1 2;		// S
+			 short w0 3;		// S
+		}
+
+		.publicMethodTable 1 {
+			equals(Ljava/lang/Object;)Z;
+		}
+
+		.packageMethodTable 0 {
+		}
+
+		.method  <init>()V {
+			.stack 1;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 78;		// java/lang/Object.<init>()V
+					return;
+		}
+
+		.method  <init>(SSSS)V {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 78;		// java/lang/Object.<init>()V
+					aload_0;
+					sload_1;
+					putfield_s 38;		// short com/test/U64.w3
+					aload_0;
+					sload_2;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_0;
+					sload_3;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_0;
+					sload 4;
+					putfield_s 35;		// short com/test/U64.w0
+					return;
+		}
+
+		.method static set(Lcom/test/U64;SSSS)V {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					sload_1;
+					putfield_s 38;		// short com/test/U64.w3
+					aload_0;
+					sload_2;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_0;
+					sload_3;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_0;
+					sload 4;
+					putfield_s 35;		// short com/test/U64.w0
+					return;
+		}
+
+		.method static getU64([S[S[S[SSLcom/test/U64;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload 5;
+					aload_0;
+					sload 4;
+					saload;
+					putfield_s 38;		// short com/test/U64.w3
+					aload 5;
+					aload_1;
+					sload 4;
+					saload;
+					putfield_s 37;		// short com/test/U64.w2
+					aload 5;
+					aload_2;
+					sload 4;
+					saload;
+					putfield_s 36;		// short com/test/U64.w1
+					aload 5;
+					aload_3;
+					sload 4;
+					saload;
+					putfield_s 35;		// short com/test/U64.w0
+					return;
+		}
+
+		.method static copy(Lcom/test/U64;Lcom/test/U64;)V {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_1;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					putfield_s 38;		// short com/test/U64.w3
+					aload_1;
+					aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					putfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					putfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					putfield_s 35;		// short com/test/U64.w0
+					return;
+		}
+
+		.method static xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_2;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					aload_1;
+					getfield_s 38;		// short com/test/U64.w3
+					sxor;
+					putfield_s 38;		// short com/test/U64.w3
+					aload_2;
+					aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					getfield_s 37;		// short com/test/U64.w2
+					sxor;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_2;
+					aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					getfield_s 36;		// short com/test/U64.w1
+					sxor;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_2;
+					aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					aload_1;
+					getfield_s 35;		// short com/test/U64.w0
+					sxor;
+					putfield_s 35;		// short com/test/U64.w0
+					return;
+		}
+
+		.method static and(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_2;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					aload_1;
+					getfield_s 38;		// short com/test/U64.w3
+					sand;
+					putfield_s 38;		// short com/test/U64.w3
+					aload_2;
+					aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					getfield_s 37;		// short com/test/U64.w2
+					sand;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_2;
+					aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					getfield_s 36;		// short com/test/U64.w1
+					sand;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_2;
+					aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					aload_1;
+					getfield_s 35;		// short com/test/U64.w0
+					sand;
+					putfield_s 35;		// short com/test/U64.w0
+					return;
+		}
+
+		.method static or(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_2;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					aload_1;
+					getfield_s 38;		// short com/test/U64.w3
+					sor;
+					putfield_s 38;		// short com/test/U64.w3
+					aload_2;
+					aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					getfield_s 37;		// short com/test/U64.w2
+					sor;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_2;
+					aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					getfield_s 36;		// short com/test/U64.w1
+					sor;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_2;
+					aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					aload_1;
+					getfield_s 35;		// short com/test/U64.w0
+					sor;
+					putfield_s 35;		// short com/test/U64.w0
+					return;
+		}
+
+		.method public static not(Lcom/test/U64;Lcom/test/U64;)V 0 {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_1;
+					aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					sconst_m1;
+					sxor;
+					putfield_s 35;		// short com/test/U64.w0
+					aload_1;
+					aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					sconst_m1;
+					sxor;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					sconst_m1;
+					sxor;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					sconst_m1;
+					sxor;
+					putfield_s 38;		// short com/test/U64.w3
+					return;
+		}
+
+		.method public static rol1(Lcom/test/U64;Lcom/test/U64;)V 1 {
+			.stack 3;
+			.locals 4;
+
+				L0:	aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					ifge L2;
+				L1:	sconst_1;
+					goto L3;
+				L2:	sconst_0;
+				L3:	sstore_2;
+					aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					ifge L5;
+				L4:	sconst_1;
+					goto L6;
+				L5:	sconst_0;
+				L6:	sstore_3;
+					aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					ifge L8;
+				L7:	sconst_1;
+					goto L9;
+				L8:	sconst_0;
+				L9:	sstore 4;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					ifge L11;
+				L10:	sconst_1;
+					goto L12;
+				L11:	sconst_0;
+				L12:	sstore 5;
+					aload_1;
+					aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					sconst_1;
+					sshl;
+					putfield_s 35;		// short com/test/U64.w0
+					aload_1;
+					aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					sconst_1;
+					sshl;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					sconst_1;
+					sshl;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					sconst_1;
+					sshl;
+					putfield_s 38;		// short com/test/U64.w3
+					aload_1;
+					dup;
+					getfield_s 36;		// short com/test/U64.w1
+					sload_2;
+					sor;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					dup;
+					getfield_s 37;		// short com/test/U64.w2
+					sload_3;
+					sor;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					dup;
+					getfield_s 38;		// short com/test/U64.w3
+					sload 4;
+					sor;
+					putfield_s 38;		// short com/test/U64.w3
+					aload_1;
+					dup;
+					getfield_s 35;		// short com/test/U64.w0
+					sload 5;
+					sor;
+					putfield_s 35;		// short com/test/U64.w0
+					return;
+		}
+
+		.method public static rol(Lcom/test/U64;SLcom/test/U64;)V 2 {
+			.stack 3;
+			.locals 2;
+
+				L0:	sload_1;
+					bspush 63;
+					sand;
+					sstore_1;
+					sload_1;
+					ifne L2;
+				L1:	aload_0;
+					aload_2;
+					invokestatic 162;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+					return;
+				L2:	new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore_3;
+					new 137;		// com/test/U64
+					dup;
+					invokespecial 138;		// com/test/U64.<init>()V
+					astore 4;
+					aload_0;
+					aload_3;
+					invokestatic 162;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+				L3:	sload_1;
+					sinc 1 -1;
+					ifle L5;
+				L4:	aload_3;
+					aload 4;
+					invokestatic 164;		// com/test/U64.rol1(Lcom/test/U64;Lcom/test/U64;)V
+					aload 4;
+					aload_3;
+					invokestatic 162;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+					goto L3;
+				L5:	aload_3;
+					aload_2;
+					invokestatic 162;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+					return;
+		}
+
+		.method static msb(Lcom/test/U64;)S {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					bspush 15;
+					sushr;
+					sconst_1;
+					sand;
+					sreturn;
+		}
+
+		.method static clearMsb(Lcom/test/U64;)V {
+			.stack 3;
+			.locals 0;
+
+				L0:	aload_0;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					sspush 32767;
+					sand;
+					putfield_s 38;		// short com/test/U64.w3
+					return;
+		}
+
+		.method static select(Lcom/test/U64;Lcom/test/U64;SLcom/test/U64;)V {
+			.stack 5;
+			.locals 0;
+
+				L0:	aload_3;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					sload_2;
+					aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					aload_1;
+					getfield_s 38;		// short com/test/U64.w3
+					sxor;
+					sand;
+					sxor;
+					putfield_s 38;		// short com/test/U64.w3
+					aload_3;
+					aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					sload_2;
+					aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					getfield_s 37;		// short com/test/U64.w2
+					sxor;
+					sand;
+					sxor;
+					putfield_s 37;		// short com/test/U64.w2
+					aload_3;
+					aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					sload_2;
+					aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					getfield_s 36;		// short com/test/U64.w1
+					sxor;
+					sand;
+					sxor;
+					putfield_s 36;		// short com/test/U64.w1
+					aload_3;
+					aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					sload_2;
+					aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					aload_1;
+					getfield_s 35;		// short com/test/U64.w0
+					sxor;
+					sand;
+					sxor;
+					putfield_s 35;		// short com/test/U64.w0
+					return;
+		}
+
+		.method private static uLessThan16(SS)S {
+			.stack 3;
+			.locals 0;
+
+				L0:	sload_0;
+					sspush -32768;
+					sxor;
+					sload_1;
+					sspush -32768;
+					sxor;
+					if_scmpge L2;
+				L1:	sconst_1;
+					goto L3;
+				L2:	sconst_0;
+				L3:	sreturn;
+		}
+
+		.method static ult(Lcom/test/U64;Lcom/test/U64;)S {
+			.stack 2;
+			.locals 0;
+
+				L0:	aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					aload_1;
+					getfield_s 38;		// short com/test/U64.w3
+					if_scmpeq L2;
+				L1:	aload_0;
+					getfield_s 38;		// short com/test/U64.w3
+					aload_1;
+					getfield_s 38;		// short com/test/U64.w3
+					invokestatic 183;		// com/test/U64.uLessThan16(SS)S
+					sreturn;
+				L2:	aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					getfield_s 37;		// short com/test/U64.w2
+					if_scmpeq L4;
+				L3:	aload_0;
+					getfield_s 37;		// short com/test/U64.w2
+					aload_1;
+					getfield_s 37;		// short com/test/U64.w2
+					invokestatic 183;		// com/test/U64.uLessThan16(SS)S
+					sreturn;
+				L4:	aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					getfield_s 36;		// short com/test/U64.w1
+					if_scmpeq L6;
+				L5:	aload_0;
+					getfield_s 36;		// short com/test/U64.w1
+					aload_1;
+					getfield_s 36;		// short com/test/U64.w1
+					invokestatic 183;		// com/test/U64.uLessThan16(SS)S
+					sreturn;
+				L6:	aload_0;
+					getfield_s 35;		// short com/test/U64.w0
+					aload_1;
+					getfield_s 35;		// short com/test/U64.w0
+					invokestatic 183;		// com/test/U64.uLessThan16(SS)S
+					sreturn;
 		}
 
 	}

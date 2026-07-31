@@ -39,6 +39,13 @@ Run a simulator-based test.
 - `Chameleon.ChameleonECDSATest`
 - `Chameleon.ChameleonTest`
 
+## Verify Certificates and Signatures
+Run verification for the Chameleon scheme.
+
+```powershell
+.\scripts\run-verify.ps1
+```
+
 ## Build CAP Files
 Generate Java Card CAP files.
 ```powershell

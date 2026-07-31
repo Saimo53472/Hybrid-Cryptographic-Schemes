@@ -16,3 +16,10 @@ $env:PATH = "$env:JC_HOME\bin;$env:PATH"
   "-DartifactId=javacard-api" `
   "-Dversion=2.2.2" `
   "-Dpackaging=jar"
+
+& "$ROOT\mvnw.cmd" install:install-file `
+  "-Dfile=$ROOT\jcardsim-2.2.2-all.jar" `
+  "-DgroupId=com.licel" `
+  "-DartifactId=jcardsim" `
+  "-Dversion=2.2.2" `
+  "-Dpackaging=jar"

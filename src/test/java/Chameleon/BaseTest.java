@@ -1,6 +1,6 @@
 package Chameleon;
 
-import com.licel.jcardsim.smartcardio.CardSimulator;
+import com.licel.jcardsim.base.Simulator;
 import com.test.BaseApplet;
 
 import javacard.framework.AID;
@@ -34,7 +34,7 @@ public class BaseTest {
 
     public static void main(String[] args) throws Exception{
 
-        CardSimulator simulator = new CardSimulator();
+        Simulator simulator = new Simulator();
 
         // Applet AID
         byte[] aidBytes = {(byte) 0xA0, 0x00, 0x00, 0x00, 0x62, 0x01};
@@ -222,14 +222,14 @@ public class BaseTest {
         System.out.println("ECDSA signature size (bytes): " + sigData.length);
     }
 
-    private static ResponseAPDU send(CardSimulator sim, CommandAPDU cmd) {
+    private static ResponseAPDU send(Simulator sim, CommandAPDU cmd) {
         // Count APDU
         apduCount++;
 
         // Count bytes sent
         bytesSent += cmd.getBytes().length;
 
-        ResponseAPDU resp = sim.transmitCommand(cmd);
+        ResponseAPDU resp = new ResponseAPDU(sim.transmitCommand(cmd.getBytes()));
 
         // Count bytes received
         bytesReceived += resp.getBytes().length;
@@ -242,8 +242,8 @@ public class BaseTest {
         return resp;
     }
 
-    private static ResponseAPDU send2(CardSimulator sim, CommandAPDU cmd) {
-        ResponseAPDU resp = sim.transmitCommand(cmd);
+    private static ResponseAPDU send2(Simulator sim, CommandAPDU cmd) {
+        ResponseAPDU resp = new ResponseAPDU(sim.transmitCommand(cmd.getBytes()));
         return resp;
     }
 

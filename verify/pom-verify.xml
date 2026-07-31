@@ -11,12 +11,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.licel</groupId>
-            <artifactId>jcardsim</artifactId>
-            <version>2.2.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.javacard</groupId>
             <artifactId>javacard-api</artifactId>
             <version>2.2.2</version>

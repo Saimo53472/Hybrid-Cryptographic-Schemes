@@ -3,7 +3,6 @@ com\test\KeccakF1600.class
 com\test\U64.class
 com\test\U32.class
 com\test\ChameleonECDSAApplet.class
-com\test\Test.class
 com\test\Hawk.class
 com\test\SHAKE256JC.class
 com\test\BaseApplet.class

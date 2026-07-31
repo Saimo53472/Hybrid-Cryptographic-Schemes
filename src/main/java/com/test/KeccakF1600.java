@@ -173,6 +173,23 @@ public final class KeccakF1600
         // write back hi/lo -> state bytes (little-endian)
         for (short i = 0; i < 25; i++) {
 
+//             short off = (short)(i << 3);
+
+// if (permCount == 3 && i == 20) {
+//     ISOException.throwIt((short)0x7F20);
+// }
+
+// state[off] = (byte)A[i].w0;
+
+// if (permCount == 3 && i == 20) {
+//     ISOException.throwIt((short)0x7F21);
+// }
+
+// state[(short)(off + 1)] = (byte)(A[i].w0 >>> 8);
+
+// if (permCount == 3 && i == 20) {
+//     ISOException.throwIt((short)0x7F22);
+// }
             short off = (short)(i << 3);
             state[off] = (byte)A[i].w0;
             state[(short)(off + 1)] = (byte)(A[i].w0 >>> 8);
@@ -183,8 +200,5 @@ public final class KeccakF1600
             state[(short)(off + 6)] = (byte)A[i].w3;
             state[(short)(off + 7)] = (byte)(A[i].w3 >>> 8);
         }
-        if (permCount == 3) {
-    ISOException.throwIt((short)0x7F50);
-}
     }
 }

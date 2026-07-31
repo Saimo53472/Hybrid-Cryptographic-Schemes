@@ -458,9 +458,9 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
                 }
             }
 
-            if (u == 512) {
-                ISOException.throwIt((short)0x7C00);
-            }
+            // if (u == 512) {
+            //     ISOException.throwIt((short)0x7C00);
+            // }
         }
     }
 }
