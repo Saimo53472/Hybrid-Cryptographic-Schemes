@@ -1,7 +1,5 @@
 package com.test;
 
-import javacard.framework.ISOException;
-
 /**
  * SHAKE256 sponge that uses KeccakF1600.permute(state, scratch).
  */
@@ -99,17 +97,11 @@ public final class SHAKE256JC
             o += toCopy;
             ratePos += toCopy;
             remaining -= toCopy;
-            // if (ratePos == RATE_BYTES)
-            // {
-            //     KeccakF1600.permute(state, scratch);
-            //     ratePos = 0;
-            // }
             if (ratePos == RATE_BYTES)
-{
-    KeccakF1600.permute(state, scratch);
-
-    ratePos = 0;
-}
+            {
+                KeccakF1600.permute(state, scratch);
+                ratePos = 0;
+            }
         }
     }
 

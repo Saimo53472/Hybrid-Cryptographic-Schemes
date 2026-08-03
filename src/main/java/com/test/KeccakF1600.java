@@ -1,7 +1,5 @@
 package com.test;
 
-import javacard.framework.ISOException;
-
 /**
  * Allocation-free Keccak-f[1600] permutation using 32-bit hi/lo lane pairs.
  */
@@ -51,8 +49,6 @@ public final class KeccakF1600
         (short)0x8081, (short)0x8080, (short)0x0001, (short)0x8008
     };
 
-    private static short permCount = 0;
-
     public static void permute(byte[] state)
     {
         U64[] A = new U64[25];
@@ -61,7 +57,6 @@ public final class KeccakF1600
 
     public static void permute(byte[] state, U64[] A)
     {
-        permCount++;
         for (short i = 0; i < 25; i++) {
             A[i] = new U64();
         }
@@ -169,30 +164,8 @@ public final class KeccakF1600
             rc.w0 = RC_W0[round];
             U64.xor(A[0], rc, A[0]);
         }
-
         // write back hi/lo -> state bytes (little-endian)
         for (short i = 0; i < 25; i++) {
-            if (permCount == 3) {
-    ISOException.throwIt((short)0x7F00);
-}
-
-//             short off = (short)(i << 3);
-
-// if (permCount == 3 && i == 20) {
-//     ISOException.throwIt((short)0x7F20);
-// }
-
-// state[off] = (byte)A[i].w0;
-
-// if (permCount == 3 && i == 20) {
-//     ISOException.throwIt((short)0x7F21);
-// }
-
-// state[(short)(off + 1)] = (byte)(A[i].w0 >>> 8);
-
-// if (permCount == 3 && i == 20) {
-//     ISOException.throwIt((short)0x7F22);
-// }
             short off = (short)(i << 3);
             state[off] = (byte)A[i].w0;
             state[(short)(off + 1)] = (byte)(A[i].w0 >>> 8);

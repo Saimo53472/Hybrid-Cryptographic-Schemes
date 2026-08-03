@@ -1,5 +1,5 @@
 // converted by version 1.3
-// on Fri Jul 31 17:38:09 CEST 2026
+// on Fri Jul 31 19:31:57 CEST 2026
 
 .package com/test {
 	.aid 0xA0:0x1:0x1:0x1:0x1:0x1;
@@ -315,58 +315,60 @@
 		// 135
 		staticMethodRef KeccakF1600/permute([B[Lcom/test/U64;)V;
 		// 136
-		staticFieldRef short KeccakF1600/permCount;
+		staticMethodRef 0.8.16(B)S;		// javacard/framework/JCSystem.getAvailableMemory(B)S
 		// 137
-		staticMethodRef U64/copy(Lcom/test/U64;Lcom/test/U64;)V;
+		staticFieldRef short KeccakF1600/permCount;
 		// 138
-		staticMethodRef U64/xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V;
+		staticMethodRef U64/copy(Lcom/test/U64;Lcom/test/U64;)V;
 		// 139
-		staticMethodRef U64/rol1(Lcom/test/U64;Lcom/test/U64;)V;
+		staticMethodRef U64/xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V;
 		// 140
-		staticFieldRef byte[] KeccakF1600/RHO_OFFSETS;
+		staticMethodRef U64/rol1(Lcom/test/U64;Lcom/test/U64;)V;
 		// 141
-		staticMethodRef U64/rol(Lcom/test/U64;SLcom/test/U64;)V;
+		staticFieldRef byte[] KeccakF1600/RHO_OFFSETS;
 		// 142
-		staticMethodRef U64/not(Lcom/test/U64;Lcom/test/U64;)V;
+		staticMethodRef U64/rol(Lcom/test/U64;SLcom/test/U64;)V;
 		// 143
-		staticMethodRef U64/and(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V;
+		staticMethodRef U64/not(Lcom/test/U64;Lcom/test/U64;)V;
 		// 144
-		staticFieldRef short[] KeccakF1600/RC_W3;
+		staticMethodRef U64/and(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V;
 		// 145
-		staticFieldRef short[] KeccakF1600/RC_W2;
+		staticFieldRef short[] KeccakF1600/RC_W3;
 		// 146
-		staticFieldRef short[] KeccakF1600/RC_W1;
+		staticFieldRef short[] KeccakF1600/RC_W2;
 		// 147
-		staticFieldRef short[] KeccakF1600/RC_W0;
+		staticFieldRef short[] KeccakF1600/RC_W1;
 		// 148
+		staticFieldRef short[] KeccakF1600/RC_W0;
+		// 149
 		staticMethodRef ChameleonApplet/sendSignatureDelta(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 149
+		// 150
 		staticMethodRef ChameleonApplet/loadPrivateKeyBase(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 150
+		// 151
 		staticMethodRef ChameleonApplet/loadPrivateKeyDelta(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 151
+		// 152
 		staticMethodRef ChameleonApplet/loadIssuerCertificate(Ljavacard/framework/APDU;)V;
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-		// 152
-		virtualMethodRef SHAKE256JC/finalizeSqueeze()V;
 		// 153
-		virtualMethodRef SHAKE256JC/absorbXor([BSS)V;
+		virtualMethodRef SHAKE256JC/finalizeSqueeze()V;
 		// 154
-		virtualMethodRef SHAKE256JC/squeezeBytes([BSS)V;
+		virtualMethodRef SHAKE256JC/absorbXor([BSS)V;
 		// 155
-		virtualMethodRef SHAKE256JC/reset()V;
+		virtualMethodRef SHAKE256JC/squeezeBytes([BSS)V;
 		// 156
-		staticMethodRef U32/uLessThan(SSSS)S;
+		virtualMethodRef SHAKE256JC/reset()V;
 		// 157
-		staticMethodRef U32/mul16(SSLcom/test/U32;)V;
+		staticMethodRef U32/uLessThan(SSSS)S;
 		// 158
+		staticMethodRef U32/mul16(SSLcom/test/U32;)V;
+		// 159
 		staticMethodRef U64/uLessThan16(SS)S;
 	}
 
@@ -538,19 +540,19 @@
 					return;
 				L10:	aload_0;
 					aload_1;
-					invokespecial 148;		// com/test/ChameleonApplet.sendSignatureDelta(Ljavacard/framework/APDU;)V
+					invokespecial 149;		// com/test/ChameleonApplet.sendSignatureDelta(Ljavacard/framework/APDU;)V
 					return;
 				L11:	aload_0;
 					aload_1;
-					invokespecial 149;		// com/test/ChameleonApplet.loadPrivateKeyBase(Ljavacard/framework/APDU;)V
+					invokespecial 150;		// com/test/ChameleonApplet.loadPrivateKeyBase(Ljavacard/framework/APDU;)V
 					return;
 				L12:	aload_0;
 					aload_1;
-					invokespecial 150;		// com/test/ChameleonApplet.loadPrivateKeyDelta(Ljavacard/framework/APDU;)V
+					invokespecial 151;		// com/test/ChameleonApplet.loadPrivateKeyDelta(Ljavacard/framework/APDU;)V
 					return;
 				L13:	aload_0;
 					aload_1;
-					invokespecial 151;		// com/test/ChameleonApplet.loadIssuerCertificate(Ljavacard/framework/APDU;)V
+					invokespecial 152;		// com/test/ChameleonApplet.loadIssuerCertificate(Ljavacard/framework/APDU;)V
 					return;
 				L14:	aload_0;
 					aload_1;
@@ -5511,44 +5513,59 @@
 
 		.method public static permute([B[Lcom/test/U64;)V 2 {
 			.stack 5;
-			.locals 14;
+			.locals 17;
 
-				L0:	getstatic_s 136;		// short com/test/KeccakF1600.permCount
+				L0:	sconst_1;
+					invokestatic 136;		// javacard/framework/JCSystem.getAvailableMemory(B)S
+					sstore_2;
+					sconst_2;
+					invokestatic 136;		// javacard/framework/JCSystem.getAvailableMemory(B)S
+					sstore_3;
+					sconst_0;
+					invokestatic 136;		// javacard/framework/JCSystem.getAvailableMemory(B)S
+					sstore 4;
+					sspush 28672;
+					sload_2;
+					bspush 100;
+					sdiv;
+					sadd;
+					invokestatic 34;		// javacard/framework/ISOException.throwIt(S)V
+					getstatic_s 137;		// short com/test/KeccakF1600.permCount
 					sconst_1;
 					sadd;
-					putstatic_s 136;		// short com/test/KeccakF1600.permCount
+					putstatic_s 137;		// short com/test/KeccakF1600.permCount
 					sconst_0;
-					sstore_2;
-				L1:	sload_2;
+					sstore 5;
+				L1:	sload 5;
 					bspush 25;
 					if_scmpge L3;
 				L2:	aload_1;
-					sload_2;
+					sload 5;
 					new 112;		// com/test/U64
 					dup;
 					invokespecial 113;		// com/test/U64.<init>()V
 					aastore;
-					sinc 2 1;
+					sinc 5 1;
 					goto L1;
 				L3:	sconst_0;
-					sstore_2;
-				L4:	sload_2;
+					sstore 5;
+				L4:	sload 5;
 					bspush 25;
-					if_scmpge L6;
-				L5:	sload_2;
+					if_scmpge_w L6;
+				L5:	sload 5;
 					sconst_3;
 					sshl;
-					sstore_3;
+					sstore 6;
 					aload_1;
-					sload_2;
+					sload 5;
 					aaload;
 					aload_0;
-					sload_3;
+					sload 6;
 					baload;
 					sspush 255;
 					sand;
 					aload_0;
-					sload_3;
+					sload 6;
 					sconst_1;
 					sadd;
 					baload;
@@ -5559,17 +5576,17 @@
 					sor;
 					putfield_s 23;		// short com/test/U64.w0
 					aload_1;
-					sload_2;
+					sload 5;
 					aaload;
 					aload_0;
-					sload_3;
+					sload 6;
 					sconst_2;
 					sadd;
 					baload;
 					sspush 255;
 					sand;
 					aload_0;
-					sload_3;
+					sload 6;
 					sconst_3;
 					sadd;
 					baload;
@@ -5580,17 +5597,17 @@
 					sor;
 					putfield_s 24;		// short com/test/U64.w1
 					aload_1;
-					sload_2;
+					sload 5;
 					aaload;
 					aload_0;
-					sload_3;
+					sload 6;
 					sconst_4;
 					sadd;
 					baload;
 					sspush 255;
 					sand;
 					aload_0;
-					sload_3;
+					sload 6;
 					sconst_5;
 					sadd;
 					baload;
@@ -5601,17 +5618,17 @@
 					sor;
 					putfield_s 25;		// short com/test/U64.w2
 					aload_1;
-					sload_2;
+					sload 5;
 					aaload;
 					aload_0;
-					sload_3;
+					sload 6;
 					bspush 6;
 					sadd;
 					baload;
 					sspush 255;
 					sand;
 					aload_0;
-					sload_3;
+					sload 6;
 					bspush 7;
 					sadd;
 					baload;
@@ -5621,414 +5638,395 @@
 					sshl;
 					sor;
 					putfield_s 26;		// short com/test/U64.w3
-					sinc 2 1;
-					goto L4;
+					sinc 5 1;
+					goto_w L4;
 				L6:	bspush 25;
 					anewarray 112;		// com/test/U64
-					astore_2;
+					astore 5;
 					sconst_5;
 					anewarray 112;		// com/test/U64
-					astore_3;
+					astore 6;
 					sconst_5;
 					anewarray 112;		// com/test/U64
-					astore 4;
+					astore 7;
 					sconst_0;
-					sstore 5;
-				L7:	sload 5;
+					sstore 8;
+				L7:	sload 8;
 					bspush 25;
 					if_scmpge L9;
-				L8:	aload_2;
-					sload 5;
+				L8:	aload 5;
+					sload 8;
 					new 112;		// com/test/U64
 					dup;
 					invokespecial 113;		// com/test/U64.<init>()V
 					aastore;
-					sinc 5 1;
+					sinc 8 1;
 					goto L7;
 				L9:	sconst_0;
-					sstore 5;
-				L10:	sload 5;
+					sstore 8;
+				L10:	sload 8;
 					sconst_5;
 					if_scmpge L12;
-				L11:	aload_3;
-					sload 5;
+				L11:	aload 6;
+					sload 8;
 					new 112;		// com/test/U64
 					dup;
 					invokespecial 113;		// com/test/U64.<init>()V
 					aastore;
-					aload 4;
-					sload 5;
+					aload 7;
+					sload 8;
 					new 112;		// com/test/U64
 					dup;
 					invokespecial 113;		// com/test/U64.<init>()V
 					aastore;
-					sinc 5 1;
+					sinc 8 1;
 					goto L10;
 				L12:	new 112;		// com/test/U64
 					dup;
 					invokespecial 113;		// com/test/U64.<init>()V
-					astore 5;
+					astore 8;
 					new 112;		// com/test/U64
 					dup;
 					invokespecial 113;		// com/test/U64.<init>()V
-					astore 6;
+					astore 9;
 					new 112;		// com/test/U64
 					dup;
 					invokespecial 113;		// com/test/U64.<init>()V
-					astore 7;
+					astore 10;
 					sconst_0;
-					sstore 8;
-				L13:	sload 8;
+					sstore 11;
+				L13:	sload 11;
 					bspush 24;
 					if_scmpge_w L39;
 				L14:	sconst_0;
-					sstore 9;
-				L15:	sload 9;
+					sstore 12;
+				L15:	sload 12;
 					sconst_5;
 					if_scmpge L17;
 				L16:	aload_1;
-					sload 9;
+					sload 12;
 					aaload;
-					aload_3;
-					sload 9;
+					aload 6;
+					sload 12;
 					aaload;
-					invokestatic 137;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
-					aload_3;
-					sload 9;
+					invokestatic 138;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+					aload 6;
+					sload 12;
 					aaload;
 					aload_1;
-					sload 9;
+					sload 12;
 					sconst_5;
 					sadd;
 					aaload;
-					aload_3;
-					sload 9;
+					aload 6;
+					sload 12;
 					aaload;
-					invokestatic 138;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
-					aload_3;
-					sload 9;
+					invokestatic 139;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					aload 6;
+					sload 12;
 					aaload;
 					aload_1;
-					sload 9;
+					sload 12;
 					bspush 10;
 					sadd;
 					aaload;
-					aload_3;
-					sload 9;
+					aload 6;
+					sload 12;
 					aaload;
-					invokestatic 138;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
-					aload_3;
-					sload 9;
+					invokestatic 139;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					aload 6;
+					sload 12;
 					aaload;
 					aload_1;
-					sload 9;
+					sload 12;
 					bspush 15;
 					sadd;
 					aaload;
-					aload_3;
-					sload 9;
+					aload 6;
+					sload 12;
 					aaload;
-					invokestatic 138;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
-					aload_3;
-					sload 9;
+					invokestatic 139;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					aload 6;
+					sload 12;
 					aaload;
 					aload_1;
-					sload 9;
+					sload 12;
 					bspush 20;
 					sadd;
 					aaload;
-					aload_3;
-					sload 9;
+					aload 6;
+					sload 12;
 					aaload;
-					invokestatic 138;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
-					sinc 9 1;
+					invokestatic 139;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 12 1;
 					goto L15;
 				L17:	sconst_0;
-					sstore 9;
-				L18:	sload 9;
+					sstore 12;
+				L18:	sload 12;
 					sconst_5;
 					if_scmpge L20;
-				L19:	sload 9;
+				L19:	sload 12;
 					sconst_1;
 					sadd;
-					sstore 10;
-					sload 9;
+					sstore 13;
+					sload 12;
 					sconst_4;
 					sadd;
-					sstore 11;
-					sload 10;
+					sstore 14;
+					sload 13;
 					sconst_5;
 					srem;
-					sstore 10;
-					sload 11;
+					sstore 13;
+					sload 14;
 					sconst_5;
 					srem;
-					sstore 11;
-					aload_3;
-					sload 10;
+					sstore 14;
+					aload 6;
+					sload 13;
 					aaload;
-					aload 5;
-					invokestatic 139;		// com/test/U64.rol1(Lcom/test/U64;Lcom/test/U64;)V
-					aload_3;
-					sload 11;
+					aload 8;
+					invokestatic 140;		// com/test/U64.rol1(Lcom/test/U64;Lcom/test/U64;)V
+					aload 6;
+					sload 14;
 					aaload;
-					aload 5;
-					aload 4;
-					sload 9;
+					aload 8;
+					aload 7;
+					sload 12;
 					aaload;
-					invokestatic 138;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
-					sinc 9 1;
+					invokestatic 139;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 12 1;
 					goto L18;
 				L20:	sconst_0;
-					sstore 9;
-				L21:	sload 9;
+					sstore 12;
+				L21:	sload 12;
 					sconst_5;
 					if_scmpge L26;
 				L22:	sconst_0;
-					sstore 10;
-				L23:	sload 10;
+					sstore 13;
+				L23:	sload 13;
 					sconst_5;
 					if_scmpge L25;
-				L24:	sload 9;
+				L24:	sload 12;
 					sconst_5;
-					sload 10;
+					sload 13;
 					smul;
 					sadd;
-					sstore 11;
+					sstore 14;
 					aload_1;
-					sload 11;
+					sload 14;
 					aaload;
-					aload 4;
-					sload 9;
+					aload 7;
+					sload 12;
 					aaload;
 					aload_1;
-					sload 11;
+					sload 14;
 					aaload;
-					invokestatic 138;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
-					sinc 10 1;
+					invokestatic 139;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 13 1;
 					goto L23;
-				L25:	sinc 9 1;
+				L25:	sinc 12 1;
 					goto L21;
 				L26:	sconst_0;
-					sstore 9;
-				L27:	sload 9;
+					sstore 12;
+				L27:	sload 12;
 					sconst_5;
 					if_scmpge L32;
 				L28:	sconst_0;
-					sstore 10;
-				L29:	sload 10;
+					sstore 13;
+				L29:	sload 13;
 					sconst_5;
 					if_scmpge L31;
-				L30:	sload 9;
+				L30:	sload 12;
 					sconst_5;
-					sload 10;
+					sload 13;
 					smul;
 					sadd;
-					sstore 11;
-					getstatic_a 140;		// reference com/test/KeccakF1600.RHO_OFFSETS
-					sload 11;
+					sstore 14;
+					getstatic_a 141;		// reference com/test/KeccakF1600.RHO_OFFSETS
+					sload 14;
 					baload;
 					sspush 255;
 					sand;
-					sstore 12;
-					sload 10;
-					sstore 13;
+					sstore 15;
+					sload 13;
+					sstore 16;
 					sconst_2;
-					sload 9;
+					sload 12;
 					smul;
 					sconst_3;
-					sload 10;
+					sload 13;
 					smul;
 					sadd;
-					sstore 14;
-					sload 14;
+					sstore 17;
+					sload 17;
 					sconst_5;
 					srem;
-					sstore 14;
-					sload 13;
+					sstore 17;
+					sload 16;
 					sconst_5;
-					sload 14;
+					sload 17;
 					smul;
 					sadd;
-					sstore 15;
+					sstore 18;
 					aload_1;
-					sload 11;
+					sload 14;
 					aaload;
-					sload 12;
-					aload_2;
 					sload 15;
+					aload 5;
+					sload 18;
 					aaload;
-					invokestatic 141;		// com/test/U64.rol(Lcom/test/U64;SLcom/test/U64;)V
-					sinc 10 1;
+					invokestatic 142;		// com/test/U64.rol(Lcom/test/U64;SLcom/test/U64;)V
+					sinc 13 1;
 					goto L29;
-				L31:	sinc 9 1;
+				L31:	sinc 12 1;
 					goto L27;
 				L32:	sconst_0;
-					sstore 9;
-				L33:	sload 9;
+					sstore 12;
+				L33:	sload 12;
 					sconst_5;
 					if_scmpge L38;
 				L34:	sconst_0;
-					sstore 10;
-				L35:	sload 10;
+					sstore 13;
+				L35:	sload 13;
 					sconst_5;
 					if_scmpge L37;
-				L36:	sload 10;
+				L36:	sload 13;
 					sconst_5;
-					sload 9;
+					sload 12;
 					smul;
 					sadd;
-					sstore 11;
-					sload 10;
+					sstore 14;
+					sload 13;
 					sconst_1;
 					sadd;
 					sconst_5;
 					srem;
-					sstore 12;
-					sload 12;
+					sstore 15;
+					sload 15;
 					sconst_5;
-					sload 9;
+					sload 12;
 					smul;
 					sadd;
-					sstore 12;
-					sload 10;
+					sstore 15;
+					sload 13;
 					sconst_2;
 					sadd;
 					sconst_5;
 					srem;
-					sstore 13;
-					sload 13;
+					sstore 16;
+					sload 16;
 					sconst_5;
-					sload 9;
+					sload 12;
 					smul;
 					sadd;
-					sstore 13;
-					aload_2;
-					sload 12;
+					sstore 16;
+					aload 5;
+					sload 15;
 					aaload;
-					aload 6;
-					invokestatic 142;		// com/test/U64.not(Lcom/test/U64;Lcom/test/U64;)V
-					aload 6;
-					aload_2;
-					sload 13;
+					aload 9;
+					invokestatic 143;		// com/test/U64.not(Lcom/test/U64;Lcom/test/U64;)V
+					aload 9;
+					aload 5;
+					sload 16;
 					aaload;
-					aload 7;
-					invokestatic 143;		// com/test/U64.and(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
-					aload_2;
-					sload 11;
+					aload 10;
+					invokestatic 144;		// com/test/U64.and(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					aload 5;
+					sload 14;
 					aaload;
-					aload 7;
+					aload 10;
 					aload_1;
-					sload 11;
+					sload 14;
 					aaload;
-					invokestatic 138;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
-					sinc 10 1;
+					invokestatic 139;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 13 1;
 					goto L35;
-				L37:	sinc 9 1;
+				L37:	sinc 12 1;
 					goto L33;
 				L38:	new 112;		// com/test/U64
 					dup;
 					invokespecial 113;		// com/test/U64.<init>()V
-					astore 9;
-					aload 9;
-					getstatic_a 144;		// reference com/test/KeccakF1600.RC_W3
-					sload 8;
+					astore 12;
+					aload 12;
+					getstatic_a 145;		// reference com/test/KeccakF1600.RC_W3
+					sload 11;
 					saload;
 					putfield_s 26;		// short com/test/U64.w3
-					aload 9;
-					getstatic_a 145;		// reference com/test/KeccakF1600.RC_W2
-					sload 8;
+					aload 12;
+					getstatic_a 146;		// reference com/test/KeccakF1600.RC_W2
+					sload 11;
 					saload;
 					putfield_s 25;		// short com/test/U64.w2
-					aload 9;
-					getstatic_a 146;		// reference com/test/KeccakF1600.RC_W1
-					sload 8;
+					aload 12;
+					getstatic_a 147;		// reference com/test/KeccakF1600.RC_W1
+					sload 11;
 					saload;
 					putfield_s 24;		// short com/test/U64.w1
-					aload 9;
-					getstatic_a 147;		// reference com/test/KeccakF1600.RC_W0
-					sload 8;
+					aload 12;
+					getstatic_a 148;		// reference com/test/KeccakF1600.RC_W0
+					sload 11;
 					saload;
 					putfield_s 23;		// short com/test/U64.w0
 					aload_1;
 					sconst_0;
 					aaload;
-					aload 9;
+					aload 12;
 					aload_1;
 					sconst_0;
 					aaload;
-					invokestatic 138;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
-					sinc 8 1;
+					invokestatic 139;		// com/test/U64.xor(Lcom/test/U64;Lcom/test/U64;Lcom/test/U64;)V
+					sinc 11 1;
 					goto_w L13;
-				L39:	sconst_0;
-					sstore 8;
-				L40:	sload 8;
+				L39:	getstatic_s 137;		// short com/test/KeccakF1600.permCount
+					sconst_3;
+					if_scmpne L41;
+				L40:	sspush 32512;
+					invokestatic 34;		// javacard/framework/ISOException.throwIt(S)V
+				L41:	sconst_0;
+					sstore 11;
+				L42:	sload 11;
 					bspush 25;
-					if_scmpge_w L51;
-				L41:	sload 8;
+					if_scmpge_w L44;
+				L43:	sload 11;
 					sconst_3;
 					sshl;
-					sstore 9;
-					getstatic_s 136;		// short com/test/KeccakF1600.permCount
-					sconst_3;
-					if_scmpne L44;
-				L42:	sload 8;
-					bspush 20;
-					if_scmpne L44;
-				L43:	sspush 32544;
-					invokestatic 34;		// javacard/framework/ISOException.throwIt(S)V
-				L44:	aload_0;
-					sload 9;
+					sstore 12;
+					aload_0;
+					sload 12;
 					aload_1;
-					sload 8;
+					sload 11;
 					aaload;
 					getfield_s 23;		// short com/test/U64.w0
 					s2b;
 					bastore;
-					getstatic_s 136;		// short com/test/KeccakF1600.permCount
-					sconst_3;
-					if_scmpne L47;
-				L45:	sload 8;
-					bspush 20;
-					if_scmpne L47;
-				L46:	sspush 32545;
-					invokestatic 34;		// javacard/framework/ISOException.throwIt(S)V
-				L47:	aload_0;
-					sload 9;
+					aload_0;
+					sload 12;
 					sconst_1;
 					sadd;
 					aload_1;
-					sload 8;
+					sload 11;
 					aaload;
 					getfield_s 23;		// short com/test/U64.w0
 					bspush 8;
 					sushr;
 					s2b;
 					bastore;
-					getstatic_s 136;		// short com/test/KeccakF1600.permCount
-					sconst_3;
-					if_scmpne L50;
-				L48:	sload 8;
-					bspush 20;
-					if_scmpne L50;
-				L49:	sspush 32546;
-					invokestatic 34;		// javacard/framework/ISOException.throwIt(S)V
-				L50:	aload_0;
-					sload 9;
+					aload_0;
+					sload 12;
 					sconst_2;
 					sadd;
 					aload_1;
-					sload 8;
+					sload 11;
 					aaload;
 					getfield_s 24;		// short com/test/U64.w1
 					s2b;
 					bastore;
 					aload_0;
-					sload 9;
+					sload 12;
 					sconst_3;
 					sadd;
 					aload_1;
-					sload 8;
+					sload 11;
 					aaload;
 					getfield_s 24;		// short com/test/U64.w1
 					bspush 8;
@@ -6036,21 +6034,21 @@
 					s2b;
 					bastore;
 					aload_0;
-					sload 9;
+					sload 12;
 					sconst_4;
 					sadd;
 					aload_1;
-					sload 8;
+					sload 11;
 					aaload;
 					getfield_s 25;		// short com/test/U64.w2
 					s2b;
 					bastore;
 					aload_0;
-					sload 9;
+					sload 12;
 					sconst_5;
 					sadd;
 					aload_1;
-					sload 8;
+					sload 11;
 					aaload;
 					getfield_s 25;		// short com/test/U64.w2
 					bspush 8;
@@ -6058,30 +6056,30 @@
 					s2b;
 					bastore;
 					aload_0;
-					sload 9;
+					sload 12;
 					bspush 6;
 					sadd;
 					aload_1;
-					sload 8;
+					sload 11;
 					aaload;
 					getfield_s 26;		// short com/test/U64.w3
 					s2b;
 					bastore;
 					aload_0;
-					sload 9;
+					sload 12;
 					bspush 7;
 					sadd;
 					aload_1;
-					sload 8;
+					sload 11;
 					aaload;
 					getfield_s 26;		// short com/test/U64.w3
 					bspush 8;
 					sushr;
 					s2b;
 					bastore;
-					sinc 8 1;
-					goto_w L40;
-				L51:	return;
+					sinc 11 1;
+					goto_w L42;
+				L44:	return;
 		}
 
 	}
@@ -6303,7 +6301,7 @@
 				L0:	getfield_b_this 30;		// boolean com/test/SHAKE256JC.squeezing
 					ifne L2;
 				L1:	aload_0;
-					invokevirtual 152;		// finalizeSqueeze()V
+					invokevirtual 153;		// finalizeSqueeze()V
 				L2:	sload_2;
 					sstore 4;
 					sload_3;
@@ -6373,7 +6371,7 @@
 					aload_1;
 					sload_2;
 					sload_3;
-					invokevirtual 153;		// absorbXor([BSS)V
+					invokevirtual 154;		// absorbXor([BSS)V
 					return;
 		}
 
@@ -6385,7 +6383,7 @@
 					aload_1;
 					sload_2;
 					sload_3;
-					invokevirtual 154;		// squeezeBytes([BSS)V
+					invokevirtual 155;		// squeezeBytes([BSS)V
 					sload_3;
 					sreturn;
 		}
@@ -6398,9 +6396,9 @@
 					aload_1;
 					sload_2;
 					sload_3;
-					invokevirtual 154;		// squeezeBytes([BSS)V
+					invokevirtual 155;		// squeezeBytes([BSS)V
 					aload_0;
-					invokevirtual 155;		// reset()V
+					invokevirtual 156;		// reset()V
 					sload_3;
 					sreturn;
 		}
@@ -6648,7 +6646,7 @@
 					getfield_s 22;		// short com/test/U32.hi
 					aload_1;
 					getfield_s 21;		// short com/test/U32.lo
-					invokestatic 156;		// com/test/U32.uLessThan(SSSS)S
+					invokestatic 157;		// com/test/U32.uLessThan(SSSS)S
 					sreturn;
 		}
 
@@ -6813,19 +6811,19 @@
 					sload_1;
 					sload_3;
 					aload 6;
-					invokestatic 157;		// com/test/U32.mul16(SSLcom/test/U32;)V
+					invokestatic 158;		// com/test/U32.mul16(SSLcom/test/U32;)V
 					sload_1;
 					sload_2;
 					aload 7;
-					invokestatic 157;		// com/test/U32.mul16(SSLcom/test/U32;)V
+					invokestatic 158;		// com/test/U32.mul16(SSLcom/test/U32;)V
 					sload_0;
 					sload_3;
 					aload 8;
-					invokestatic 157;		// com/test/U32.mul16(SSLcom/test/U32;)V
+					invokestatic 158;		// com/test/U32.mul16(SSLcom/test/U32;)V
 					sload_0;
 					sload_2;
 					aload 9;
-					invokestatic 157;		// com/test/U32.mul16(SSLcom/test/U32;)V
+					invokestatic 158;		// com/test/U32.mul16(SSLcom/test/U32;)V
 					aload 6;
 					getfield_s 21;		// short com/test/U32.lo
 					sstore 10;
@@ -6840,7 +6838,7 @@
 					sconst_0;
 					aload 6;
 					getfield_s 22;		// short com/test/U32.hi
-					invokestatic 156;		// com/test/U32.uLessThan(SSSS)S
+					invokestatic 157;		// com/test/U32.uLessThan(SSSS)S
 					sstore 12;
 					sload 11;
 					sstore 13;
@@ -6853,7 +6851,7 @@
 					sload 11;
 					sconst_0;
 					sload 13;
-					invokestatic 156;		// com/test/U32.uLessThan(SSSS)S
+					invokestatic 157;		// com/test/U32.uLessThan(SSSS)S
 					ifeq L2;
 				L1:	sinc 12 1;
 				L2:	sload 11;
@@ -6869,7 +6867,7 @@
 					sconst_0;
 					aload 7;
 					getfield_s 22;		// short com/test/U32.hi
-					invokestatic 156;		// com/test/U32.uLessThan(SSSS)S
+					invokestatic 157;		// com/test/U32.uLessThan(SSSS)S
 					sstore 16;
 					sload 15;
 					sstore 13;
@@ -6882,7 +6880,7 @@
 					sload 15;
 					sconst_0;
 					sload 13;
-					invokestatic 156;		// com/test/U32.uLessThan(SSSS)S
+					invokestatic 157;		// com/test/U32.uLessThan(SSSS)S
 					ifeq L4;
 				L3:	sinc 16 1;
 				L4:	sload 15;
@@ -6895,7 +6893,7 @@
 					sload 15;
 					sconst_0;
 					sload 13;
-					invokestatic 156;		// com/test/U32.uLessThan(SSSS)S
+					invokestatic 157;		// com/test/U32.uLessThan(SSSS)S
 					ifeq L6;
 				L5:	sinc 16 1;
 				L6:	sload 15;
@@ -7278,7 +7276,7 @@
 					ifne L2;
 				L1:	aload_0;
 					aload_2;
-					invokestatic 137;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+					invokestatic 138;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
 					return;
 				L2:	new 112;		// com/test/U64
 					dup;
@@ -7290,20 +7288,20 @@
 					astore 4;
 					aload_0;
 					aload_3;
-					invokestatic 137;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+					invokestatic 138;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
 				L3:	sload_1;
 					sinc 1 -1;
 					ifle L5;
 				L4:	aload_3;
 					aload 4;
-					invokestatic 139;		// com/test/U64.rol1(Lcom/test/U64;Lcom/test/U64;)V
+					invokestatic 140;		// com/test/U64.rol1(Lcom/test/U64;Lcom/test/U64;)V
 					aload 4;
 					aload_3;
-					invokestatic 137;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+					invokestatic 138;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
 					goto L3;
 				L5:	aload_3;
 					aload_2;
-					invokestatic 137;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
+					invokestatic 138;		// com/test/U64.copy(Lcom/test/U64;Lcom/test/U64;)V
 					return;
 		}
 
@@ -7418,7 +7416,7 @@
 					getfield_s 26;		// short com/test/U64.w3
 					aload_1;
 					getfield_s 26;		// short com/test/U64.w3
-					invokestatic 158;		// com/test/U64.uLessThan16(SS)S
+					invokestatic 159;		// com/test/U64.uLessThan16(SS)S
 					sreturn;
 				L2:	aload_0;
 					getfield_s 25;		// short com/test/U64.w2
@@ -7429,7 +7427,7 @@
 					getfield_s 25;		// short com/test/U64.w2
 					aload_1;
 					getfield_s 25;		// short com/test/U64.w2
-					invokestatic 158;		// com/test/U64.uLessThan16(SS)S
+					invokestatic 159;		// com/test/U64.uLessThan16(SS)S
 					sreturn;
 				L4:	aload_0;
 					getfield_s 24;		// short com/test/U64.w1
@@ -7440,13 +7438,13 @@
 					getfield_s 24;		// short com/test/U64.w1
 					aload_1;
 					getfield_s 24;		// short com/test/U64.w1
-					invokestatic 158;		// com/test/U64.uLessThan16(SS)S
+					invokestatic 159;		// com/test/U64.uLessThan16(SS)S
 					sreturn;
 				L6:	aload_0;
 					getfield_s 23;		// short com/test/U64.w0
 					aload_1;
 					getfield_s 23;		// short com/test/U64.w0
-					invokestatic 158;		// com/test/U64.uLessThan16(SS)S
+					invokestatic 159;		// com/test/U64.uLessThan16(SS)S
 					sreturn;
 		}
 

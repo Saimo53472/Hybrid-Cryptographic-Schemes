@@ -378,92 +378,31 @@ class Hawk {
     /**
      * Regenerate f and g polynomials from seed using SHAKE256
      */
-    // public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed) {
-    //     for (byte j = 0; j < 4; j++) {
-    //         SHAKE256JC shake = new SHAKE256JC();
-    //         shake.update(seed, (short) 0, (short) 24);
+    public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed) {
+        for (byte j = 0; j < 4; j++) {
+            SHAKE256JC shake = new SHAKE256JC();
+            shake.update(seed, (short) 0, (short) 24);
 
-    //         byte[] singleByte = new byte[1];
-    //         singleByte[0] = j;
-    //         shake.update(singleByte, (short) 0, (short) 1);
-    //         byte[] qb = new byte[8];
+            byte[] singleByte = new byte[1];
+            singleByte[0] = j;
+            shake.update(singleByte, (short) 0, (short) 1);
+            byte[] qb = new byte[8];
 
-    //         for (short u = 0; u < 1024; u += 32) {
-    //             shake.doOutput(qb, (short) 0, (short) 8);
+            for (short u = 0; u < 1024; u += 32) {
+                shake.doOutput(qb, (short) 0, (short) 8);
 
-    //             for (short i = 0; i < 8; i++) {
-    //                 byte coeff = (byte) (popcount8(qb[i]) - 4);
+                for (short i = 0; i < 8; i++) {
+                    byte coeff = (byte) (popcount8(qb[i]) - 4);
 
-    //                 if (u < 512) {
-    //                     f[(short) (fOff + u + (j << 3) + i)] = coeff;
-    //                 } else {
-    //                     g[(short) (gOff + (u - 512) + (j << 3) + i)] = coeff;
-    //                 }
-    //             }
-    //         } 
-    //     }
-    // }
-
-public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
-{
-    if (f == null) {
-        ISOException.throwIt((short)0x7901);
-    }
-
-    if (g == null) {
-        ISOException.throwIt((short)0x7902);
-    }
-
-    for (byte j = 0; j < 4; j++) {
-
-        SHAKE256JC shake = new SHAKE256JC();
-        shake.update(seed, (short)0, (short)24);
-
-        byte[] singleByte = new byte[1];
-        singleByte[0] = j;
-
-        shake.update(singleByte, (short)0, (short)1);
-
-        byte[] qb = new byte[8];
-
-        for (short u = 0; u < 1024; u += 32) {
-            shake.doOutput(qb, (short)0, (short)8);
-            for (short i = 0; i < 8; i++) {
-                byte coeff = (byte)(popcount8(qb[i]) - 4);
-
-                if (u < 512) {
-
-                    short idx =
-                        (short)(fOff + u + (j << 3) + i);
-
-                    try {
-                        f[idx] = coeff;
-                    } catch (Throwable e) {
-                        ISOException.throwIt(
-                            (short)(0x7A00 + i));
-                    }
-
-                } else {
-
-                    short idx =
-                        (short)(gOff + (u - 512)
-                              + (j << 3) + i);
-
-                    try {
-                        g[idx] = coeff;
-                    } catch (Throwable e) {
-                        ISOException.throwIt(
-                            (short)(0x7B00 + i));
+                    if (u < 512) {
+                        f[(short) (fOff + u + (j << 3) + i)] = coeff;
+                    } else {
+                        g[(short) (gOff + (u - 512) + (j << 3) + i)] = coeff;
                     }
                 }
-            }
-
-            // if (u == 512) {
-            //     ISOException.throwIt((short)0x7C00);
-            // }
+            } 
         }
     }
-}
 
     // Encode 32-bit integer as little-endian bytes
     public static void enc32le(byte[] dst, short dstOffset, short hi, short lo) {
@@ -1527,193 +1466,6 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
     /**
      * Sign method
      */
-    // public short sign(short logn, short useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, short privLen, byte[] tmp, short tmpLen) {
-    //     // Ensure proper alignment for 64-bit access
-    //     if (tmpLen < 7) {
-    //         return 0;
-    //     }
-    //     if (logn < 8 || logn > 10) {
-    //         return 0;
-    //     }
-
-    //     // Align temporary buffer for 64-bit access
-    //     int utmp1 = 0;
-    //     int utmp2 = (utmp1 + 7) & ~7;
-    //     tmpLen -= (int) (utmp2 - utmp1);
-
-    //     // short minTmpLen = (short) (6 << logn);
-    //     short minTmpLen = 512;
-    //     if (tmpLen < minTmpLen) {
-    //         return 0;
-    //     }
-
-    //     short seedLen = 24;
-    //     short hpubLen = 32;
-
-    //     // Memory layout in tmp buffer
-    //     byte[] g = new byte[n];
-    //     byte[] ww = new byte[(short) (2 * n)];
-    //     byte[] x0 = new byte[(short) (2 * n)];
-    //     byte[] f = new byte[n];
-
-    //     // Re-expand the private key
-    //     byte[] F2, G2;
-    //     byte[] hpub;
-
-    //     // Regenerate f and g from seed // DecodePrivate(priv) & Regeneratefg(kgseed)
-    //     byte[] seed = new byte[seedLen];
-    //     Util.arrayCopy(priv, (short) 0, seed, (short) 0, (short) seedLen);
-    //     regen_fg(f, (short) 0, g, (short) 0, seed);
-    //     Util.arrayCopy(seed, (short) 0, tmp, (short) 0, (short) seedLen);
-    //     F2 = new byte[n >> 3];
-    //     G2 = new byte[n >> 3];
-    //     hpub = new byte[hpubLen];
-    //     Util.arrayCopy(priv, (short) seedLen, F2, (short) 0, (short) (n >> 3));
-    //     Util.arrayCopy(priv, (short) (seedLen + (n >> 3)), G2, (short) 0, (short) (n >> 3));
-    //     Util.arrayCopy(priv, (short) (seedLen + 2 * (n >> 3)), hpub, (short) 0, (short) hpubLen);
-
-    //     // Compute hm = SHAKE256(message || hpub)
-    //     byte[] hm = new byte[64];
-    //     shake256jc.update(hpub, (short) 0, (short) hpubLen);
-    //     shake256jc.doFinal(hm, (short) 0, (short) hm.length);
-
-    //     // Main signing loop
-    //     for (short attempt = 0;; attempt += 2) {
-    //         int t0Offset = 0;
-    //         int t1Offset = t0Offset + (n >> 3);
-    //         int h0Offset = t1Offset + (n >> 3);
-    //         int h1Offset = h0Offset + (n >> 3);
-    //         int f2Offset = h1Offset + (n >> 3);
-    //         int g2Offset = f2Offset + (n >> 3);
-    //         int xxOffset = g2Offset + (n >> 3);
-
-    //         // Generate salt
-    //         byte[] salt = new byte[saltLen];
-    //         random.generateData(salt, (short) 0, (short) saltLen);
-
-    //         if (useShake != 0) {
-    //             byte[] tbuf = new byte[4];
-    //             enc32le(tbuf, (short)0, (short)(attempt >>> 16), (short)attempt);
-
-    //             SHAKE256JC saltShake = new SHAKE256JC();
-    //             saltShake.update(hm, (short) 0, (short) hm.length);
-    //             saltShake.update(priv, (short) 0, (short) seedLen); // problem?
-    //             saltShake.update(tbuf, (short) 0, (short) tbuf.length);
-    //             saltShake.update(salt, (short) 0, (short) saltLen);
-    //             saltShake.doFinal(salt, (short) 0, saltLen);
-    //         }
-
-    //         // Compute h = SHAKE256(hm || salt)
-    //         SHAKE256JC hShake = new SHAKE256JC();
-    //         hShake.update(hm, (short) 0, (short) hm.length);
-    //         hShake.update(salt, (short) 0, (short) saltLen);
-
-    //         // Squeeze h0 and h1 (total n >> 2 bytes)
-    //         hShake.doFinal(ww, (short) h0Offset, (short) (n >> 2));
-
-    //         // Extract low bits and compute t = B*h (mod 2)
-    //         byte[] f2 = new byte[n >> 3];
-    //         byte[] g2 = new byte[n >> 3];
-    //         extract_lowbit(logn, f2, f);
-    //         extract_lowbit(logn, g2, g);
-
-    //         basisM2Mul(logn,
-    //             ww, (short)t0Offset,
-    //             ww, (short)t1Offset,
-    //             ww, (short)h0Offset,
-    //             ww, (short)h1Offset,
-    //             f2, (short)0,
-    //             g2, (short)0,
-    //             F2, (short)0,
-    //             G2, (short)0,
-    //             tmp, (short)xxOffset);
-    //         // Sample x using Gaussian distribution
-    //         short xsn;
-    //         byte[] tbuf = new byte[4];
-    //         int att1 = attempt + 1;
-    //         enc32le(tbuf, (short)0, (short)(att1 >>> 16), (short)att1);
-
-    //         SHAKE256JC gaussShake = new SHAKE256JC();
-
-    //         gaussShake.update(hm, (short) 0, (short) hm.length);
-    //         gaussShake.update(priv, (short) 0, (short) seedLen); 
-    //         gaussShake.update(tbuf, (short) 0, (short) tbuf.length);
-
-    //         xsn = sigGauss(logn, gaussShake, x0, (short) 0, ww, (short) t0Offset);
-
-    //         // Reject if squared norm is too large
-    //         if (xsn > maxXnorm) {
-    //             continue;
-    //         }
-
-    //         // Compute s1 = f*x1 - g*x0 using NTT over Q=18433
-    //         short[] w1 = new short[n];
-    //         short[] w2 = new short[n];
-    //         short[] w3 = new short[n];
-
-    //         // w1 <- g*x0 in NTT domain
-    //         mq18433PolySetSmall(logn, w1, (short) 0, g, (short) 0);
-    //         mq18433PolySetSmall(logn, w2, (short) 0, x0, (short) 0);
-    //         mq18433NTT(logn, w1, (short)0);
-    //         mq18433NTT(logn, w2, (short)0);
-    //         for (short u = 0; u < n; u++) {
-    //             w1[u] = mq18433MontyMul((short) (w1[u]), (short) (w2[u]));
-    //         }
-
-    //         // w3 <- f*x1 - g*x0, then INTT to get polynomial
-    //         mq18433PolySetSmall(logn, w2, (short) 0, x0, n); // x1 = x0[n..2n-1]
-    //         mq18433PolySetSmall(logn, w3, (short) 0, f, (short)0);
-    //         mq18433NTT(logn, w2, (short) 0);
-    //         mq18433NTT(logn, w3, (short) 0);
-    //         for (short u = 0; u < n; u++) {
-    //             w3[u] = mq18433ToMonty(mq18433Sub(mq18433MontyMul(w2[u], w3[u]), w1[u]));
-    //         }
-    //         mq18433INTT(logn, w3, (short) 0);
-    //         mq18433PolySnorm(logn, w3, (short)0);
-
-    //         short[] s1 = w3;
-
-    //         int ps = polySymBreak(logn, s1, (short) 0);
-    //         int lim = 1 << ((logn == 10) ? 10 : 9);
-    //         short nm = (short) ~tbmask((short) (ps - 1));
-
-    //         byte[] h1buf = new byte[n >> 3];
-    //         Util.arrayCopy(ww, (short) h1Offset, h1buf, (short) 0, (short) (n >> 3));
-
-    //         // Per-coefficient bounds check
-    //         int reject = 0;
-    //         for (short u = 0; u < n; u++) {
-    //             int z = s1[u];
-    //             z = ((z ^ nm) - nm) + ((h1buf[u >> 3] >> (u & 7)) & 1);
-    //             int y = z >> 1;
-
-    //             // -1 if y < -lim or y >= lim, 0 otherwise
-    //             short negLim = (short)-lim;
-
-    //             short outOfRange = 0;
-
-    //             if ((short)y < negLim || (short)y >= (short)lim) {
-    //                 outOfRange = (short)-1;
-    //             }
-    //             reject |= outOfRange;
-    //             s1[u] = (short) y;
-    //         }
-
-    //         if (reject != 0) {
-    //             continue;
-    //         }
-
-    //         // Encode signature
-    //         short sigLen = HAWK_SIG_SIZE(logn);
-    //         if (encodeSig(logn, tmp, (short) 0, sigLen, salt, (short) 0, saltLen, s1, (short) 0)) {
-    //             if (sig != null) {
-    //                 Util.arrayCopy(tmp, (short) 0, sig, (short) 0, sigLen);
-    //             }
-    //             return 1;
-    //         }
-    //     }
-    // }
-
     public short sign(short logn, short useShake, byte[] sig, SHAKE256JC shake256jc, byte[] priv, short privLen, byte[] tmp, short tmpLen) {
         // Ensure proper alignment for 64-bit access
         if (tmpLen < 7) {
@@ -1738,10 +1490,10 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         short hpubLen = 32;
 
         // Memory layout in tmp buffer
-        byte[] g = new byte[(short) 512];
-        byte[] ww = new byte[(short) 1024];
-        byte[] x0 = new byte[(short) 1024];
-        byte[] f = new byte[(short) 512];
+        byte[] g = new byte[n];
+        byte[] ww = new byte[(short) (2 * n)];
+        byte[] x0 = new byte[(short) (2 * n)];
+        byte[] f = new byte[n];
 
         // Re-expand the private key
         byte[] F2, G2;
@@ -1750,7 +1502,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
         // Regenerate f and g from seed // DecodePrivate(priv) & Regeneratefg(kgseed)
         byte[] seed = new byte[seedLen];
         Util.arrayCopy(priv, (short) 0, seed, (short) 0, (short) seedLen);
-        regen_fg(f, (short)0, g, (short)0, seed);
+        regen_fg(f, (short) 0, g, (short) 0, seed);
         Util.arrayCopy(seed, (short) 0, tmp, (short) 0, (short) seedLen);
         F2 = new byte[n >> 3];
         G2 = new byte[n >> 3];
@@ -1761,12 +1513,9 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
 
         // Compute hm = SHAKE256(message || hpub)
         byte[] hm = new byte[64];
-        try {
-    shake256jc.update(hpub, (short)0, (short)hpubLen);
-    shake256jc.doFinal(hm, (short)0, (short)hm.length);
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x7002);
-}
+        shake256jc.update(hpub, (short) 0, (short) hpubLen);
+        shake256jc.doFinal(hm, (short) 0, (short) hm.length);
+
         // Main signing loop
         for (short attempt = 0;; attempt += 2) {
             int t0Offset = 0;
@@ -1779,98 +1528,62 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
 
             // Generate salt
             byte[] salt = new byte[saltLen];
-            try {
-    random.generateData(salt, (short)0, saltLen);
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x7003);
-}
+            random.generateData(salt, (short) 0, (short) saltLen);
 
             if (useShake != 0) {
                 byte[] tbuf = new byte[4];
-                enc32le(
-                    tbuf,
-                    (short)0,
-                    (short)(attempt >>> 16),
-                    (short)attempt);
+                enc32le(tbuf, (short)0, (short)(attempt >>> 16), (short)attempt);
 
-                try {
-    SHAKE256JC saltShake = new SHAKE256JC();
-    saltShake.update(hm, (short)0, (short)hm.length);
-    saltShake.update(priv, (short)0, seedLen);
-    saltShake.update(tbuf, (short)0, (short)tbuf.length);
-    saltShake.update(salt, (short)0, saltLen);
-    saltShake.doFinal(salt, (short)0, saltLen);
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x7004);
-}
+                SHAKE256JC saltShake = new SHAKE256JC();
+                saltShake.update(hm, (short) 0, (short) hm.length);
+                saltShake.update(priv, (short) 0, (short) seedLen); // problem?
+                saltShake.update(tbuf, (short) 0, (short) tbuf.length);
+                saltShake.update(salt, (short) 0, (short) saltLen);
+                saltShake.doFinal(salt, (short) 0, saltLen);
             }
 
             // Compute h = SHAKE256(hm || salt)
-            try {
-    SHAKE256JC hShake = new SHAKE256JC();
-    hShake.update(hm, (short)0, (short)hm.length);
-    hShake.update(salt, (short)0, saltLen);
-    hShake.doFinal(ww, (short)h0Offset, (short)(n >> 2));
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x7005);
-}
+            SHAKE256JC hShake = new SHAKE256JC();
+            hShake.update(hm, (short) 0, (short) hm.length);
+            hShake.update(salt, (short) 0, (short) saltLen);
+
+            // Squeeze h0 and h1 (total n >> 2 bytes)
+            hShake.doFinal(ww, (short) h0Offset, (short) (n >> 2));
 
             // Extract low bits and compute t = B*h (mod 2)
             byte[] f2 = new byte[n >> 3];
             byte[] g2 = new byte[n >> 3];
-            try {
-    extract_lowbit(logn, f2, f);
-    extract_lowbit(logn, g2, g);
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x7006);
-}
+            extract_lowbit(logn, f2, f);
+            extract_lowbit(logn, g2, g);
 
-            try {
-    basisM2Mul(
-        logn,
-        ww, (short)t0Offset,
-        ww, (short)t1Offset,
-        ww, (short)h0Offset,
-        ww, (short)h1Offset,
-        f2, (short)0,
-        g2, (short)0,
-        F2, (short)0,
-        G2, (short)0,
-        tmp, (short)xxOffset);
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x7007);
-}
+            basisM2Mul(logn,
+                ww, (short)t0Offset,
+                ww, (short)t1Offset,
+                ww, (short)h0Offset,
+                ww, (short)h1Offset,
+                f2, (short)0,
+                g2, (short)0,
+                F2, (short)0,
+                G2, (short)0,
+                tmp, (short)xxOffset);
             // Sample x using Gaussian distribution
             short xsn;
             byte[] tbuf = new byte[4];
             int att1 = attempt + 1;
-            enc32le(
-                tbuf,
-                (short)0,
-                (short)(att1 >>> 16),
-                (short)att1);
+            enc32le(tbuf, (short)0, (short)(att1 >>> 16), (short)att1);
 
-            try {
-    SHAKE256JC gaussShake = new SHAKE256JC();
-    gaussShake.update(hm, (short)0, (short)hm.length);
-    gaussShake.update(priv, (short)0, seedLen);
-    gaussShake.update(tbuf, (short)0, (short)tbuf.length);
+            SHAKE256JC gaussShake = new SHAKE256JC();
 
-    xsn = sigGauss(
-        logn,
-        gaussShake,
-        x0,
-        (short)0,
-        ww,
-        (short)t0Offset);
+            gaussShake.update(hm, (short) 0, (short) hm.length);
+            gaussShake.update(priv, (short) 0, (short) seedLen); 
+            gaussShake.update(tbuf, (short) 0, (short) tbuf.length);
 
-        // Reject if squared norm is too large
+            xsn = sigGauss(logn, gaussShake, x0, (short) 0, ww, (short) t0Offset);
+
+            // Reject if squared norm is too large
             if (xsn > maxXnorm) {
                 continue;
             }
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x7008);
-}
 
             // Compute s1 = f*x1 - g*x0 using NTT over Q=18433
             short[] w1 = new short[n];
@@ -1878,43 +1591,24 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
             short[] w3 = new short[n];
 
             // w1 <- g*x0 in NTT domain
-           try {
-    mq18433PolySetSmall(logn, w1, (short)0, g, (short)0);
-    mq18433PolySetSmall(logn, w2, (short)0, x0, (short)0);
-    mq18433NTT(logn, w1, (short)0);
-    mq18433NTT(logn, w2, (short)0);
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x7009);
-}
+            mq18433PolySetSmall(logn, w1, (short) 0, g, (short) 0);
+            mq18433PolySetSmall(logn, w2, (short) 0, x0, (short) 0);
+            mq18433NTT(logn, w1, (short)0);
+            mq18433NTT(logn, w2, (short)0);
             for (short u = 0; u < n; u++) {
-                w1[u] = mq18433MontyMul(
-                       (short) (w1[u]),
-                        (short) (w2[u]));
+                w1[u] = mq18433MontyMul((short) (w1[u]), (short) (w2[u]));
             }
 
             // w3 <- f*x1 - g*x0, then INTT to get polynomial
-            try {
-    mq18433PolySetSmall(logn, w2, (short)0, x0, n);
-    mq18433PolySetSmall(logn, w3, (short)0, f, (short)0);
-    mq18433NTT(logn, w2, (short)0);
-    mq18433NTT(logn, w3, (short)0);
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x700A);
-}
+            mq18433PolySetSmall(logn, w2, (short) 0, x0, n); // x1 = x0[n..2n-1]
+            mq18433PolySetSmall(logn, w3, (short) 0, f, (short)0);
+            mq18433NTT(logn, w2, (short) 0);
+            mq18433NTT(logn, w3, (short) 0);
             for (short u = 0; u < n; u++) {
-                w3[u] = mq18433ToMonty(
-            mq18433Sub(
-                mq18433MontyMul(
-                    w2[u],
-                    w3[u]),
-                w1[u]));
+                w3[u] = mq18433ToMonty(mq18433Sub(mq18433MontyMul(w2[u], w3[u]), w1[u]));
             }
-            try {
-    mq18433INTT(logn, w3, (short)0);
-    mq18433PolySnorm(logn, w3, (short)0);
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x700B);
-}
+            mq18433INTT(logn, w3, (short) 0);
+            mq18433PolySnorm(logn, w3, (short)0);
 
             short[] s1 = w3;
 
@@ -1923,16 +1617,7 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
             short nm = (short) ~tbmask((short) (ps - 1));
 
             byte[] h1buf = new byte[n >> 3];
-            try {
-    Util.arrayCopy(
-        ww,
-        (short)h1Offset,
-        h1buf,
-        (short)0,
-        (short)(n >> 3));
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x700D);
-}
+            Util.arrayCopy(ww, (short) h1Offset, h1buf, (short) 0, (short) (n >> 3));
 
             // Per-coefficient bounds check
             int reject = 0;
@@ -1959,31 +1644,12 @@ public void regen_fg(byte[] f, short fOff, byte[] g, short gOff, byte[] seed)
 
             // Encode signature
             short sigLen = HAWK_SIG_SIZE(logn);
-            try {
-    if (encodeSig(
-            logn,
-            tmp,
-            (short)0,
-            sigLen,
-            salt,
-            (short)0,
-            saltLen,
-            s1,
-            (short)0))
-    {
-        if (sig != null) {
-            Util.arrayCopy(
-                tmp,
-                (short)0,
-                sig,
-                (short)0,
-                sigLen);
-        }
-        return 1;
-    }
-} catch (Throwable e) {
-    ISOException.throwIt((short)0x700E);
-}
+            if (encodeSig(logn, tmp, (short) 0, sigLen, salt, (short) 0, saltLen, s1, (short) 0)) {
+                if (sig != null) {
+                    Util.arrayCopy(tmp, (short) 0, sig, (short) 0, sigLen);
+                }
+                return 1;
+            }
         }
     }
 
